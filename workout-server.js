@@ -7,7 +7,7 @@ const port = Number(process.env.PORT || 4177);
 const host = "0.0.0.0";
 const adminPasscode = "j@bultra";
 const maxPlayers = 10;
-const appFile = path.join(__dirname, "solo-workout-system.html");
+const appFile = path.join(__dirname, "index.html");
 const saveFile = path.join(__dirname, "workout-save.json");
 
 const defaultState = {
