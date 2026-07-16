@@ -1,0 +1,175 @@
+{
+  "quoteIndex": 0,
+  "feed": [
+    "Khi joined the party.",
+    "Motivation quote refreshed.",
+    "Jab summoned Boss Quest: 5 minute push-up ladder for 143 XP.",
+    "Motivation quote refreshed."
+  ],
+  "players": [
+    {
+      "id": "p1",
+      "name": "Jab",
+      "level": 3,
+      "xp": 95,
+      "totalXp": 340,
+      "streak": 1,
+      "lastDaily": "2026-07-15",
+      "quests": [
+        {
+          "id": "2026-07-16-0-896f8be1cfaaf",
+          "title": "3 sets of 15 push-ups",
+          "xp": 45,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-1-13b52d79c5fba",
+          "title": "3 sets of 15 leg raises",
+          "xp": 40,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-2-0053bd141bc4e",
+          "title": "3 sets of 15 in-and-out abs",
+          "xp": 40,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-3-b1e3047480ece",
+          "title": "3 sets of 35 second planks",
+          "xp": 45,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-4-97bfae4c1eb1b",
+          "title": "3 sets of 12 squats",
+          "xp": 40,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-5-b34cade51fe21",
+          "title": "1 set of 40 curls, both arms",
+          "xp": 50,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-custom-bcbd56b7ecef88",
+          "title": "Boss Quest: 5 minute push-up ladder",
+          "xp": 143,
+          "done": false,
+          "boss": true
+        }
+      ],
+      "log": [
+        {
+          "text": "+75 XP: Daily quest bonus",
+          "date": "Jul 15, 10:58 AM"
+        },
+        {
+          "text": "+50 XP: 1 set of 40 curls, both arms",
+          "date": "Jul 15, 10:58 AM"
+        },
+        {
+          "text": "+40 XP: 3 sets of 12 squats",
+          "date": "Jul 15, 10:40 AM"
+        },
+        {
+          "text": "+45 XP: 3 sets of 35 second planks",
+          "date": "Jul 15, 10:16 AM"
+        },
+        {
+          "text": "+40 XP: 3 sets of 15 in-and-out abs",
+          "date": "Jul 15, 9:50 AM"
+        },
+        {
+          "text": "+40 XP: 3 sets of 15 leg raises",
+          "date": "Jul 15, 9:34 AM"
+        },
+        {
+          "text": "+45 XP: 3 sets of 15 push-ups",
+          "date": "Jul 15, 9:14 AM"
+        }
+      ],
+      "questDate": "2026-07-16",
+      "questSignature": "3 sets of 15 push-ups|3 sets of 15 leg raises|3 sets of 15 in-and-out abs|3 sets of 35 second planks|3 sets of 12 squats|1 set of 40 curls, both arms"
+    },
+    {
+      "id": "p2",
+      "name": "Mar",
+      "level": 1,
+      "xp": 45,
+      "totalXp": 45,
+      "streak": 0,
+      "lastDaily": "",
+      "quests": [
+        {
+          "id": "2026-07-16-0-6a25bea5ca6048",
+          "title": "3 sets of 15 push-ups",
+          "xp": 45,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-1-b10cb1f4612678",
+          "title": "3 sets of 15 leg raises",
+          "xp": 40,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-2-f6963860df3ed",
+          "title": "3 sets of 15 in-and-out abs",
+          "xp": 40,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-3-cd547710a9aea",
+          "title": "3 sets of 35 second planks",
+          "xp": 45,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-4-0ecf9d90210cd8",
+          "title": "3 sets of 12 squats",
+          "xp": 40,
+          "done": false,
+          "custom": false
+        },
+        {
+          "id": "2026-07-16-5-c81a1d35c15308",
+          "title": "1 set of 40 curls, both arms",
+          "xp": 50,
+          "done": false,
+          "custom": false
+        }
+      ],
+      "log": [
+        {
+          "text": "+45 XP: 3 sets of 15 push-ups",
+          "date": "Jul 15 at 10:55 AM"
+        }
+      ],
+      "questDate": "2026-07-16",
+      "questSignature": "3 sets of 15 push-ups|3 sets of 15 leg raises|3 sets of 15 in-and-out abs|3 sets of 35 second planks|3 sets of 12 squats|1 set of 40 curls, both arms"
+    },
+    {
+      "id": "p3",
+      "name": "Khi",
+      "level": 1,
+      "xp": 0,
+      "totalXp": 0,
+      "streak": 0,
+      "lastDaily": "",
+      "quests": [],
+      "log": []
+    }
+  ]
+}
