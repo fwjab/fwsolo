@@ -1,0 +1,9 @@
+{
+  "name": "fwsolo",
+  "version": "1.0.0",
+  "private": true,
+  "main": "workout-server.js",
+  "scripts": {
+    "start": "node workout-server.js"
+  }
+}
