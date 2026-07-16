@@ -1,0 +1,1452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hunter Workout System</title>
+</head>
+<body>
+<div id="solo-workout-app">
+  <div class="sw-bg-art" aria-hidden="true"></div>
+  <div class="sw-manga-art" aria-hidden="true">
+    <span class="sw-panel-one"></span>
+    <span class="sw-panel-two"></span>
+    <span class="sw-panel-three"></span>
+    <span class="sw-speed-lines"></span>
+    <span class="sw-ink-slash-a"></span>
+    <span class="sw-ink-slash-b"></span>
+    <span class="sw-ink-slash-c"></span>
+    <span class="sw-ink-shadow"></span>
+    <span class="sw-sfx">RAID</span>
+  </div>
+  <style>
+    #solo-workout-app {
+      color: #eef4ff;
+      background:
+        linear-gradient(180deg, rgba(5, 9, 20, .3), rgba(5, 9, 20, .92) 72%),
+        radial-gradient(circle at 50% 16%, rgba(79, 176, 255, .34), transparent 18%),
+        radial-gradient(circle at 18% 12%, rgba(67, 132, 255, .24), transparent 30%),
+        radial-gradient(circle at 82% 4%, rgba(155, 64, 255, .24), transparent 28%),
+        linear-gradient(135deg, #050914 0%, #0a1325 42%, #160c25 100%);
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    #solo-workout-app * {
+      box-sizing: border-box;
+    }
+
+    #solo-workout-app::before {
+      content: "";
+      position: absolute;
+      inset: -6% -7% auto auto;
+      width: min(760px, 76vw);
+      height: min(760px, 76vw);
+      background:
+        radial-gradient(circle, rgba(170, 230, 255, .95) 0 4%, rgba(75, 191, 255, .75) 5% 8%, transparent 9% 17%, rgba(62, 168, 255, .34) 18% 19%, transparent 20% 31%, rgba(157, 94, 255, .35) 32% 33%, transparent 34% 45%, rgba(67, 184, 255, .26) 46% 47%, transparent 48%),
+        conic-gradient(from 8deg, transparent 0 6%, rgba(104, 210, 255, .58) 6.2% 7.2%, transparent 7.5% 13%, rgba(159, 91, 255, .45) 13.4% 14.2%, transparent 14.5% 23%, rgba(104, 210, 255, .55) 23.2% 24.2%, transparent 24.5% 39%, rgba(104, 210, 255, .48) 39.2% 40%, transparent 40.5% 100%);
+      border-radius: 50%;
+      filter: blur(.2px) drop-shadow(0 0 60px rgba(79, 184, 255, .42));
+      opacity: .7;
+      z-index: -3;
+      animation: swGateSpin 44s linear infinite;
+    }
+
+    #solo-workout-app::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 18% 24%, rgba(238, 246, 255, .10) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 18% 24%, rgba(238, 246, 255, .08) 0 1px, transparent 1.6px),
+        linear-gradient(115deg, transparent 0 62%, rgba(72, 169, 255, .18) 62.2% 62.8%, transparent 63%),
+        linear-gradient(70deg, transparent 0 68%, rgba(159, 91, 255, .14) 68.2% 69%, transparent 69.2%),
+        linear-gradient(to top, rgba(4, 7, 16, .92), transparent 34%),
+        repeating-linear-gradient(104deg, transparent 0 88px, rgba(95, 183, 255, .09) 89px 91px, transparent 92px 180px),
+        repeating-linear-gradient(76deg, transparent 0 110px, rgba(166, 94, 255, .08) 111px 113px, transparent 114px 210px);
+      background-size:
+        18px 18px,
+        28px 28px,
+        auto,
+        auto,
+        auto,
+        auto,
+        auto;
+      opacity: .82;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .sw-bg-art {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .sw-bg-art::before {
+      content: "";
+      position: absolute;
+      right: 12%;
+      bottom: 6%;
+      width: min(185px, 26vw);
+      height: min(380px, 48vw);
+      background:
+        radial-gradient(ellipse at 50% 12%, rgba(0, 0, 0, .85) 0 18%, transparent 19%),
+        linear-gradient(86deg, transparent 0 28%, rgba(0, 0, 0, .72) 29% 43%, transparent 44%),
+        linear-gradient(94deg, transparent 0 56%, rgba(0, 0, 0, .72) 57% 71%, transparent 72%),
+        linear-gradient(180deg, rgba(0, 0, 0, .92) 0 56%, transparent 57%),
+        linear-gradient(35deg, transparent 0 42%, rgba(30, 183, 255, .5) 43% 45%, transparent 46%);
+      clip-path: polygon(42% 0, 58% 0, 65% 18%, 78% 46%, 64% 100%, 52% 72%, 39% 100%, 24% 46%, 35% 18%);
+      filter: drop-shadow(0 0 28px rgba(63, 179, 255, .55));
+      opacity: .72;
+    }
+
+    .sw-bg-art::after {
+      content: "";
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      bottom: -5%;
+      height: 42%;
+      background:
+        linear-gradient(100deg, transparent 0 8%, rgba(83, 174, 255, .15) 8.2% 8.7%, transparent 9% 100%),
+        linear-gradient(80deg, transparent 0 20%, rgba(83, 174, 255, .12) 20.2% 20.7%, transparent 21% 100%),
+        linear-gradient(96deg, transparent 0 38%, rgba(155, 90, 255, .12) 38.2% 38.7%, transparent 39% 100%),
+        linear-gradient(84deg, transparent 0 64%, rgba(83, 174, 255, .14) 64.2% 64.7%, transparent 65% 100%),
+        radial-gradient(ellipse at 65% 100%, rgba(74, 177, 255, .16), transparent 55%);
+      transform: perspective(420px) rotateX(58deg);
+      transform-origin: bottom center;
+      opacity: .8;
+    }
+
+    .sw-manga-art {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: .86;
+      mix-blend-mode: screen;
+    }
+
+    .sw-manga-art span {
+      position: absolute;
+      display: block;
+    }
+
+    .sw-panel-one,
+    .sw-panel-two,
+    .sw-panel-three {
+      border: 2px solid rgba(206, 230, 255, .22);
+      background:
+        repeating-linear-gradient(115deg, rgba(255, 255, 255, .11) 0 2px, transparent 2px 11px),
+        linear-gradient(135deg, rgba(43, 88, 150, .14), rgba(7, 10, 20, .02));
+      transform: skew(-10deg) rotate(-4deg);
+      box-shadow: inset 0 0 34px rgba(0, 0, 0, .44), 0 0 26px rgba(79, 184, 255, .14);
+    }
+
+    .sw-panel-one {
+      width: 28vw;
+      height: 34vh;
+      min-width: 230px;
+      left: -5vw;
+      top: 12vh;
+      clip-path: polygon(0 4%, 100% 0, 84% 100%, 8% 88%);
+    }
+
+    .sw-panel-two {
+      width: 34vw;
+      height: 28vh;
+      right: -8vw;
+      top: 48vh;
+      transform: skew(12deg) rotate(7deg);
+      clip-path: polygon(16% 0, 100% 12%, 90% 92%, 0 100%);
+    }
+
+    .sw-panel-three {
+      width: 22vw;
+      height: 20vh;
+      min-width: 180px;
+      right: 24vw;
+      top: -5vh;
+      transform: skew(-16deg) rotate(5deg);
+      opacity: .58;
+    }
+
+    .sw-speed-lines {
+      inset: -20%;
+      background:
+        repeating-conic-gradient(from 212deg at 72% 34%, transparent 0deg 5deg, rgba(235, 247, 255, .20) 5.2deg 5.9deg, transparent 6.2deg 10deg);
+      mask-image: radial-gradient(circle at 72% 34%, transparent 0 12%, #000 15% 58%, transparent 66%);
+      opacity: .68;
+    }
+
+    .sw-ink-slash-a,
+    .sw-ink-slash-b,
+    .sw-ink-slash-c {
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(235, 248, 255, .78), rgba(71, 189, 255, .42), transparent);
+      filter: drop-shadow(0 0 12px rgba(83, 199, 255, .55));
+      transform-origin: center;
+    }
+
+    .sw-ink-slash-a {
+      width: 42vw;
+      left: 4vw;
+      top: 34vh;
+      transform: rotate(-18deg);
+    }
+
+    .sw-ink-slash-b {
+      width: 30vw;
+      right: 6vw;
+      top: 22vh;
+      transform: rotate(24deg);
+    }
+
+    .sw-ink-slash-c {
+      width: 48vw;
+      right: -5vw;
+      bottom: 22vh;
+      transform: rotate(-11deg);
+      opacity: .62;
+    }
+
+    .sw-sfx {
+      right: 9vw;
+      top: 13vh;
+      color: rgba(235, 247, 255, .14);
+      font-size: clamp(4rem, 13vw, 10rem);
+      font-weight: 800;
+      line-height: .8;
+      letter-spacing: 0;
+      transform: rotate(-12deg) skew(-7deg);
+      text-shadow: 0 0 24px rgba(75, 184, 255, .25);
+      user-select: none;
+    }
+
+    .sw-ink-shadow {
+      left: 7vw;
+      bottom: 5vh;
+      width: 34vw;
+      height: 28vh;
+      min-width: 260px;
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, .8), transparent 66%),
+        linear-gradient(72deg, transparent 0 22%, rgba(0, 0, 0, .72) 23% 31%, transparent 32% 100%),
+        linear-gradient(112deg, transparent 0 58%, rgba(0, 0, 0, .76) 59% 67%, transparent 68% 100%);
+      clip-path: polygon(0 82%, 18% 44%, 34% 78%, 50% 18%, 66% 82%, 86% 36%, 100% 88%, 100% 100%, 0 100%);
+      filter: drop-shadow(0 0 18px rgba(36, 146, 255, .35));
+      opacity: .68;
+    }
+
+    @keyframes swGateSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .sw-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sw-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0 20px;
+    }
+
+    .sw-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .sw-sigil {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(159, 194, 255, .5);
+      background:
+        linear-gradient(135deg, rgba(91, 141, 255, .45), rgba(247, 82, 140, .22)),
+        #101a2d;
+      display: grid;
+      place-items: center;
+      clip-path: polygon(50% 0, 96% 27%, 86% 82%, 50% 100%, 14% 82%, 4% 27%);
+      flex: 0 0 auto;
+    }
+
+    .sw-brand h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 4vw, 2.1rem);
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .sw-brand p,
+    .sw-muted {
+      color: #aebbd3;
+    }
+
+    .sw-brand p {
+      margin: 5px 0 0;
+      font-size: .9rem;
+    }
+
+    .sw-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .sw-sync-mode {
+      color: #aebbd3;
+      font-size: .84rem;
+      padding: 8px 0;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .sw-btn {
+      border: 1px solid rgba(158, 190, 255, .26);
+      color: #eef4ff;
+      background: rgba(255, 255, 255, .07);
+      border-radius: 8px;
+      min-height: 40px;
+      padding: 9px 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+
+    .sw-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, .12);
+      border-color: rgba(170, 204, 255, .45);
+    }
+
+    .sw-btn-primary {
+      border-color: rgba(121, 171, 255, .72);
+      background: linear-gradient(135deg, #4d79ff, #b542c4);
+    }
+
+    .sw-btn-danger {
+      border-color: rgba(255, 130, 130, .42);
+      color: #ffd8d8;
+    }
+
+    .sw-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .sw-system-panel {
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+      padding: 28px;
+      border: 1px solid rgba(146, 179, 255, .22);
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 76% 42%, rgba(62, 175, 255, .24), transparent 19%),
+        radial-gradient(circle at 76% 42%, transparent 0 24%, rgba(90, 178, 255, .2) 24.4% 25.2%, transparent 25.6% 33%, rgba(166, 94, 255, .2) 33.4% 34.1%, transparent 34.6%),
+        linear-gradient(rgba(7, 15, 29, .58), rgba(7, 15, 29, .84)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, .06) 0 1px, transparent 1px 72px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, .05) 0 1px, transparent 1px 72px);
+      box-shadow: 0 20px 70px rgba(0, 0, 0, .35);
+    }
+
+    .sw-system-panel::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(119, 171, 255, .28);
+      background:
+        linear-gradient(45deg, transparent 0 46%, rgba(105, 189, 255, .18) 47% 48%, transparent 49%),
+        linear-gradient(-45deg, transparent 0 46%, rgba(166, 94, 255, .16) 47% 48%, transparent 49%);
+      clip-path: polygon(0 9%, 6% 0, 94% 0, 100% 9%, 100% 91%, 94% 100%, 6% 100%, 0 91%);
+      pointer-events: none;
+    }
+
+    .sw-system-panel::after {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      right: 24px;
+      top: 42px;
+      background:
+        conic-gradient(from 20deg, transparent 0 8%, rgba(121, 212, 255, .82) 8% 10%, transparent 10% 18%, rgba(162, 92, 255, .7) 18% 20%, transparent 20% 31%, rgba(121, 212, 255, .82) 31% 33%, transparent 33% 44%, rgba(162, 92, 255, .7) 44% 46%, transparent 46% 100%),
+        radial-gradient(circle, transparent 0 42%, rgba(94, 182, 255, .28) 43% 44%, transparent 45% 56%, rgba(94, 182, 255, .22) 57% 58%, transparent 59%);
+      border-radius: 50%;
+      opacity: .74;
+      filter: drop-shadow(0 0 34px rgba(104, 191, 255, .48));
+      animation: swFloat 5s ease-in-out infinite, swSpin 16s linear infinite;
+    }
+
+    @keyframes swFloat {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(8px) rotate(7deg); }
+    }
+
+    @keyframes swSpin {
+      to { rotate: 360deg; }
+    }
+
+    .sw-kicker {
+      position: relative;
+      margin: 0 0 12px;
+      color: #91b9ff;
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-weight: 700;
+    }
+
+    .sw-system-panel h2 {
+      position: relative;
+      margin: 0;
+      max-width: 650px;
+      font-size: clamp(2rem, 6vw, 4.8rem);
+      line-height: .95;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .sw-system-panel .sw-copy {
+      position: relative;
+      max-width: 610px;
+      color: #c9d5ea;
+      margin: 16px 0 0;
+      line-height: 1.55;
+    }
+
+    .sw-status-feed {
+      margin-top: 24px;
+      display: grid;
+      gap: 10px;
+      position: relative;
+      max-width: 640px;
+    }
+
+    .sw-feed-line {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: #dce8ff;
+      font-size: .94rem;
+      padding: 10px 12px;
+      border-left: 3px solid #73a8ff;
+      background: rgba(7, 15, 29, .58);
+    }
+
+    .sw-card,
+    .sw-player,
+    .sw-quest,
+    .sw-form-card {
+      border: 1px solid rgba(164, 193, 255, .18);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(20, 35, 61, .84), rgba(14, 20, 42, .82)),
+        repeating-linear-gradient(90deg, rgba(114, 184, 255, .05) 0 1px, transparent 1px 44px);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .25), inset 0 0 22px rgba(74, 164, 255, .05);
+    }
+
+    .sw-card {
+      padding: 18px;
+    }
+
+    .sw-dashboard {
+      display: grid;
+      gap: 14px;
+    }
+
+    .sw-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .sw-stat {
+      padding: 14px;
+      background: rgba(255, 255, 255, .05);
+      border-radius: 8px;
+    }
+
+    .sw-stat b {
+      display: block;
+      font-size: 1.6rem;
+      line-height: 1.1;
+    }
+
+    .sw-stat span {
+      display: block;
+      margin-top: 5px;
+      color: #aebbd3;
+      font-size: .82rem;
+    }
+
+    .sw-players {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .sw-player {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .sw-player-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .sw-name-wrap {
+      min-width: 0;
+    }
+
+    .sw-player-name {
+      margin: 0;
+      font-size: 1.35rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .sw-rank {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(121, 171, 255, .14);
+      color: #b8d1ff;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .sw-level {
+      text-align: right;
+      flex: 0 0 auto;
+    }
+
+    .sw-level b {
+      display: block;
+      font-size: 2.3rem;
+      line-height: .95;
+    }
+
+    .sw-level span {
+      color: #aebbd3;
+      font-size: .82rem;
+    }
+
+    .sw-bar {
+      height: 13px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .1);
+    }
+
+    .sw-bar-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #72dcff, #7b7dff, #f7528c);
+      transition: width .28s ease;
+    }
+
+    .sw-xp-row {
+      display: flex;
+      justify-content: space-between;
+      color: #c9d5ea;
+      font-size: .88rem;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .sw-quest-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .sw-quest {
+      padding: 12px;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sw-quest input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #70a7ff;
+    }
+
+    .sw-quest-title {
+      display: block;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .sw-quest small {
+      color: #aebbd3;
+    }
+
+    .sw-xp-pill {
+      color: #dff0ff;
+      border: 1px solid rgba(114, 220, 255, .35);
+      background: rgba(114, 220, 255, .1);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: .8rem;
+      white-space: nowrap;
+    }
+
+    .sw-log {
+      display: grid;
+      gap: 8px;
+      max-height: 210px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .sw-log-item {
+      padding: 9px 10px;
+      border-left: 2px solid rgba(247, 82, 140, .7);
+      background: rgba(255, 255, 255, .045);
+      color: #dbe7fb;
+      font-size: .9rem;
+    }
+
+    .sw-forms {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .sw-form-card {
+      padding: 18px;
+    }
+
+    .sw-form-card h3,
+    .sw-card h3 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+    }
+
+    .sw-fields {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: #c9d5ea;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid rgba(174, 197, 239, .25);
+      border-radius: 8px;
+      color: #eef4ff;
+      background: rgba(255, 255, 255, .07);
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(121, 171, 255, .85);
+      box-shadow: 0 0 0 3px rgba(121, 171, 255, .18);
+    }
+
+    .sw-inline-fields {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 120px;
+      gap: 10px;
+    }
+
+    .sw-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      width: min(520px, calc(100% - 28px));
+      border: 1px solid rgba(121, 171, 255, .5);
+      background: rgba(7, 15, 29, .96);
+      color: #eef4ff;
+      border-radius: 8px;
+      padding: 14px 16px;
+      box-shadow: 0 18px 70px rgba(0, 0, 0, .42);
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 20;
+    }
+
+    .sw-toast.is-visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .sw-toast b {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    @media (max-width: 860px) {
+      .sw-hero,
+      .sw-players,
+      .sw-forms {
+        grid-template-columns: 1fr;
+      }
+
+      .sw-system-panel::after {
+        width: 120px;
+        height: 120px;
+        right: 18px;
+        top: 34px;
+      }
+
+      .sw-sfx {
+        right: 4vw;
+        top: 17vh;
+        opacity: .72;
+      }
+
+      .sw-panel-one {
+        left: -18vw;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .sw-shell {
+        width: min(100% - 20px, 1180px);
+        padding-top: 12px;
+      }
+
+      .sw-topbar,
+      .sw-player-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .sw-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .sw-actions .sw-btn,
+      .sw-form-card .sw-btn {
+        flex: 1 1 auto;
+      }
+
+      .sw-system-panel {
+        padding: 22px 18px;
+      }
+
+      .sw-stat-grid,
+      .sw-inline-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .sw-level {
+        text-align: left;
+      }
+    }
+  </style>
+
+  <main class="sw-shell">
+    <header class="sw-topbar">
+      <div class="sw-brand">
+        <div class="sw-sigil" aria-hidden="true">◆</div>
+        <div>
+          <h1>Hunter Workout System</h1>
+          <p>Two-player quests, XP, ranks, and daily streaks.</p>
+        </div>
+      </div>
+      <div class="sw-actions">
+        <span class="sw-sync-mode" id="sw-sync-mode">Local save</span>
+        <button class="sw-btn" id="sw-reroll" type="button">New Quote</button>
+        <button class="sw-btn sw-btn-danger" id="sw-reset" type="button">Reset Save</button>
+      </div>
+    </header>
+
+    <section class="sw-hero" aria-label="Workout system overview">
+      <div class="sw-system-panel">
+        <p class="sw-kicker">System Online</p>
+        <h2>Daily quest accepted.</h2>
+        <p class="sw-copy" id="sw-quote">Discipline is the mana bar. Refill it with reps.</p>
+        <div class="sw-status-feed" id="sw-status-feed"></div>
+      </div>
+
+      <aside class="sw-dashboard">
+        <div class="sw-card">
+          <h3>Party Status</h3>
+          <div class="sw-stat-grid">
+            <div class="sw-stat">
+              <b id="sw-player-count">2/10</b>
+              <span>Players</span>
+            </div>
+            <div class="sw-stat">
+              <b id="sw-party-xp">0</b>
+              <span>Total XP earned</span>
+            </div>
+            <div class="sw-stat">
+              <b id="sw-daily-done">0/6</b>
+              <span>Daily quests today</span>
+            </div>
+            <div class="sw-stat">
+              <b id="sw-streak">0</b>
+              <span>Best streak</span>
+            </div>
+            <div class="sw-stat">
+              <b id="sw-party-level">2</b>
+              <span>Combined levels</span>
+            </div>
+          </div>
+        </div>
+        <div class="sw-card">
+          <h3>Rank Ladder</h3>
+          <p class="sw-muted">E Rank at level 1, then D at 5, C at 10, B at 15, A at 22, and S at 30.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="sw-players" id="sw-players" aria-label="Player status cards"></section>
+
+    <section class="sw-forms" aria-label="Quest and achievement controls">
+      <form class="sw-form-card" id="sw-achievement-form">
+        <h3>Log Achievement</h3>
+        <div class="sw-fields">
+          <label>
+            Player
+            <select id="sw-achievement-player"></select>
+          </label>
+          <label>
+            Achievement
+            <textarea id="sw-achievement-text" placeholder="Example: Ran 2 miles, hit a push-up PR, finished leg day"></textarea>
+          </label>
+          <p class="sw-muted">Achievements roll a random system reward from 20 to 75 XP.</p>
+          <button class="sw-btn sw-btn-primary" type="submit">Log Random XP</button>
+        </div>
+      </form>
+
+      <form class="sw-form-card" id="sw-boss-quest-form">
+        <h3>Optional Boss Quest</h3>
+        <div class="sw-fields">
+          <label>
+            Player
+            <select id="sw-quest-player"></select>
+          </label>
+          <p class="sw-muted">Summon a random bonus challenge. The reward is rolled by the system.</p>
+          <button class="sw-btn sw-btn-primary" type="submit">Summon Boss Quest</button>
+        </div>
+      </form>
+
+      <form class="sw-form-card" id="sw-admin-form">
+        <h3>Admin Point Control</h3>
+        <div class="sw-fields">
+          <label>
+            Player
+            <select id="sw-admin-player"></select>
+          </label>
+          <div class="sw-inline-fields">
+            <label>
+              Add or remove XP
+              <input id="sw-admin-xp" type="number" min="-5000" max="5000" value="50">
+            </label>
+            <label>
+              Passcode
+              <input id="sw-admin-passcode" type="password" autocomplete="current-password" placeholder="Required">
+            </label>
+          </div>
+          <label>
+            Reason
+            <input id="sw-admin-reason" type="text" placeholder="Example: correction, penalty, bonus">
+          </label>
+          <button class="sw-btn sw-btn-primary" type="submit">Apply Admin Change</button>
+        </div>
+      </form>
+
+      <form class="sw-form-card" id="sw-admin-player-form">
+        <h3>Admin Player Control</h3>
+        <div class="sw-fields">
+          <label>
+            Add player name
+            <input id="sw-new-player-name" type="text" maxlength="30" placeholder="Example: Hunter 3">
+          </label>
+          <label>
+            Passcode
+            <input id="sw-player-admin-passcode" type="password" autocomplete="current-password" placeholder="Required">
+          </label>
+          <button class="sw-btn sw-btn-primary" type="submit">Add Player</button>
+        </div>
+      </form>
+
+      <form class="sw-form-card" id="sw-admin-delete-form">
+        <h3>Admin Delete Player</h3>
+        <div class="sw-fields">
+          <label>
+            Player
+            <select id="sw-delete-player"></select>
+          </label>
+          <label>
+            Passcode
+            <input id="sw-delete-player-passcode" type="password" autocomplete="current-password" placeholder="Required">
+          </label>
+          <button class="sw-btn sw-btn-danger" type="submit">Delete Player</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div class="sw-toast" id="sw-toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const storageKey = "hunterWorkoutSystem.v1";
+      const serverMode = location.protocol !== "file:";
+      const maxPlayers = 10;
+      let lastSyncedState = "";
+      const todayKey = () => new Date().toISOString().slice(0, 10);
+      const xpForLevel = level => 100 + (level - 1) * 45;
+      const ranks = [
+        { min: 30, name: "S Rank" },
+        { min: 22, name: "A Rank" },
+        { min: 15, name: "B Rank" },
+        { min: 10, name: "C Rank" },
+        { min: 5, name: "D Rank" },
+        { min: 1, name: "E Rank" }
+      ];
+      const quoteBank = [
+        "The body adapts when the mind stops negotiating.",
+        "A small quest completed today beats a perfect plan delayed.",
+        "Your future rank is built by the reps nobody sees.",
+        "Pain is feedback. Form is command.",
+        "Discipline is the mana bar. Refill it with reps.",
+        "Do the daily. The level-up screen comes later.",
+        "Every set is a vote for the hunter you are becoming."
+      ];
+      const starterQuests = [
+        { title: "3 sets of 15 push-ups", xp: 45 },
+        { title: "3 sets of 15 leg raises", xp: 40 },
+        { title: "3 sets of 15 in-and-out abs", xp: 40 },
+        { title: "3 sets of 35 second planks", xp: 45 },
+        { title: "3 sets of 12 squats", xp: 40 },
+        { title: "1 set of 40 curls, both arms", xp: 50 }
+      ];
+      const dailyQuestSignature = starterQuests.map(quest => quest.title).join("|");
+      const bossQuestBank = [
+        "Boss Quest: 5 minute push-up ladder",
+        "Boss Quest: 60 second plank finisher",
+        "Boss Quest: 30 squat burnout",
+        "Boss Quest: 40 curl finisher, both arms",
+        "Boss Quest: 3 rounds of 20 mountain climbers",
+        "Boss Quest: 10 minute no-excuses walk or jog",
+        "Boss Quest: Core gauntlet, 20 leg raises plus 20 in-and-outs"
+      ];
+
+      const defaultState = {
+        quoteIndex: 4,
+        feed: ["System initialized: party quest board is live."],
+        players: [
+          { id: "p1", name: "Player 1", level: 3, xp: 95, totalXp: 340, streak: 0, lastDaily: "", quests: [], log: [] },
+          { id: "p2", name: "Player 2", level: 1, xp: 0, totalXp: 0, streak: 0, lastDaily: "", quests: [], log: [] }
+        ]
+      };
+
+      let state = loadLocalState();
+
+      function loadLocalState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey));
+          if (saved && Array.isArray(saved.players)) {
+            return saved;
+          }
+        } catch (error) {}
+        return structuredClone(defaultState);
+      }
+
+      async function loadServerState() {
+        if (!serverMode) return;
+        try {
+          const response = await fetch("/api/state", { cache: "no-store" });
+          if (!response.ok) throw new Error("Unable to load shared save.");
+          const sharedState = await response.json();
+          if (sharedState && Array.isArray(sharedState.players)) {
+            state = sharedState;
+            lastSyncedState = JSON.stringify(state);
+            localStorage.setItem(storageKey, lastSyncedState);
+          }
+          setSyncMode("Shared party sync");
+        } catch (error) {
+          setSyncMode("Offline local save");
+          showToast("Sync Offline", "Using this device's local save until the server is reachable.");
+        }
+      }
+
+      function saveState() {
+        const payload = JSON.stringify(state);
+        localStorage.setItem(storageKey, payload);
+        if (!serverMode) return;
+        lastSyncedState = payload;
+        fetch("/api/state", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload
+        }).then(response => {
+          if (!response.ok) throw new Error("Save failed.");
+          setSyncMode("Shared party sync");
+        }).catch(() => {
+          setSyncMode("Sync retrying");
+        });
+      }
+
+      async function refreshSharedState() {
+        if (!serverMode || isEditing()) return;
+        try {
+          const response = await fetch("/api/state", { cache: "no-store" });
+          if (!response.ok) return;
+          const incoming = await response.json();
+          const incomingText = JSON.stringify(incoming);
+          if (incomingText && incomingText !== lastSyncedState && Array.isArray(incoming.players)) {
+            state = incoming;
+            lastSyncedState = incomingText;
+            localStorage.setItem(storageKey, incomingText);
+            render();
+          }
+          setSyncMode("Shared party sync");
+        } catch (error) {
+          setSyncMode("Sync retrying");
+        }
+      }
+
+      function isEditing() {
+        const active = document.activeElement;
+        if (!active) return false;
+        return active.matches("input, textarea, select") || active.isContentEditable;
+      }
+
+      function setSyncMode(text) {
+        const sync = document.getElementById("sw-sync-mode");
+        if (sync) sync.textContent = text;
+      }
+
+      function rankFor(level) {
+        return ranks.find(rank => level >= rank.min).name;
+      }
+
+      function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function randomAchievementXp() {
+        return randomInt(20, 75);
+      }
+
+      function randomBossXp() {
+        return randomInt(85, 180);
+      }
+
+      function getDailyQuests(player) {
+        const today = todayKey();
+        if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
+          player.questDate = today;
+          player.questSignature = dailyQuestSignature;
+          player.quests = starterQuests.map((quest, index) => ({
+            id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
+            title: quest.title,
+            xp: quest.xp,
+            done: false,
+            custom: false
+          }));
+        }
+        return player.quests;
+      }
+
+      function addXp(player, xp, reason) {
+        xp = Math.max(0, Math.round(Number(xp) || 0));
+        player.xp += xp;
+        player.totalXp += xp;
+        const leveled = [];
+        while (player.xp >= xpForLevel(player.level)) {
+          player.xp -= xpForLevel(player.level);
+          player.level += 1;
+          leveled.push(player.level);
+        }
+        player.log.unshift({
+          text: `+${xp} XP: ${reason}`,
+          date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+        });
+        player.log = player.log.slice(0, 12);
+        if (leveled.length) {
+          pushFeed(`${player.name} reached Level ${player.level} (${rankFor(player.level)}).`);
+          showToast("Level Up", `${player.name} is now Level ${player.level}. ${quoteBank[state.quoteIndex]}`);
+        } else {
+          showToast("XP Gained", `${player.name} gained ${xp} XP.`);
+        }
+      }
+
+      function completeQuest(playerId, questId, checked) {
+        const player = state.players.find(item => item.id === playerId);
+        const quest = getDailyQuests(player).find(item => item.id === questId);
+        if (!quest || quest.done === checked) return;
+        quest.done = checked;
+        if (checked) {
+          addXp(player, quest.xp, quest.title);
+          updateDailyStreak(player);
+          pushFeed(`${player.name} cleared quest: ${quest.title}`);
+        } else {
+          player.xp = Math.max(0, player.xp - quest.xp);
+          player.totalXp = Math.max(0, player.totalXp - quest.xp);
+          player.log.unshift({
+            text: `Quest unchecked: ${quest.title}`,
+            date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+          });
+        }
+        saveState();
+        render();
+      }
+
+      function updateDailyStreak(player) {
+        const quests = getDailyQuests(player);
+        const allDone = quests.every(quest => quest.done);
+        if (allDone && player.lastDaily !== todayKey()) {
+          player.streak += 1;
+          player.lastDaily = todayKey();
+          addXp(player, 75, "Daily quest bonus");
+          pushFeed(`${player.name} completed the full daily quest and gained a streak bonus.`);
+        }
+      }
+
+      function pushFeed(text) {
+        state.feed.unshift(text);
+        state.feed = state.feed.slice(0, 4);
+      }
+
+      function showToast(title, body) {
+        const toast = document.getElementById("sw-toast");
+        toast.innerHTML = `<b>${escapeHtml(title)}</b><span>${escapeHtml(body)}</span>`;
+        toast.classList.add("is-visible");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => toast.classList.remove("is-visible"), 2600);
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function render() {
+        const playersRoot = document.getElementById("sw-players");
+        const achievementSelect = document.getElementById("sw-achievement-player");
+        const questSelect = document.getElementById("sw-quest-player");
+        const adminSelect = document.getElementById("sw-admin-player");
+        const deleteSelect = document.getElementById("sw-delete-player");
+        const today = todayKey();
+
+        state.players.forEach(getDailyQuests);
+
+        playersRoot.innerHTML = state.players.map(player => {
+          const needed = xpForLevel(player.level);
+          const progress = Math.min(100, Math.round((player.xp / needed) * 100));
+          const quests = getDailyQuests(player);
+          const log = player.log.length
+            ? player.log.map(item => `<div class="sw-log-item"><b>${escapeHtml(item.date)}</b><br>${escapeHtml(item.text)}</div>`).join("")
+            : `<div class="sw-log-item">No achievements logged yet.</div>`;
+
+          return `
+            <article class="sw-player">
+              <div class="sw-player-head">
+                <div class="sw-name-wrap">
+                  <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
+                  <span class="sw-rank">${rankFor(player.level)}</span>
+                </div>
+                <div class="sw-level">
+                  <b>${player.level}</b>
+                  <span>Level</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="sw-xp-row">
+                  <span>${player.xp} / ${needed} XP</span>
+                  <span>${progress}% to next level</span>
+                </div>
+                <div class="sw-bar" aria-label="${escapeHtml(player.name)} XP progress">
+                  <div class="sw-bar-fill" style="width: ${progress}%"></div>
+                </div>
+              </div>
+
+              <div class="sw-quest-list">
+                ${quests.map(quest => `
+                  <label class="sw-quest">
+                    <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""}>
+                    <span>
+                      <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
+                      <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
+                    </span>
+                    <span class="sw-xp-pill">+${quest.xp}</span>
+                  </label>
+                `).join("")}
+              </div>
+
+              <div>
+                <h3>Achievement Log</h3>
+                <div class="sw-log">${log}</div>
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        const playerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
+        achievementSelect.innerHTML = playerOptions;
+        questSelect.innerHTML = playerOptions;
+        adminSelect.innerHTML = playerOptions;
+        deleteSelect.innerHTML = playerOptions;
+
+        document.getElementById("sw-quote").textContent = quoteBank[state.quoteIndex];
+        document.getElementById("sw-status-feed").innerHTML = state.feed.map(line => (
+          `<div class="sw-feed-line"><span aria-hidden="true">▸</span><span>${escapeHtml(line)}</span></div>`
+        )).join("");
+
+        document.getElementById("sw-party-level").textContent = state.players.reduce((sum, player) => sum + player.level, 0);
+        document.getElementById("sw-player-count").textContent = `${state.players.length}/${maxPlayers}`;
+        document.getElementById("sw-party-xp").textContent = state.players.reduce((sum, player) => sum + player.totalXp, 0);
+        const done = state.players.reduce((sum, player) => sum + getDailyQuests(player).filter(quest => quest.done).length, 0);
+        const total = state.players.reduce((sum, player) => sum + getDailyQuests(player).length, 0);
+        document.getElementById("sw-daily-done").textContent = `${done}/${total}`;
+        document.getElementById("sw-streak").textContent = Math.max(...state.players.map(player => player.streak));
+
+        document.querySelectorAll("[data-player][data-quest]").forEach(box => {
+          box.addEventListener("change", event => {
+            completeQuest(event.currentTarget.dataset.player, event.currentTarget.dataset.quest, event.currentTarget.checked);
+          });
+        });
+
+        document.querySelectorAll("[data-name-for]").forEach(nameEl => {
+          nameEl.addEventListener("blur", event => {
+            const player = state.players.find(item => item.id === event.currentTarget.dataset.nameFor);
+            const nextName = event.currentTarget.textContent.trim().slice(0, 30);
+            player.name = nextName || player.name;
+            saveState();
+            render();
+          });
+        });
+      }
+
+      document.getElementById("sw-achievement-form").addEventListener("submit", event => {
+        event.preventDefault();
+        const player = state.players.find(item => item.id === document.getElementById("sw-achievement-player").value);
+        const text = document.getElementById("sw-achievement-text").value.trim();
+        const xp = randomAchievementXp();
+        if (!text) {
+          showToast("Need Details", "Add the achievement and the system will roll XP.");
+          return;
+        }
+        addXp(player, xp, text);
+        pushFeed(`${player.name} logged achievement: ${text}`);
+        document.getElementById("sw-achievement-text").value = "";
+        saveState();
+        render();
+      });
+
+      document.getElementById("sw-boss-quest-form").addEventListener("submit", event => {
+        event.preventDefault();
+        const player = state.players.find(item => item.id === document.getElementById("sw-quest-player").value);
+        const title = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
+        const xp = randomBossXp();
+        getDailyQuests(player).push({
+          id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
+          title,
+          xp,
+          done: false,
+          boss: true
+        });
+        pushFeed(`${player.name} summoned ${title} for ${xp} XP.`);
+        showToast("Boss Quest Summoned", `${title} appeared for ${player.name}. Reward: ${xp} XP.`);
+        saveState();
+        render();
+      });
+
+      document.getElementById("sw-admin-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!serverMode) {
+          showToast("Admin Locked", "Admin point control requires the shared server link.");
+          return;
+        }
+        const playerId = document.getElementById("sw-admin-player").value;
+        const amount = Number(document.getElementById("sw-admin-xp").value);
+        const passcode = document.getElementById("sw-admin-passcode").value;
+        const reason = document.getElementById("sw-admin-reason").value.trim() || "Admin adjustment";
+        if (!Number.isFinite(amount) || amount === 0) {
+          showToast("Need Points", "Enter a positive number to add XP or a negative number to remove XP.");
+          return;
+        }
+        try {
+          const response = await fetch("/api/admin/points", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ passcode, playerId, amount, reason })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Admin change failed.");
+          state = result.state;
+          lastSyncedState = JSON.stringify(state);
+          localStorage.setItem(storageKey, lastSyncedState);
+          document.getElementById("sw-admin-passcode").value = "";
+          document.getElementById("sw-admin-reason").value = "";
+          render();
+          showToast("Admin Change Applied", `${amount > 0 ? "Added" : "Removed"} ${Math.abs(amount)} XP.`);
+        } catch (error) {
+          showToast("Admin Denied", error.message);
+        }
+      });
+
+      document.getElementById("sw-admin-player-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!serverMode) {
+          showToast("Admin Locked", "Player control requires the shared server link.");
+          return;
+        }
+        const name = document.getElementById("sw-new-player-name").value.trim();
+        const passcode = document.getElementById("sw-player-admin-passcode").value;
+        if (!name) {
+          showToast("Need Name", "Enter a name for the new player.");
+          return;
+        }
+        try {
+          const response = await fetch("/api/admin/players", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ passcode, name })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Could not add player.");
+          state = result.state;
+          lastSyncedState = JSON.stringify(state);
+          localStorage.setItem(storageKey, lastSyncedState);
+          document.getElementById("sw-new-player-name").value = "";
+          document.getElementById("sw-player-admin-passcode").value = "";
+          render();
+          showToast("Player Added", `${result.player.name} joined the party.`);
+        } catch (error) {
+          showToast("Admin Denied", error.message);
+        }
+      });
+
+      document.getElementById("sw-admin-delete-form").addEventListener("submit", async event => {
+        event.preventDefault();
+        if (!serverMode) {
+          showToast("Admin Locked", "Player control requires the shared server link.");
+          return;
+        }
+        const playerId = document.getElementById("sw-delete-player").value;
+        const player = state.players.find(item => item.id === playerId);
+        if (!player) {
+          showToast("No Player", "Choose a player to delete.");
+          return;
+        }
+        if (!confirm(`Delete ${player.name} and all of their XP, quests, and logs?`)) return;
+        const passcode = document.getElementById("sw-delete-player-passcode").value;
+        try {
+          const response = await fetch("/api/admin/players/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ passcode, playerId })
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Could not delete player.");
+          state = result.state;
+          lastSyncedState = JSON.stringify(state);
+          localStorage.setItem(storageKey, lastSyncedState);
+          document.getElementById("sw-delete-player-passcode").value = "";
+          render();
+          showToast("Player Deleted", `${result.deletedName} was removed from the party.`);
+        } catch (error) {
+          showToast("Admin Denied", error.message);
+        }
+      });
+
+      document.getElementById("sw-reroll").addEventListener("click", () => {
+        state.quoteIndex = (state.quoteIndex + 1) % quoteBank.length;
+        pushFeed("Motivation quote refreshed.");
+        saveState();
+        render();
+      });
+
+      document.getElementById("sw-reset").addEventListener("click", () => {
+        if (!confirm("Reset both players, quests, XP, and logs?")) return;
+        state = structuredClone(defaultState);
+        saveState();
+        render();
+        showToast("Save Reset", "The system has been reset.");
+      });
+
+      async function init() {
+        setSyncMode(serverMode ? "Connecting sync" : "Local save");
+        if (serverMode) {
+          document.getElementById("sw-reset").style.display = "none";
+        }
+        await loadServerState();
+        render();
+        if (serverMode) {
+          window.setInterval(refreshSharedState, 5000);
+        }
+      }
+
+      init();
+    })();
+  </script>
+</div>
+</body>
+</html>
