@@ -5,5 +5,8 @@
   "main": "workout-server.js",
   "scripts": {
     "start": "node workout-server.js"
+  },
+  "dependencies": {
+    "mongoose": "^8.18.0"
   }
 }
