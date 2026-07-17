@@ -25,13 +25,15 @@ const defaultState = {
   ]
 };
 
-function readState() {
-  try {
-    const saved = JSON.parse(fs.readFileSync(saveFile, "utf8"));
-    if (saved && Array.isArray(saved.players)) return saved;
-  } catch (error) {}
-  writeState(defaultState);
-  return defaultState;
+async function readState() {
+  let state = await GameState.findOne();
+
+  if (!state) {
+    state = await GameState.create(defaultState);
+  }
+
+  return state;
+}
 }
 
 function writeState(state) {
