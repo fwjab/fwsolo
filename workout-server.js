@@ -36,8 +36,12 @@ async function readState() {
 }
 }
 
-function writeState(state) {
-  fs.writeFileSync(saveFile, JSON.stringify(state, null, 2));
+async function writeState(state) {
+  await GameState.findByIdAndUpdate(
+    state._id,
+    state,
+    { new: true, upsert: true }
+  );
 }
 
 function xpForLevel(level) {
