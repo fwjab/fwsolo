@@ -34,7 +34,6 @@ async function readState() {
 
   return state;
 }
-}
 
 async function writeState(state) {
   await GameState.findByIdAndUpdate(
@@ -123,7 +122,8 @@ const server = http.createServer(async (request, response) => {
     }
 
     if (request.url === "/api/state" && request.method === "GET") {
-      sendJson(response, 200, readState());
+      const state = await readState();
+sendJson(response, 200, state);
       return;
     }
 
@@ -135,12 +135,19 @@ const server = http.createServer(async (request, response) => {
         return;
       }
      const state = await readState();
-      const currentIds = currentState.players.map(player => player.id).sort().join("|");
+
+const currentIds = state.players
+  .map(player => player.id)
+  .sort()
+  .join("|");
       const nextIds = nextState.players.map(player => player.id).sort().join("|");
       if (currentIds !== nextIds) {
         sendJson(response, 403, { error: "Player roster changes require admin control." });
         return;
       }
+      state.quoteIndex = nextState.quoteIndex;
+state.feed = nextState.feed;
+state.players = nextState.players;
       await writeState(state);
       sendJson(response, 200, { ok: true });
       return;
