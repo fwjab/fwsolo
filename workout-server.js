@@ -134,14 +134,14 @@ const server = http.createServer(async (request, response) => {
         sendJson(response, 400, { error: "Invalid state." });
         return;
       }
-      const currentState = readState();
+     const state = await readState();
       const currentIds = currentState.players.map(player => player.id).sort().join("|");
       const nextIds = nextState.players.map(player => player.id).sort().join("|");
       if (currentIds !== nextIds) {
         sendJson(response, 403, { error: "Player roster changes require admin control." });
         return;
       }
-      writeState(nextState);
+      await writeState(state);
       sendJson(response, 200, { ok: true });
       return;
     }
@@ -160,7 +160,7 @@ const server = http.createServer(async (request, response) => {
         return;
       }
 
-      const state = readState();
+      const state = await readState();
       const player = state.players.find(item => item.id === playerId);
       if (!player) {
         sendJson(response, 404, { error: "Player not found." });
@@ -179,7 +179,7 @@ const server = http.createServer(async (request, response) => {
       state.feed = Array.isArray(state.feed) ? state.feed : [];
       state.feed.unshift(`${player.name} received an admin XP adjustment.`);
       state.feed = state.feed.slice(0, 4);
-      writeState(state);
+   await writeState(state);
       sendJson(response, 200, { ok: true, state });
       return;
     }
@@ -198,7 +198,7 @@ const server = http.createServer(async (request, response) => {
         return;
       }
 
-      const state = readState();
+      const state = await readState();
       if (state.players.length >= maxPlayers) {
         sendJson(response, 400, { error: "Party is already at the 10 player limit." });
         return;
@@ -209,7 +209,7 @@ const server = http.createServer(async (request, response) => {
       state.feed = Array.isArray(state.feed) ? state.feed : [];
       state.feed.unshift(`${player.name} joined the party.`);
       state.feed = state.feed.slice(0, 4);
-      writeState(state);
+      await writeState(state);
       sendJson(response, 200, { ok: true, player, state });
       return;
     }
@@ -222,7 +222,7 @@ const server = http.createServer(async (request, response) => {
         return;
       }
 
-      const state = readState();
+      const state = await readState();
       if (state.players.length <= 1) {
         sendJson(response, 400, { error: "You need at least one player." });
         return;
@@ -239,7 +239,7 @@ const server = http.createServer(async (request, response) => {
       state.feed = Array.isArray(state.feed) ? state.feed : [];
       state.feed.unshift(`${deletedName} was removed from the party.`);
       state.feed = state.feed.slice(0, 4);
-      writeState(state);
+      await writeState(state);
       sendJson(response, 200, { ok: true, deletedName, state });
       return;
     }
