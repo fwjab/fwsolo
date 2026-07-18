@@ -1023,6 +1023,7 @@
         "Every set is a vote for the hunter you are becoming."
       ];
 
+   function starterQuestsFor(player) {
     let current = rankData[0];
 
     for (const rank of rankData) {
@@ -1041,7 +1042,7 @@
             xp: 40
         },
         {
-            title: `3 sets of ${current.legRaises} in-and-out abs`,
+            title: `3 sets of ${current.inAndOut} in-and-out abs`,
             xp: 40
         },
         {
@@ -1058,8 +1059,42 @@
         }
     ];
 }
-      const dailyQuestSignature = starterQuests.map(quest => quest.title).join("|");
-      const bossQuestBank = [
+
+    for (const rank of rankData) {
+        if (player.level >= rank.level) {
+            current = rank;
+        }
+    }
+
+    return [
+        {
+            title: `3 sets of ${current.pushups} push-ups`,
+            xp: 45
+        },
+        {
+            title: `3 sets of ${current.legRaises} leg raises`,
+            xp: 40
+        },
+        {
+title: `3 sets of ${current.inAndOut} in-and-out abs`,            xp: 40
+        },
+        {
+            title: `3 sets of ${current.plank} second planks`,
+            xp: 45
+        },
+        {
+            title: `3 sets of ${current.squats} squats`,
+            xp: 40
+        },
+        {
+            title: `1 set of ${current.curls} curls, both arms`,
+            xp: 50
+        }
+    ];
+}
+const dailyQuestSignature = starterQuestsFor(defaultState.players[0])
+  .map(quest => quest.title)
+  .join("|");      const bossQuestBank = [
         "Boss Quest: 5 minute push-up ladder",
         "Boss Quest: 60 second plank finisher",
         "Boss Quest: 30 squat burnout",
