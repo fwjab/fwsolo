@@ -709,14 +709,49 @@
       grid-template-columns: minmax(0, 1fr) 120px;
       gap: 10px;
     }
-<div class="sw-rank-up" id="sw-rank-up">
-  <div class="sw-rank-up-title">SYSTEM UPDATE</div>
-  <div class="sw-rank-up-text" id="sw-rank-up-text">
-    NEW RANK UNLOCKED
-  </div>
-</div>
+    .sw-rank-up {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(.8);
+  background:
+    radial-gradient(circle, rgba(80,180,255,.35), transparent 45%),
+    rgba(0,0,0,.55);
+  transition: opacity .3s ease, transform .3s ease;
+}
 
-<div class="sw-toast" id="sw-toast" role="status" aria-live="polite"></div>
+.sw-rank-up.active {
+  opacity: 1;
+  transform: scale(1);
+  animation: rankPulse 1.8s ease;
+}
+
+.sw-rank-up-title {
+  font-size: clamp(2rem,5vw,4rem);
+  font-weight: 900;
+  color: #72dcff;
+  text-shadow:
+    0 0 10px #72dcff,
+    0 0 40px #7b7dff;
+  letter-spacing: .15em;
+}
+
+.sw-rank-up-text {
+  margin-top: 15px;
+  font-size: clamp(1.2rem,3vw,2.5rem);
+  color: white;
+  font-weight: 800;
+}
+
+@keyframes rankPulse {
+  0% { filter: brightness(1); }
+  40% { filter: brightness(2); }
+  100% { filter: brightness(1); }
+}
     .sw-toast {
       position: fixed;
       left: 50%;
@@ -1136,7 +1171,21 @@
           date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
         });
         player.log = player.log.slice(0, 12);
-       
+       if (leveled.length) {
+  const oldRank = rankFor(player.level - leveled.length);
+  const newRank = rankFor(player.level);
+
+  pushFeed(`${player.name} reached Level ${player.level} (${newRank}).`);
+
+  showToast(
+    "Level Up",
+    `${player.name} is now Level ${player.level}.`
+  );
+
+  if (oldRank !== newRank) {
+    showRankUp(newRank);
+  }
+}
       }
 
       function completeQuest(playerId, questId, checked) {
@@ -1177,7 +1226,7 @@
       }
 
       function showToast(title, body) {
-        showRankUp()
+       
         const toast = document.getElementById("sw-toast");
         toast.innerHTML = `<b>${escapeHtml(title)}</b><span>${escapeHtml(body)}</span>`;
         toast.classList.add("is-visible");
