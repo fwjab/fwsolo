@@ -951,7 +951,12 @@
       </form>
     </section>
   </main>
-
+<div class="sw-rank-up" id="sw-rank-up">
+  <div class="sw-rank-up-title">SYSTEM UPDATE</div>
+  <div class="sw-rank-up-text" id="sw-rank-up-text">
+    NEW RANK UNLOCKED
+  </div>
+</div>
   <div class="sw-toast" id="sw-toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -1131,12 +1136,7 @@
           date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
         });
         player.log = player.log.slice(0, 12);
-        if (leveled.length) {
-          pushFeed(`${player.name} reached Level ${player.level} (${rankFor(player.level)}).`);
-          showToast("Level Up", `${player.name} is now Level ${player.level}. ${quoteBank[state.quoteIndex]}`);
-        } else {
-          showToast("XP Gained", `${player.name} gained ${xp} XP.`);
-        }
+       
       }
 
       function completeQuest(playerId, questId, checked) {
@@ -1177,6 +1177,7 @@
       }
 
       function showToast(title, body) {
+        showRankUp()
         const toast = document.getElementById("sw-toast");
         toast.innerHTML = `<b>${escapeHtml(title)}</b><span>${escapeHtml(body)}</span>`;
         toast.classList.add("is-visible");
