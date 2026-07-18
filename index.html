@@ -709,7 +709,14 @@
       grid-template-columns: minmax(0, 1fr) 120px;
       gap: 10px;
     }
+<div class="sw-rank-up" id="sw-rank-up">
+  <div class="sw-rank-up-title">SYSTEM UPDATE</div>
+  <div class="sw-rank-up-text" id="sw-rank-up-text">
+    NEW RANK UNLOCKED
+  </div>
+</div>
 
+<div class="sw-toast" id="sw-toast" role="status" aria-live="polite"></div>
     .sw-toast {
       position: fixed;
       left: 50%;
@@ -1175,7 +1182,18 @@
         toast.classList.add("is-visible");
         window.clearTimeout(showToast.timer);
         showToast.timer = window.setTimeout(() => toast.classList.remove("is-visible"), 2600);
-      }
+      }function showRankUp(rank) {
+  const box = document.getElementById("sw-rank-up");
+  const text = document.getElementById("sw-rank-up-text");
+
+  text.textContent = `NEW RANK UNLOCKED: ${rank}`;
+
+  box.classList.add("active");
+
+  setTimeout(() => {
+    box.classList.remove("active");
+  }, 2500);
+}
 
       function escapeHtml(value) {
         return String(value)
