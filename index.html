@@ -1002,13 +1002,16 @@
       let lastSyncedState = "";
       const todayKey = () => new Date().toISOString().slice(0, 10);
       const xpForLevel = level => 100 + (level - 1) * 45;
-      const ranks = [
-        { min: 30, name: "S Rank" },
-        { min: 22, name: "A Rank" },
-        { min: 15, name: "B Rank" },
-        { min: 10, name: "C Rank" },
-        { min: 5, name: "D Rank" },
-        { min: 1, name: "E Rank" }
+     const rankData = [
+  { name: "E", level: 1, pushups: 15, legRaises: 15, plank: 35, squats: 12, curls: 40 },
+  { name: "D", level: 5, pushups: 18, legRaises: 18, plank: 38, squats: 15, curls: 42 },
+  { name: "C", level: 10, pushups: 23, legRaises: 23, plank: 43, squats: 20, curls: 44 },
+  { name: "B", level: 15, pushups: 28, legRaises: 28, plank: 48, squats: 25, curls: 46 },
+  { name: "A", level: 20, pushups: 33, legRaises: 33, plank: 53, squats: 30, curls: 48 },
+  { name: "S", level: 25, pushups: 38, legRaises: 38, plank: 58, squats: 35, curls: 50 },
+  { name: "National", level: 30, pushups: 43, legRaises: 43, plank: 63, squats: 40, curls: 52 },
+  { name: "Monarch", level: 35, pushups: 48, legRaises: 48, plank: 68, squats: 45, curls: 54 }
+];
       ];
       const quoteBank = [
         "The body adapts when the mind stops negotiating.",
@@ -1019,14 +1022,43 @@
         "Do the daily. The level-up screen comes later.",
         "Every set is a vote for the hunter you are becoming."
       ];
-      const starterQuests = [
-        { title: "3 sets of 15 push-ups", xp: 45 },
-        { title: "3 sets of 15 leg raises", xp: 40 },
-        { title: "3 sets of 15 in-and-out abs", xp: 40 },
-        { title: "3 sets of 35 second planks", xp: 45 },
-        { title: "3 sets of 12 squats", xp: 40 },
-        { title: "1 set of 40 curls, both arms", xp: 50 }
-      ];
+      function starterQuestsFor(player) {
+
+    let current = rankData[0];
+
+    for (const rank of rankData) {
+        if (player.level >= rank.level) {
+            current = rank;
+        }
+    }
+
+    return [
+        {
+            title: `3 sets of ${current.pushups} push-ups`,
+            xp: 45
+        },
+        {
+            title: `3 sets of ${current.legRaises} leg raises`,
+            xp: 40
+        },
+        {
+            title: `3 sets of ${current.legRaises} in-and-out abs`,
+            xp: 40
+        },
+        {
+            title: `3 sets of ${current.plank} second planks`,
+            xp: 45
+        },
+        {
+            title: `3 sets of ${current.squats} squats`,
+            xp: 40
+        },
+        {
+            title: `1 set of ${current.curls} curls, both arms`,
+            xp: 50
+        }
+    ];
+}
       const dailyQuestSignature = starterQuests.map(quest => quest.title).join("|");
       const bossQuestBank = [
         "Boss Quest: 5 minute push-up ladder",
@@ -1125,8 +1157,16 @@
       }
 
       function rankFor(level) {
-        return ranks.find(rank => level >= rank.min).name;
-      }
+    let current = rankData[0];
+
+    for (const rank of rankData) {
+        if (level >= rank.level) {
+            current = rank;
+        }
+    }
+
+    return current.name;
+}
 
       function randomInt(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -1145,7 +1185,17 @@
         if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
           player.questDate = today;
           player.questSignature = dailyQuestSignature;
-          player.quests = starterQuests.map((quest, index) => ({
+          pconst quests = starterQuestsFor(player);
+
+const quests = starterQuestsFor(player);
+
+player.quests = quests.map((quest, index) => ({
+    id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
+    title: quest.title,
+    xp: quest.xp,
+    done: false,
+    custom: false
+}));
             id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
             title: quest.title,
             xp: quest.xp,
