@@ -1012,7 +1012,7 @@
   { name: "National", level: 30, pushups: 43, legRaises: 43, plank: 63, squats: 40, curls: 52 },
   { name: "Monarch", level: 35, pushups: 48, legRaises: 48, plank: 68, squats: 45, curls: 54 }
 ];
-      ];
+
       const quoteBank = [
         "The body adapts when the mind stops negotiating.",
         "A small quest completed today beats a perfect plan delayed.",
@@ -1022,8 +1022,7 @@
         "Do the daily. The level-up screen comes later.",
         "Every set is a vote for the hunter you are becoming."
       ];
-      function starterQuestsFor(player) {
-
+const dailyQuestSignature = "dynamic";
     let current = rankData[0];
 
     for (const rank of rankData) {
@@ -1185,7 +1184,7 @@
         if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
           player.questDate = today;
           player.questSignature = dailyQuestSignature;
-          pconst quests = starterQuestsFor(player);
+          
 
 const quests = starterQuestsFor(player);
 
@@ -1196,12 +1195,6 @@ player.quests = quests.map((quest, index) => ({
     done: false,
     custom: false
 }));
-            id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
-            title: quest.title,
-            xp: quest.xp,
-            done: false,
-            custom: false
-          }));
         }
         return player.quests;
       }
