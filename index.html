@@ -1418,7 +1418,7 @@ function getDailyQuestSignature(player) {
   quest.done = checked;
 
   if (checked) {
-    addXp(player, quest.xp, quest.title ?? "Unknown Quest");
+    addXp(player, quest.xp);
     updateDailyStreak(player);
     pushFeed(`${player.name} cleared quest: ${quest.title}`);
   } else {
@@ -1481,7 +1481,7 @@ function getDailyQuestSignature(player) {
         if (!quest || quest.done === checked) return;
         quest.done = checked;
         if (checked) {
-          addXp(player, quest.xp, quest.title ?? "Unknown Quest");
+          addXp(player, quest.xp);
 updateDailyStreak(player);
           pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} cleared quest: ${quest.title}`);
         } else {
@@ -1633,7 +1633,7 @@ updateDailyStreak(player);
           nameEl.addEventListener("blur", event => {
             const player = state.players.find(item => item.id === event.currentTarget.dataset.nameFor);
             const nextName = event.currentTarget.textContent.trim().slice(0, 30);
-            `${player.name} 💰 ${player.gold ?? 0}` = nextName || `${player.name} 💰 ${player.gold ?? 0}`;
+player.name = nextName || player.name;
             saveState();
             render();
           });
@@ -1739,7 +1739,7 @@ getDailyQuests(player).push({
           document.getElementById("sw-new-player-name").value = "";
           document.getElementById("sw-player-admin-passcode").value = "";
           render();
-          showToast("Player Added", `${result.`${player.name} 💰 ${player.gold ?? 0}`} joined the party.`);
+          showToast("Player Added", `${player.name} joined the party.`);
         } catch (error) {
           showToast("Admin Denied", error.message);
         }
