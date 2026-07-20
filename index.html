@@ -1461,7 +1461,7 @@ function getDailyQuestSignature(player) {
         if (checked) {
           addXp(player, quest.xp, (quest.title ?? "Unknown Quest"),
           updateDailyStreak(player);
-          pushFeed(`${player.name} cleared quest: ${(quest.title ?? "Unknown Quest")}
+          pushFeed(`${player.name} cleared quest: ${quest.title}`);
         } else {
           player.xp = Math.max(0, player.xp - quest.xp);
           player.totalXp = Math.max(0, player.totalXp - quest.xp);
