@@ -49,3 +49,9 @@ type:"upgrade"
 }
 
 ];
+function buyItem(id){
+
+}
+function renderShop(){
+
+}
