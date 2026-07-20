@@ -1482,7 +1482,7 @@ function getDailyQuestSignature(player) {
         quest.done = checked;
         if (checked) {
           addXp(player, quest.xp, quest.title ?? "Unknown Quest");
-          updateDailyStreak(player);
+updateDailyStreak(player);
           pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} cleared quest: ${quest.title}`);
         } else {
           player.xp = Math.max(0, player.xp - quest.xp);
@@ -1613,7 +1613,7 @@ function getDailyQuestSignature(player) {
         document.getElementById("sw-quote").textContent = quoteBank[state.quoteIndex];
         document.getElementById("sw-status-feed").innerHTML = state.feed.map(line => (
           `<div class="sw-feed-line"><span aria-hidden="true">▸</span><span>${escapeHtml(line)}</span></div>`
-        ).join("");
+        )).join("");
 
         document.getElementById("sw-party-level").textContent = state.players.reduce((sum, player) => sum + player.level, 0);
         document.getElementById("sw-player-count").textContent = `${state.players.length}/${maxPlayers}`;
