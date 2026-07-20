@@ -5,30 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hunter Workout System</title>
 </head>
-
 <body>
-
-  <!-- Top Menu Button -->
-  <button class="hunter-menu-btn" onclick="openMenu('profile')">
-    ☰ Hunter Menu
-  </button>
-
-  <!-- Navigation Bar -->
-  <div class="menu-bar">
-    <button onclick="openMenu('profile')">Hunter Profile</button>
-    <button onclick="openMenu('shop')">Hunter Shop</button>
-    <button onclick="openMenu('achievements')">Achievements</button>
-    <button onclick="openMenu('titles')">Titles</button>
-    <button onclick="openMenu('shadows')">Shadow Army</button>
-    <button onclick="openMenu('cosmetics')">Cosmetics</button>
-    <button onclick="openMenu('upgrades')">Upgrades</button>
-  </div>
-
-  <!-- SINGLE menu container -->
-  <div id="menuContainer"></div>
-
-  <!-- Your App -->
-  <div id="solo-workout-app">
+<div id="solo-workout-app">
   <div class="sw-bg-art" aria-hidden="true"></div>
   <div class="sw-manga-art" aria-hidden="true">
     <span class="sw-panel-one"></span>
@@ -77,42 +55,7 @@
       z-index: -3;
       animation: swGateSpin 44s linear infinite;
     }
-/* === NAVBAR SOLO LEVELING STYLE === */
-.menu-bar {
-  display: flex;
-  gap: 10px;
-  padding: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
 
-  background: rgba(10, 20, 40, 0.6);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(120, 180, 255, 0.2);
-}
-
-.menu-bar button {
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(120, 180, 255, 0.25);
-
-  background: linear-gradient(
-    135deg,
-    rgba(60, 120, 255, 0.15),
-    rgba(140, 60, 255, 0.15)
-  );
-
-  color: #e6f0ff;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.menu-bar button:hover {
-  box-shadow:
-    0 0 12px rgba(100, 160, 255, 0.5),
-    0 0 24px rgba(140, 60, 255, 0.4);
-
-  transform: translateY(-2px);
-}
     #solo-workout-app::after {
       content: "";
       position: absolute;
@@ -905,7 +848,7 @@
         <div class="sw-sigil" aria-hidden="true">◆</div>
         <div>
           <h1>Hunter Workout System</h1>
-          <p>FwNation-Guild quests, XP, ranks, and daily streaks.</p>
+          <p>Two-player quests, XP, ranks, and daily streaks.</p>
         </div>
       </div>
       <div class="sw-actions">
@@ -1230,58 +1173,15 @@
     ];
 }
 
-const bossQuestBank = [
-  // E Rank
-  { rank: "E", quest: "30 Push-ups", xp: 150, gold: 75 },
-  { rank: "E", quest: "45 Squats", xp: 150, gold: 75 },
-  { rank: "E", quest: "60 Jumping Jacks", xp: 175, gold: 90 },
-  { rank: "E", quest: "1 Minute Plank", xp: 200, gold: 100 },
-  { rank: "E", quest: "15 Minute Walk", xp: 200, gold: 100 },
-
-  // D Rank
-  { rank: "D", quest: "50 Push-ups", xp: 300, gold: 150 },
-  { rank: "D", quest: "75 Squats", xp: 325, gold: 160 },
-  { rank: "D", quest: "25 Burpees", xp: 350, gold: 175 },
-  { rank: "D", quest: "20 Minute Jog", xp: 375, gold: 190 },
-  { rank: "D", quest: "2 Minute Wall Sit", xp: 400, gold: 200 },
-
-  // C Rank
-  { rank: "C", quest: "100 Push-ups", xp: 600, gold: 300 },
-  { rank: "C", quest: "150 Squats", xp: 650, gold: 325 },
-  { rank: "C", quest: "5 Rounds: 20 Mountain Climbers", xp: 700, gold: 350 },
-  { rank: "C", quest: "30 Minute Run", xp: 750, gold: 375 },
-  { rank: "C", quest: "100 Sit-ups", xp: 800, gold: 400 },
-
-  // B Rank
-  { rank: "B", quest: "50 Burpees", xp: 1200, gold: 600 },
-  { rank: "B", quest: "200 Total Reps", xp: 1250, gold: 625 },
-  { rank: "B", quest: "5 Minute Plank (Total)", xp: 1300, gold: 650 },
-  { rank: "B", quest: "45 Minute Cardio", xp: 1350, gold: 675 },
-  { rank: "B", quest: "100 Walking Lunges", xp: 1400, gold: 700 },
-
-  // A Rank
-  { rank: "A", quest: "500 Total Reps", xp: 2200, gold: 1100 },
-  { rank: "A", quest: "75 Burpees", xp: 2300, gold: 1150 },
-  { rank: "A", quest: "5 Kilometer Run", xp: 2400, gold: 1200 },
-  { rank: "A", quest: "Repeat Today's Daily Quest Twice", xp: 2500, gold: 1250 },
-  { rank: "A", quest: "60 Minute Endurance Workout", xp: 2600, gold: 1300 },
-
-  // S Rank
-  { rank: "S", quest: "1000 Total Reps", xp: 5000, gold: 2500 },
-  { rank: "S", quest: "10 Kilometer Run", xp: 5500, gold: 2750 },
-  { rank: "S", quest: "100 Burpees", xp: 6000, gold: 3000 },
-  { rank: "S", quest: "Complete Every Available Quest Today", xp: 6500, gold: 3250 },
-  { rank: "S", quest: "90 Minute Hunter Trial", xp: 7000, gold: 3500 },
-
-  // SS Rank
-  { rank: "SS", quest: "1500 Total Reps", xp: 12000, gold: 6000 },
-  { rank: "SS", quest: "Complete Every Quest for 7 Consecutive Days", xp: 14000, gold: 7000 },
-  { rank: "SS", quest: "Hunter's Gauntlet: 100 Push-ups, 200 Squats, 100 Sit-ups, 100 Lunges, 5K Run", xp: 16000, gold: 8000 },
-
-  // SSS Rank
-  { rank: "SSS", quest: "Monarch's Trial: 200 Push-ups, 300 Squats, 200 Sit-ups, 100 Burpees, 10K Run", xp: 30000, gold: 15000 },
-  { rank: "SSS", quest: "Shadow Monarch Challenge: Finish every Daily, Weekly, and Boss Quest in one day", xp: 50000, gold: 25000 }
-];
+const dailyQuestSignature = "dynamic";      const bossQuestBank = [
+        "Boss Quest: 5 minute push-up ladder",
+        "Boss Quest: 60 second plank finisher",
+        "Boss Quest: 30 squat burnout",
+        "Boss Quest: 40 curl finisher, both arms",
+        "Boss Quest: 3 rounds of 20 mountain climbers",
+        "Boss Quest: 10 minute no-excuses walk or jog",
+        "Boss Quest: Core gauntlet, 20 leg raises plus 20 in-and-outs"
+      ];
 
       const defaultState = {
         quoteIndex: 4,
@@ -1392,62 +1292,26 @@ const bossQuestBank = [
       function randomBossXp() {
         return randomInt(85, 180);
       }
-function getDailyQuestSignature(player) {
-    return starterQuestsFor(player)
-        .map(q => `${q.title}:${q.xp}`)
-        .join("|");
-}
+
       function getDailyQuests(player) {
-  const today = todayKey();
+        const today = todayKey();
+        if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
+          player.questDate = today;
+          player.questSignature = dailyQuestSignature;
+          
 
-  if (
-    !player.quests ||
-    player.quests.length === 0 ||
-    player.questDate !== today
-  ) {
-    player.questDate = today;
+const quests = starterQuestsFor(player);
 
-    const quests = starterQuestsFor(player);
 player.quests = quests.map((quest, index) => ({
-id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
-title: (quest.title ?? "Unknown Quest"),
- xp: quest.xp,
-done: false,
- custom: false
- }));
-    function completeQuest(playerId, questId, checked) {
-  const player = state.players.find(item => item.id === playerId);
-  const quest = getDailyQuests(player).find(item => item.id === questId);
-
-  if (!quest || quest.done === checked) return;
-
-  quest.done = checked;
-
-  if (checked) {
-    addXp(player, quest.xp);
-    updateDailyStreak(player);
-    pushFeed(`${player.name} cleared quest: ${quest.title}`);
-  } else {
-    player.xp = Math.max(0, player.xp - quest.xp);
-    player.totalXp = Math.max(0, player.totalXp - quest.xp);
-
-    player.log.unshift({
-      text: `Quest unchecked: ${quest.title ?? "Unknown Quest"}`,
-      date: new Date().toLocaleString([], {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-      })
-    });
-  }
-
-  saveState();
-  render();
-}
-
-  return player.quests;
-}
+    id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
+    title: quest.title,
+    xp: quest.xp,
+    done: false,
+    custom: false
+}));
+        }
+        return player.quests;
+      }
 
       function addXp(player, xp, reason) {
         xp = Math.max(0, Math.round(Number(xp) || 0));
@@ -1468,11 +1332,11 @@ done: false,
   const oldRank = rankFor(player.level - leveled.length);
   const newRank = rankFor(player.level);
 
-  pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} reached Level ${player.level} (${newRank}).`);
+  pushFeed(`${player.name} reached Level ${player.level} (${newRank}).`);
 
   showToast(
     "Level Up",
-    `${`${player.name} 💰 ${player.gold ?? 0}`} is now Level ${player.level}.`
+    `${player.name} is now Level ${player.level}.`
   );
 
   if (oldRank !== newRank) {
@@ -1487,14 +1351,14 @@ done: false,
         if (!quest || quest.done === checked) return;
         quest.done = checked;
         if (checked) {
-          addXp(player, quest.xp);
-updateDailyStreak(player);
-          pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} cleared quest: ${quest.title}`);
+          addXp(player, quest.xp, quest.title);
+          updateDailyStreak(player);
+          pushFeed(`${player.name} cleared quest: ${quest.title}`);
         } else {
           player.xp = Math.max(0, player.xp - quest.xp);
           player.totalXp = Math.max(0, player.totalXp - quest.xp);
           player.log.unshift({
-            text: `Quest unchecked: ${(quest.title ?? "Unknown Quest")}`,
+            text: `Quest unchecked: ${quest.title}`,
             date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
           });
         }
@@ -1509,7 +1373,7 @@ updateDailyStreak(player);
           player.streak += 1;
           player.lastDaily = todayKey();
           addXp(player, 75, "Daily quest bonus");
-          pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} completed the full daily quest and gained a streak bonus.`);
+          pushFeed(`${player.name} completed the full daily quest and gained a streak bonus.`);
         }
       }
 
@@ -1569,7 +1433,7 @@ updateDailyStreak(player);
             <article class="sw-player">
               <div class="sw-player-head">
                 <div class="sw-name-wrap">
-                  <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(`${player.name} 💰 ${player.gold ?? 0}`)}</h3>
+                  <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
                   <span class="sw-rank">${rankFor(player.level)}</span>
                 </div>
                 <div class="sw-level">
@@ -1583,7 +1447,7 @@ updateDailyStreak(player);
                   <span>${player.xp} / ${needed} XP</span>
                   <span>${progress}% to next level</span>
                 </div>
-                <div class="sw-bar" aria-label="${escapeHtml(`${player.name} 💰 ${player.gold ?? 0}`)} XP progress">
+                <div class="sw-bar" aria-label="${escapeHtml(player.name)} XP progress">
                   <div class="sw-bar-fill" style="width: ${progress}%"></div>
                 </div>
               </div>
@@ -1593,8 +1457,7 @@ updateDailyStreak(player);
                   <label class="sw-quest">
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""}>
                     <span>
-                      <span class="sw-quest-title">${escapeHtml((quest.title ?? "Unknown Quest"))}</span>
-                      ${quest.description ? `<div class="sw-quest-desc">${escapeHtml(quest.description)}</div>` : ""}
+                      <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
                       <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
                     </span>
                     <span class="sw-xp-pill">+${quest.xp}</span>
@@ -1610,7 +1473,7 @@ updateDailyStreak(player);
           `;
         }).join("");
 
-        const playerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(`${player.name} 💰 ${player.gold ?? 0}`)}</option>`).join("");
+        const playerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
         achievementSelect.innerHTML = playerOptions;
         questSelect.innerHTML = playerOptions;
         adminSelect.innerHTML = playerOptions;
@@ -1639,7 +1502,7 @@ updateDailyStreak(player);
           nameEl.addEventListener("blur", event => {
             const player = state.players.find(item => item.id === event.currentTarget.dataset.nameFor);
             const nextName = event.currentTarget.textContent.trim().slice(0, 30);
-player.name = nextName || player.name;
+            player.name = nextName || player.name;
             saveState();
             render();
           });
@@ -1656,7 +1519,7 @@ player.name = nextName || player.name;
           return;
         }
         addXp(player, xp, text);
-        pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} logged achievement: ${text}`);
+        pushFeed(`${player.name} logged achievement: ${text}`);
         document.getElementById("sw-achievement-text").value = "";
         saveState();
         render();
@@ -1665,22 +1528,17 @@ player.name = nextName || player.name;
       document.getElementById("sw-boss-quest-form").addEventListener("submit", event => {
         event.preventDefault();
         const player = state.players.find(item => item.id === document.getElementById("sw-quest-player").value);
-        const boss = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
-const xp = randomBossXp();
-
-getDailyQuests(player).push({
-  id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
-  title: boss.title,
-  description: boss.description,
-  xp,
-  done: false,
-  boss: true
-});
-        pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} summoned ${boss.title} for ${xp} XP.`);
-        showToast(
-  "Boss Quest Summoned",
-  `${boss.title} appeared for ${`${player.name} 💰 ${player.gold ?? 0}`}. Reward: ${xp} XP.`
-);
+        const title = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
+        const xp = randomBossXp();
+        getDailyQuests(player).push({
+          id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
+          title,
+          xp,
+          done: false,
+          boss: true
+        });
+        pushFeed(`${player.name} summoned ${title} for ${xp} XP.`);
+        showToast("Boss Quest Summoned", `${title} appeared for ${player.name}. Reward: ${xp} XP.`);
         saveState();
         render();
       });
@@ -1745,7 +1603,7 @@ getDailyQuests(player).push({
           document.getElementById("sw-new-player-name").value = "";
           document.getElementById("sw-player-admin-passcode").value = "";
           render();
-          showToast("Player Added", `${player.name} joined the party.`);
+          showToast("Player Added", `${result.player.name} joined the party.`);
         } catch (error) {
           showToast("Admin Denied", error.message);
         }
@@ -1763,7 +1621,7 @@ getDailyQuests(player).push({
           showToast("No Player", "Choose a player to delete.");
           return;
         }
-        if (!confirm(`Delete ${`${player.name} 💰 ${player.gold ?? 0}`} and all of their XP, quests, and logs?`)) return;
+        if (!confirm(`Delete ${player.name} and all of their XP, quests, and logs?`)) return;
         const passcode = document.getElementById("sw-delete-player-passcode").value;
         try {
           const response = await fetch("/api/admin/players/delete", {
@@ -1801,35 +1659,19 @@ getDailyQuests(player).push({
 
       async function init() {
         setSyncMode(serverMode ? "Connecting sync" : "Local save");
-        <script>
-  async function init() {
-    setSyncMode(serverMode ? "Connecting sync" : "Local save");
+        if (serverMode) {
+          document.getElementById("sw-reset").style.display = "none";
+        }
+        await loadServerState();
+        render();
+        if (serverMode) {
+          window.setInterval(refreshSharedState, 5000);
+        }
+      }
 
-    if (serverMode) {
-      document.getElementById("sw-reset").style.display = "none";
-    }
-
-    await loadServerState();
-    render();
-
-    if (serverMode) {
-      window.setInterval(refreshSharedState, 5000);
-    }
-  }
-
-  init();
-</script>
-
-<script src="player.js"></script>
-<script src="shop.js"></script>
-<script src="achievements.js"></script>
-<script src="titles.js"></script>
-<script src="shadows.js"></script>
-<script src="cosmetics.js"></script>
-<script src="upgrades.js"></script>
-<script src="inventory.js"></script>
-<script src="rewards.js"></script>
-<script src="save.js"></script>
-<script src="ui.js"></script>
+      init();
+    })();
+  </script>
+</div>
 </body>
 </html>
