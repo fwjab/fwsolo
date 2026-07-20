@@ -1801,19 +1801,26 @@ getDailyQuests(player).push({
 
       async function init() {
         setSyncMode(serverMode ? "Connecting sync" : "Local save");
-        if (serverMode) {
-          document.getElementById("sw-reset").style.display = "none";
-        }
-        await loadServerState();
-        render();
-        if (serverMode) {
-          window.setInterval(refreshSharedState, 5000);
-        }
-      }
+        <script>
+  async function init() {
+    setSyncMode(serverMode ? "Connecting sync" : "Local save");
 
-      init();
-  document.getElementById("sw-reset").style.display = "none";
-  <script src="player.js"></script>
+    if (serverMode) {
+      document.getElementById("sw-reset").style.display = "none";
+    }
+
+    await loadServerState();
+    render();
+
+    if (serverMode) {
+      window.setInterval(refreshSharedState, 5000);
+    }
+  }
+
+  init();
+</script>
+
+<script src="player.js"></script>
 <script src="shop.js"></script>
 <script src="achievements.js"></script>
 <script src="titles.js"></script>
