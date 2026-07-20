@@ -147,35 +147,17 @@ if (request.method === "GET" && request.url.endsWith(".css")) {
 
     return;
 }
-    if (request.method === "GET" && (request.url === "/" || request.url === "/index.html")) {
-      response.writeHead(200, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store"
-      });
-      // 
-}
-
-  const filePath = path.join(__dirname, request.url);
-
-  if (fs.existsSync(filePath)) {
+    if (request.method === "GET" &&
+    (request.url === "/" || request.url === "/index.html")) {
 
     response.writeHead(200, {
-      "Content-Type": "text/css"
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store"
     });
 
-    response.end(fs.readFileSync(filePath));
-
-  } else {
-
-    sendJson(response,404,{error:"File not found."});
-
-  }
-
-  return;
-
+    response.end(fs.readFileSync(appFile));
+    return;
 }
-      response.end(fs.readFileSync(appFile));
-      return;
     }
 
     if (request.url === "/api/state" && request.method === "GET") {
