@@ -1409,14 +1409,36 @@ function getDailyQuestSignature(player) {
 
     const quests = starterQuestsFor(player);
 
-    player.quests = quests.map((quest, index) => ({
-      id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
-      title: (quest.title ?? "Unknown Quest"),
-      xp: quest.xp,
-      done: false,
-      custom: false
-    }));
+    function completeQuest(playerId, questId, checked) {
+  const player = state.players.find(item => item.id === playerId);
+  const quest = getDailyQuests(player).find(item => item.id === questId);
+
+  if (!quest || quest.done === checked) return;
+
+  quest.done = checked;
+
+  if (checked) {
+    addXp(player, quest.xp, quest.title ?? "Unknown Quest");
+    updateDailyStreak(player);
+    pushFeed(`${player.name} cleared quest: ${quest.title}`);
+  } else {
+    player.xp = Math.max(0, player.xp - quest.xp);
+    player.totalXp = Math.max(0, player.totalXp - quest.xp);
+
+    player.log.unshift({
+      text: `Quest unchecked: ${quest.title ?? "Unknown Quest"}`,
+      date: new Date().toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      })
+    });
   }
+
+  saveState();
+  render();
+}
 
   return player.quests;
 }
@@ -1591,7 +1613,7 @@ function getDailyQuestSignature(player) {
         document.getElementById("sw-quote").textContent = quoteBank[state.quoteIndex];
         document.getElementById("sw-status-feed").innerHTML = state.feed.map(line => (
           `<div class="sw-feed-line"><span aria-hidden="true">▸</span><span>${escapeHtml(line)}</span></div>`
-        )).join("");
+        ).join("");
 
         document.getElementById("sw-party-level").textContent = state.players.reduce((sum, player) => sum + player.level, 0);
         document.getElementById("sw-player-count").textContent = `${state.players.length}/${maxPlayers}`;
