@@ -1173,15 +1173,58 @@
     ];
 }
 
-const dailyQuestSignature = "dynamic";      const bossQuestBank = [
-        "Boss Quest: 5 minute push-up ladder",
-        "Boss Quest: 60 second plank finisher",
-        "Boss Quest: 30 squat burnout",
-        "Boss Quest: 40 curl finisher, both arms",
-        "Boss Quest: 3 rounds of 20 mountain climbers",
-        "Boss Quest: 10 minute no-excuses walk or jog",
-        "Boss Quest: Core gauntlet, 20 leg raises plus 20 in-and-outs"
-      ];
+const bossQuestBank = [
+  // E Rank
+  { rank: "E", quest: "30 Push-ups", xp: 150, gold: 75 },
+  { rank: "E", quest: "45 Squats", xp: 150, gold: 75 },
+  { rank: "E", quest: "60 Jumping Jacks", xp: 175, gold: 90 },
+  { rank: "E", quest: "1 Minute Plank", xp: 200, gold: 100 },
+  { rank: "E", quest: "15 Minute Walk", xp: 200, gold: 100 },
+
+  // D Rank
+  { rank: "D", quest: "50 Push-ups", xp: 300, gold: 150 },
+  { rank: "D", quest: "75 Squats", xp: 325, gold: 160 },
+  { rank: "D", quest: "25 Burpees", xp: 350, gold: 175 },
+  { rank: "D", quest: "20 Minute Jog", xp: 375, gold: 190 },
+  { rank: "D", quest: "2 Minute Wall Sit", xp: 400, gold: 200 },
+
+  // C Rank
+  { rank: "C", quest: "100 Push-ups", xp: 600, gold: 300 },
+  { rank: "C", quest: "150 Squats", xp: 650, gold: 325 },
+  { rank: "C", quest: "5 Rounds: 20 Mountain Climbers", xp: 700, gold: 350 },
+  { rank: "C", quest: "30 Minute Run", xp: 750, gold: 375 },
+  { rank: "C", quest: "100 Sit-ups", xp: 800, gold: 400 },
+
+  // B Rank
+  { rank: "B", quest: "50 Burpees", xp: 1200, gold: 600 },
+  { rank: "B", quest: "200 Total Reps", xp: 1250, gold: 625 },
+  { rank: "B", quest: "5 Minute Plank (Total)", xp: 1300, gold: 650 },
+  { rank: "B", quest: "45 Minute Cardio", xp: 1350, gold: 675 },
+  { rank: "B", quest: "100 Walking Lunges", xp: 1400, gold: 700 },
+
+  // A Rank
+  { rank: "A", quest: "500 Total Reps", xp: 2200, gold: 1100 },
+  { rank: "A", quest: "75 Burpees", xp: 2300, gold: 1150 },
+  { rank: "A", quest: "5 Kilometer Run", xp: 2400, gold: 1200 },
+  { rank: "A", quest: "Repeat Today's Daily Quest Twice", xp: 2500, gold: 1250 },
+  { rank: "A", quest: "60 Minute Endurance Workout", xp: 2600, gold: 1300 },
+
+  // S Rank
+  { rank: "S", quest: "1000 Total Reps", xp: 5000, gold: 2500 },
+  { rank: "S", quest: "10 Kilometer Run", xp: 5500, gold: 2750 },
+  { rank: "S", quest: "100 Burpees", xp: 6000, gold: 3000 },
+  { rank: "S", quest: "Complete Every Available Quest Today", xp: 6500, gold: 3250 },
+  { rank: "S", quest: "90 Minute Hunter Trial", xp: 7000, gold: 3500 },
+
+  // SS Rank
+  { rank: "SS", quest: "1500 Total Reps", xp: 12000, gold: 6000 },
+  { rank: "SS", quest: "Complete Every Quest for 7 Consecutive Days", xp: 14000, gold: 7000 },
+  { rank: "SS", quest: "Hunter's Gauntlet: 100 Push-ups, 200 Squats, 100 Sit-ups, 100 Lunges, 5K Run", xp: 16000, gold: 8000 },
+
+  // SSS Rank
+  { rank: "SSS", quest: "Monarch's Trial: 200 Push-ups, 300 Squats, 200 Sit-ups, 100 Burpees, 10K Run", xp: 30000, gold: 15000 },
+  { rank: "SSS", quest: "Shadow Monarch Challenge: Finish every Daily, Weekly, and Boss Quest in one day", xp: 50000, gold: 25000 }
+];
 
       const defaultState = {
         quoteIndex: 4,
