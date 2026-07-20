@@ -1,0 +1,6 @@
+function saveGame(){
+
+}
+function loadGame(){
+
+}
