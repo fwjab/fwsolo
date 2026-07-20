@@ -1459,7 +1459,7 @@ function getDailyQuestSignature(player) {
         if (!quest || quest.done === checked) return;
         quest.done = checked;
         if (checked) {
-          addXp(player, quest.xp, (quest.title ?? "Unknown Quest"),
+          addXp(player, quest.xp, quest.title ?? "Unknown Quest");
           updateDailyStreak(player);
           pushFeed(`${player.name} cleared quest: ${quest.title}`);
         } else {
