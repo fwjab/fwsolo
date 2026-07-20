@@ -1566,6 +1566,7 @@ function getDailyQuestSignature(player) {
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""}>
                     <span>
                       <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
+                      ${quest.description ? `<div class="sw-quest-desc">${escapeHtml(quest.description)}</div>` : ""}
                       <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
                     </span>
                     <span class="sw-xp-pill">+${quest.xp}</span>
@@ -1636,14 +1637,16 @@ function getDailyQuestSignature(player) {
       document.getElementById("sw-boss-quest-form").addEventListener("submit", event => {
         event.preventDefault();
         const player = state.players.find(item => item.id === document.getElementById("sw-quest-player").value);
-        const title = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
+        const boss = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
         const xp = randomBossXp();
         getDailyQuests(player).push({
-          id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
-          title,
-          xp,
-          done: false,
-          boss: true
+  id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
+  title: boss.title,
+  description: boss.description,
+  xp,
+  done: false,
+  boss: true
+});
         });
         pushFeed(`${player.name} summoned ${title} for ${xp} XP.`);
         showToast("Boss Quest Summoned", `${title} appeared for ${player.name}. Reward: ${xp} XP.`);
