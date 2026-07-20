@@ -131,9 +131,84 @@ if (request.method === "GET" && request.url.endsWith(".js")) {
 }
 
 // Serve CSS
+if (request.method === "GET" && request.url.endsWith(".css")) {
+    const filePath = path.join(__dirname, request.url.slice(1));
 
+    if (fs.existsSync(filePath)) {
+        response.writeHead(200, {
+            "Content-Type": "text/css; charset=utf-8",
+            "Cache-Control": "no-store"
+        });
 
-    
+        response.end(fs.readFileSync(filePath));
+    } else {
+        sendJson(response, 404, { error: "File not found." });
+    }
+
+    return;
+}
+    if (request.method === "GET" && (request.url === "/" || request.url === "/index.html")) {
+      response.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store"
+      });
+      // Serve JavaScript files
+
+const filePath = path.join(__dirname, request.url.slice(1));
+  if (fs.existsSync(filePath)) {
+
+    response.writeHead(200, {
+      "Content-Type": "application/javascript; charset=utf-8",
+      "Cache-Control": "no-store"
+    });
+
+    response.end(fs.readFileSync(filePath));
+
+  } else {
+
+    sendJson(response, 404, { error: "File not found." });
+
+  }
+
+  return;
+}
+
+  const filePath = path.join(__dirname, request.url);
+
+  if (fs.existsSync(filePath)) {
+
+    response.writeHead(200, {
+      "Content-Type": "text/css"
+    });
+
+    response.end(fs.readFileSync(filePath));
+
+  } else {
+
+    sendJson(response,404,{error:"File not found."});
+
+  }
+
+  return;
+
+}
+      response.end(fs.readFileSync(appFile));
+      return;
+    }
+
+    if (request.url === "/api/state" && request.method === "GET") {
+      const state = await readState();
+sendJson(response, 200, state);
+      return;
+    }
+
+    if (request.url === "/api/state" && request.method === "POST") {
+      const body = await readBody(request);
+      const nextState = JSON.parse(body);
+      if (!nextState || !Array.isArray(nextState.players)) {
+        sendJson(response, 400, { error: "Invalid state." });
+        return;
+      }
      const state = await readState();
 
 const currentIds = state.players
