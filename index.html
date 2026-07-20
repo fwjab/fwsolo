@@ -1411,7 +1411,7 @@ function getDailyQuestSignature(player) {
 
     player.quests = quests.map((quest, index) => ({
       id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
-      title: (quest.title ?? "Unknown Quest")
+      title: (quest.title ?? "Unknown Quest"),
       xp: quest.xp,
       done: false,
       custom: false
