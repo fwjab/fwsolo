@@ -133,19 +133,7 @@ if (request.method === "GET" && request.url.endsWith(".js")) {
 // Serve CSS
 
 
-    if (request.url === "/api/state" && request.method === "GET") {
-      const state = await readState();
-sendJson(response, 200, state);
-      return;
-    }
-
-    if (request.url === "/api/state" && request.method === "POST") {
-      const body = await readBody(request);
-      const nextState = JSON.parse(body);
-      if (!nextState || !Array.isArray(nextState.players)) {
-        sendJson(response, 400, { error: "Invalid state." });
-        return;
-      }
+    
      const state = await readState();
 
 const currentIds = state.players
