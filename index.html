@@ -1638,8 +1638,9 @@ function getDailyQuestSignature(player) {
         event.preventDefault();
         const player = state.players.find(item => item.id === document.getElementById("sw-quest-player").value);
         const boss = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
-        const xp = randomBossXp();
-        getDailyQuests(player).push({
+const xp = randomBossXp();
+
+getDailyQuests(player).push({
   id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
   title: boss.title,
   description: boss.description,
@@ -1647,8 +1648,11 @@ function getDailyQuestSignature(player) {
   done: false,
   boss: true
 });
-        pushFeed(`${player.name} summoned ${title} for ${xp} XP.`);
-        showToast("Boss Quest Summoned", `${title} appeared for ${player.name}. Reward: ${xp} XP.`);
+        pushFeed(`${player.name} summoned ${boss.title} for ${xp} XP.`);
+        showToast(
+  "Boss Quest Summoned",
+  `${boss.title} appeared for ${player.name}. Reward: ${xp} XP.`
+);
         saveState();
         render();
       });
