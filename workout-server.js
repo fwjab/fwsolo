@@ -131,21 +131,7 @@ if (request.method === "GET" && request.url.endsWith(".js")) {
 }
 
 // Serve CSS
-if (request.method === "GET" && request.url.endsWith(".css")) {
 
-}
-    if (request.method === "GET" &&
-    (request.url === "/" || request.url === "/index.html")) {
-
-    response.writeHead(200, {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store"
-    });
-
-    response.end(fs.readFileSync(appFile));
-    return;
-}
-    }
 
     if (request.url === "/api/state" && request.method === "GET") {
       const state = await readState();
