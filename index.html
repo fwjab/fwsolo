@@ -1395,16 +1395,29 @@ function getDailyQuestSignature(player) {
 }
       function getDailyQuests(player) {
     const today = todayKey();
-    const dailyQuestSignature = getDailyQuestSignature(player);
+    function getDailyQuests(player) {
+    const today = todayKey();
 
     if (
         !player.quests ||
         player.quests.length === 0 ||
-        player.questDate !== today ||
-        player.questSignature !== dailyQuestSignature
+        player.questDate !== today
     ) {
         player.questDate = today;
-        player.questSignature = dailyQuestSignature;
+
+        const quests = starterQuestsFor(player);
+
+        player.quests = quests.map((quest, index) => ({
+            id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
+            title: quest.title,
+            xp: quest.xp,
+            done: false,
+            custom: false
+        }));
+    }
+
+    return player.quests;
+}
 
         const quests = starterQuestsFor(player);
 
