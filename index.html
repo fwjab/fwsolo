@@ -1411,7 +1411,7 @@ function getDailyQuestSignature(player) {
 
     player.quests = quests.map((quest, index) => ({
       id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
-      title: quest.title,
+      title: (quest.title ?? "Unknown Quest")
       xp: quest.xp,
       done: false,
       custom: false
@@ -1459,14 +1459,14 @@ function getDailyQuestSignature(player) {
         if (!quest || quest.done === checked) return;
         quest.done = checked;
         if (checked) {
-          addXp(player, quest.xp, quest.title);
+          addXp(player, quest.xp, (quest.title ?? "Unknown Quest")
           updateDailyStreak(player);
-          pushFeed(`${player.name} cleared quest: ${quest.title}`);
+          pushFeed(`${player.name} cleared quest: ${(quest.title ?? "Unknown Quest")}
         } else {
           player.xp = Math.max(0, player.xp - quest.xp);
           player.totalXp = Math.max(0, player.totalXp - quest.xp);
           player.log.unshift({
-            text: `Quest unchecked: ${quest.title}`,
+            text: `Quest unchecked: ${(quest.title ?? "Unknown Quest")}`,
             date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
           });
         }
@@ -1565,7 +1565,7 @@ function getDailyQuestSignature(player) {
                   <label class="sw-quest">
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""}>
                     <span>
-                      <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
+                      <span class="sw-quest-title">${escapeHtml((quest.title ?? "Unknown Quest"))}</span>
                       ${quest.description ? `<div class="sw-quest-desc">${escapeHtml(quest.description)}</div>` : ""}
                       <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
                     </span>
