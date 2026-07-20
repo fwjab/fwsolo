@@ -117,6 +117,49 @@ const server = http.createServer(async (request, response) => {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store"
       });
+      // Serve JavaScript files
+if (request.method === "GET" && request.url.endsWith(".js")) {
+
+  const filePath = path.join(__dirname, request.url);
+
+  if (fs.existsSync(filePath)) {
+
+    response.writeHead(200, {
+      "Content-Type": "application/javascript; charset=utf-8",
+      "Cache-Control": "no-store"
+    });
+
+    response.end(fs.readFileSync(filePath));
+
+  } else {
+
+    sendJson(response, 404, { error: "File not found." });
+
+  }
+
+  return;
+}
+      if (request.method === "GET" && request.url.endsWith(".css")) {
+
+  const filePath = path.join(__dirname, request.url);
+
+  if (fs.existsSync(filePath)) {
+
+    response.writeHead(200, {
+      "Content-Type": "text/css"
+    });
+
+    response.end(fs.readFileSync(filePath));
+
+  } else {
+
+    sendJson(response,404,{error:"File not found."});
+
+  }
+
+  return;
+
+}
       response.end(fs.readFileSync(appFile));
       return;
     }
