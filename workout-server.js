@@ -132,20 +132,7 @@ if (request.method === "GET" && request.url.endsWith(".js")) {
 
 // Serve CSS
 if (request.method === "GET" && request.url.endsWith(".css")) {
-    const filePath = path.join(__dirname, request.url.slice(1));
 
-    if (fs.existsSync(filePath)) {
-        response.writeHead(200, {
-            "Content-Type": "text/css; charset=utf-8",
-            "Cache-Control": "no-store"
-        });
-
-        response.end(fs.readFileSync(filePath));
-    } else {
-        sendJson(response, 404, { error: "File not found." });
-    }
-
-    return;
 }
     if (request.method === "GET" &&
     (request.url === "/" || request.url === "/index.html")) {
