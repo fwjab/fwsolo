@@ -159,8 +159,6 @@ if (request.method === "GET" && request.url.endsWith(".css")) {
     response.end(fs.readFileSync(appFile));
     return;
 }
-      return;
-    }
 
     if (request.url === "/api/state" && request.method === "GET") {
       const state = await readState();
