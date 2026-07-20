@@ -1440,11 +1440,11 @@ function getDailyQuestSignature(player) {
   const oldRank = rankFor(player.level - leveled.length);
   const newRank = rankFor(player.level);
 
-  pushFeed(`${player.name} reached Level ${player.level} (${newRank}).`);
+  pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} reached Level ${player.level} (${newRank}).`);
 
   showToast(
     "Level Up",
-    `${player.name} is now Level ${player.level}.`
+    `${`${player.name} 💰 ${player.gold ?? 0}`} is now Level ${player.level}.`
   );
 
   if (oldRank !== newRank) {
@@ -1461,7 +1461,7 @@ function getDailyQuestSignature(player) {
         if (checked) {
           addXp(player, quest.xp, quest.title ?? "Unknown Quest");
           updateDailyStreak(player);
-          pushFeed(`${player.name} cleared quest: ${quest.title}`);
+          pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} cleared quest: ${quest.title}`);
         } else {
           player.xp = Math.max(0, player.xp - quest.xp);
           player.totalXp = Math.max(0, player.totalXp - quest.xp);
@@ -1481,7 +1481,7 @@ function getDailyQuestSignature(player) {
           player.streak += 1;
           player.lastDaily = todayKey();
           addXp(player, 75, "Daily quest bonus");
-          pushFeed(`${player.name} completed the full daily quest and gained a streak bonus.`);
+          pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} completed the full daily quest and gained a streak bonus.`);
         }
       }
 
@@ -1541,7 +1541,7 @@ function getDailyQuestSignature(player) {
             <article class="sw-player">
               <div class="sw-player-head">
                 <div class="sw-name-wrap">
-                  <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
+                  <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(`${player.name} 💰 ${player.gold ?? 0}`)}</h3>
                   <span class="sw-rank">${rankFor(player.level)}</span>
                 </div>
                 <div class="sw-level">
@@ -1555,7 +1555,7 @@ function getDailyQuestSignature(player) {
                   <span>${player.xp} / ${needed} XP</span>
                   <span>${progress}% to next level</span>
                 </div>
-                <div class="sw-bar" aria-label="${escapeHtml(player.name)} XP progress">
+                <div class="sw-bar" aria-label="${escapeHtml(`${player.name} 💰 ${player.gold ?? 0}`)} XP progress">
                   <div class="sw-bar-fill" style="width: ${progress}%"></div>
                 </div>
               </div>
@@ -1582,7 +1582,7 @@ function getDailyQuestSignature(player) {
           `;
         }).join("");
 
-        const playerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
+        const playerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(`${player.name} 💰 ${player.gold ?? 0}`)}</option>`).join("");
         achievementSelect.innerHTML = playerOptions;
         questSelect.innerHTML = playerOptions;
         adminSelect.innerHTML = playerOptions;
@@ -1611,7 +1611,7 @@ function getDailyQuestSignature(player) {
           nameEl.addEventListener("blur", event => {
             const player = state.players.find(item => item.id === event.currentTarget.dataset.nameFor);
             const nextName = event.currentTarget.textContent.trim().slice(0, 30);
-            player.name = nextName || player.name;
+            `${player.name} 💰 ${player.gold ?? 0}` = nextName || `${player.name} 💰 ${player.gold ?? 0}`;
             saveState();
             render();
           });
@@ -1628,7 +1628,7 @@ function getDailyQuestSignature(player) {
           return;
         }
         addXp(player, xp, text);
-        pushFeed(`${player.name} logged achievement: ${text}`);
+        pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} logged achievement: ${text}`);
         document.getElementById("sw-achievement-text").value = "";
         saveState();
         render();
@@ -1648,10 +1648,10 @@ getDailyQuests(player).push({
   done: false,
   boss: true
 });
-        pushFeed(`${player.name} summoned ${boss.title} for ${xp} XP.`);
+        pushFeed(`${`${player.name} 💰 ${player.gold ?? 0}`} summoned ${boss.title} for ${xp} XP.`);
         showToast(
   "Boss Quest Summoned",
-  `${boss.title} appeared for ${player.name}. Reward: ${xp} XP.`
+  `${boss.title} appeared for ${`${player.name} 💰 ${player.gold ?? 0}`}. Reward: ${xp} XP.`
 );
         saveState();
         render();
@@ -1717,7 +1717,7 @@ getDailyQuests(player).push({
           document.getElementById("sw-new-player-name").value = "";
           document.getElementById("sw-player-admin-passcode").value = "";
           render();
-          showToast("Player Added", `${result.player.name} joined the party.`);
+          showToast("Player Added", `${result.`${player.name} 💰 ${player.gold ?? 0}`} joined the party.`);
         } catch (error) {
           showToast("Admin Denied", error.message);
         }
@@ -1735,7 +1735,7 @@ getDailyQuests(player).push({
           showToast("No Player", "Choose a player to delete.");
           return;
         }
-        if (!confirm(`Delete ${player.name} and all of their XP, quests, and logs?`)) return;
+        if (!confirm(`Delete ${`${player.name} 💰 ${player.gold ?? 0}`} and all of their XP, quests, and logs?`)) return;
         const passcode = document.getElementById("sw-delete-player-passcode").value;
         try {
           const response = await fetch("/api/admin/players/delete", {
