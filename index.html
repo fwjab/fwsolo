@@ -77,7 +77,42 @@
       z-index: -3;
       animation: swGateSpin 44s linear infinite;
     }
+/* === NAVBAR SOLO LEVELING STYLE === */
+.menu-bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 
+  background: rgba(10, 20, 40, 0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(120, 180, 255, 0.2);
+}
+
+.menu-bar button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 180, 255, 0.25);
+
+  background: linear-gradient(
+    135deg,
+    rgba(60, 120, 255, 0.15),
+    rgba(140, 60, 255, 0.15)
+  );
+
+  color: #e6f0ff;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.menu-bar button:hover {
+  box-shadow:
+    0 0 12px rgba(100, 160, 255, 0.5),
+    0 0 24px rgba(140, 60, 255, 0.4);
+
+  transform: translateY(-2px);
+}
     #solo-workout-app::after {
       content: "";
       position: absolute;
