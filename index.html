@@ -922,7 +922,7 @@
             Achievement
             <textarea id="sw-achievement-text" placeholder="Example: Ran 2 miles, hit a push-up PR, finished leg day"></textarea>
           </label>
-          <p class="sw-muted">Achievements roll a random system reward from 20 to 75 XP.</p>
+          <p class="sw-muted">Achievements roll a random system reward from 20 to 40 XP.</p>
           <button class="sw-btn sw-btn-primary" type="submit">Log Random XP</button>
         </div>
       </form>
@@ -1320,7 +1320,7 @@ const dailyQuestSignature = "dynamic";      const bossQuestBank = [
       }
 
       function randomAchievementXp() {
-        return randomInt(20, 75);
+        return randomInt(20, 40);
       }
 
       function randomBossXp() {
