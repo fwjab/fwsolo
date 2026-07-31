@@ -1009,7 +1009,15 @@
       const serverMode = location.protocol !== "file:";
       const maxPlayers = 10;
       let lastSyncedState = "";
-      const todayKey = () => new Date().toISOString().slice(0, 10);
+      const todayKey = () => {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
       const xpForLevel = level => 100 + (level - 1) * 45;
      const rankData = [
   { name: "E", level: 1, pushups: 15, legRaises: 15, inAndOut: 15, plank: 35, squats: 12, curls: 40 },
