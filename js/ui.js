@@ -1,5 +1,5 @@
 (() => {
-  const tabs = ["profile", "missions", "shadows", "guild", "headquarters", "archive", "codex", "shop", "titles", "cosmetics", "upgrades", "inventory", "settings"];
+  const tabs = ["profile", "missions", "shadows", "guild", "headquarters", "archive", "codex", "stats", "shop", "titles", "cosmetics", "upgrades", "inventory", "settings"];
   let selectedPlayerId = "";
   let activeTab = "profile";
   const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" })[character]);
@@ -23,6 +23,15 @@
     const adventure = window.HunterProgression.adventureFor(player);
     const world = window.HunterProgression.worldFor(player);
     const missionCards = [];
+    if (world.storyGate) missionCards.push(card("SYSTEM MESSAGE · Unknown Gate", `${world.storyGate.objective} · +${world.storyGate.xp} XP · +${world.storyGate.gold} G`, world.storyGate.entered ? `<button data-action="story-clear">Clear Gate Challenge</button>` : `<button data-action="story-enter">Enter</button><button data-action="story-ignore">Ignore</button>`));
+    if (adventure.eliteBoss) {
+      const phases = adventure.eliteBoss.phases || ["Finish 30 controlled squats", "Finish 20 push-ups at your pace", "Hold a 60-second plank, split if needed"];
+      const phase = Number(adventure.eliteBoss.phase) || 0;
+      const hp = Math.max(0, 100 - Math.round((phase / phases.length) * 100));
+      missionCards.push(card(`${adventure.eliteBoss.name} · ${hp}% HP`, phase < phases.length ? `Phase ${phase + 1}/${phases.length}: ${phases[phase]}` : "Boss broken. Claim the core below.", phase < phases.length ? `<button data-action="elite-phase">Clear Phase</button>` : ""));
+    }
+    const shadowMission = adventure.shadowMission;
+    if (player.level >= 35) missionCards.push(card("Monarch Shadow Mission", shadowMission ? `${shadowMission.shadow} is scouting beyond the gate.` : `Send ${profile.equippedShadow || "an equipped Shadow"} for XP, gold, and Shadow levels.`, shadowMission ? `<button data-action="shadow-claim">Claim when ready</button>` : `<button data-action="shadow-send" ${profile.equippedShadow ? "" : "disabled"}>Send Shadow</button>`));
     missionCards.push(card("Daily System Scan", world.systemScan || "Scanning Hunter..."));
     if (world.eclipse?.active) missionCards.push(card("Eclipse Event", "24 hours · Double XP · Double Gold · Exclusive missions active."));
     if (world.welcomePackage) missionCards.push(card("Welcome Back, Hunter", `Recovery package: +${world.welcomePackage.xp} XP · +${world.welcomePackage.gold} G · Recovery Potion`, `<button data-action="welcome">Claim Package</button>`));
@@ -74,6 +83,16 @@
     return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Codex</p><h3>Collected Knowledge</h3><div class="sw-mini-stats">${stat("Loot", adventure.loot.length)}${stat("Boxes", adventure.boxes.length)}${stat("Constellations", adventure.constellations.length)}${stat("Awakenings", adventure.awakenings.length)}</div><p class="sw-muted">${adventure.loot.slice(0, 4).map(item => `${item.rarity} ${item.name}`).join(" · ") || "No loot collected yet."}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Exercise Mastery</p><h3>Push-Up Mastery · Level ${mastered}</h3><p>${adventure.mastery.pushups} push-up quests cleared. Next level at ${mastered * 5} clears. Current bonus: +${Math.min(100, mastered * 10)} XP per push-up quest.</p><p class="sw-muted">Constellations: ${adventure.constellations.join(", ") || "None yet"}<br>Awakenings: ${adventure.awakenings.join(", ") || "Not awakened"}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Hunter License</p><h3>${rank} License</h3><p>Current authorization: ${license}</p><p class="sw-muted">E: Shop · C: Elite Bosses · A: Shadow Barracks</p></div></div>`;
   }
 
+  function renderStats(player) {
+    const profile = getProfile(player);
+    const adventure = window.HunterProgression.adventureFor(player);
+    const records = adventure.statistics || {};
+    const first = records.firstTrackedDate ? new Date(`${records.firstTrackedDate}T00:00:00`) : new Date();
+    const days = Math.max(1, Math.ceil((Date.now() - first.getTime()) / 86400000) + 1);
+    const world = window.HunterProgression.worldFor(player);
+    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Records</p><h3>Lifetime Statistics</h3><div class="sw-mini-stats">${stat("Workouts", records.workouts || profile.completedQuests)}${stat("Push-Ups", records.pushups || 0)}${stat("Squats", records.squats || 0)}${stat("Minutes", records.minutes || 0)}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Growth Analysis</p><h3>Consistency Report</h3><div class="sw-mini-stats">${stat("Bosses", world.bossesCleared)}${stat("Highest Streak", Math.max(records.highestStreak || 0, player.streak || 0))}${stat("Lifetime XP", player.totalXp)}${stat("Avg XP/Day", Math.round((player.totalXp || 0) / days))}</div></div></div>`;
+  }
+
   function renderConsole(tab = activeTab) {
     activeTab = tab;
     const root = document.getElementById("sw-system-console");
@@ -93,6 +112,7 @@
     if (activeTab === "headquarters") content = renderHeadquarters(player);
     if (activeTab === "archive") content = renderArchive(player);
     if (activeTab === "codex") content = renderCodex(player);
+    if (activeTab === "stats") content = renderStats(player);
     if (activeTab === "shop") content = cards(shopItems, item => card(item.name, `${item.price} Gold`, `<button data-action="buy" data-id="${item.id}">Buy</button>`));
     if (activeTab === "titles") content = cards(titles, item => card(item.name, item.unlock, `<button data-action="title" data-id="${item.name}" ${!item.available(player) ? "disabled" : ""}>${profile.title === item.name ? "Equipped" : "Equip"}</button>`));
     if (activeTab === "cosmetics") content = cards(cosmetics, item => card(item.name, `${item.price} Gold`, profile.themes.includes(item.name) ? `<button data-action="theme" data-id="${item.name}">${profile.equippedTheme === item.name ? "Equipped" : "Equip"}</button>` : `<button data-action="buy" data-id="${item.name}">Unlock</button>`));
@@ -116,6 +136,7 @@
     if (action === "use-item") { const used = removeItem(player, id); if (used) { player.quests = []; } return finish(used, "Quest Refresh used. A new quest list has been issued. Cleared quests remain locked for today.", "Item unavailable."); }
     if (action === "emergency") return finish(window.HunterProgression.actions.claimEmergency(player), "Emergency quest cleared.", "No emergency quest active.");
     if (action === "elite-summon") return finish(window.HunterProgression.actions.summonEliteBoss(player), "Elite boss summoned.", "Elite bosses unlock at Level 10.");
+    if (action === "elite-phase") { const result = window.HunterProgression.actions.advanceEliteBoss(player); return finish(Boolean(result), result === "defeated" ? "Boss armor shattered. Claim the core." : "Boss HP reduced. Next phase detected.", "No active boss phase."); }
     if (action === "elite-claim") return finish(window.HunterProgression.actions.claimEliteBoss(player), "Elite boss defeated.", "No elite boss active.");
     if (action === "event") return finish(window.HunterProgression.actions.claimRandomEvent(player), "Event reward claimed.", "Event unavailable.");
     if (action === "open-box") return finish(window.HunterProgression.actions.openBox(player), "Mystery box opened.", "No mystery boxes available.");
@@ -123,6 +144,11 @@
     if (action === "potion") return finish(window.HunterProgression.actions.usePotion(player, "doubleXp"), "Double XP armed for your next quest.", "You do not have a Double XP Potion.");
     if (action === "recovery") return finish(window.HunterProgression.actions.usePotion(player, "recovery"), "Recovery protection is active.", "You do not have a Recovery Potion.");
     if (action === "gate") return finish(window.HunterProgression.worldActions.claimGate(player), "Dimension Gate cleared.", "No gate is currently open.");
+    if (action === "story-enter") return finish(window.HunterProgression.worldActions.enterStoryGate(player), "Gate entered. The challenge is active.", "No unknown gate is available.");
+    if (action === "story-clear") return finish(window.HunterProgression.worldActions.clearStoryGate(player), "Story gate cleared. Exclusive rewards granted.", "Enter the gate first.");
+    if (action === "story-ignore") return finish(window.HunterProgression.worldActions.ignoreStoryGate(player), "Gate ignored. The System records your decision.", "No unknown gate is available.");
+    if (action === "shadow-send") return finish(window.HunterProgression.actions.sendShadowMission(player), "Shadow dispatched. It returns in 30 minutes.", "Monarch rank and an equipped Shadow are required.");
+    if (action === "shadow-claim") return finish(window.HunterProgression.actions.claimShadowMission(player), "Shadow mission complete. XP, gold, and a Shadow level gained.", "Your Shadow is still on mission.");
     if (action === "welcome") return finish(window.HunterProgression.worldActions.claimWelcome(player), "Recovery package claimed.", "No welcome package is waiting.");
     if (action === "voice") { const enabled = window.HunterProgression.worldActions.toggleVoice(player); return finish(true, `System voice ${enabled ? "enabled" : "disabled"}.`, ""); }
     if (action === "voice-style") return finish(Boolean(window.HunterProgression.worldActions.setNarration(player, id)), "Narrator profile updated.", "Voice profile unavailable.");

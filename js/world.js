@@ -10,7 +10,7 @@
     const adventure = window.HunterProgression.adventureFor(player);
     if (!profile.world || typeof profile.world !== "object") profile.world = {};
     const world = profile.world;
-    const defaults = { migrationVersion: 0, firstLogin: "", lastLogin: "", systemScan: "", reputation: "Unknown Hunter", legacy: [], dimensionGate: null, eclipse: null, welcomePackage: null, memoryCrystals: 0, bossesCleared: 0, criticals: 0, rankAtLastCheck: "E", settings: { voice: false, narration: "narrator" } };
+    const defaults = { migrationVersion: 0, firstLogin: "", lastLogin: "", systemScan: "", reputation: "Unknown Hunter", legacy: [], dimensionGate: null, storyGate: null, storyGateLevel: 0, eclipse: null, welcomePackage: null, memoryCrystals: 0, bossesCleared: 0, criticals: 0, rankAtLastCheck: "E", settings: { voice: false, narration: "narrator" } };
     Object.keys(defaults).forEach(key => { if (world[key] === undefined) world[key] = defaults[key]; });
     if (!world.settings || typeof world.settings !== "object") world.settings = { voice: false, narration: "narrator" };
     if (world.settings.voice === undefined) world.settings.voice = false;
@@ -92,6 +92,11 @@
       speak(player, `Hunter rank increased. ${rank} rank.`);
     }
     if (profile.completedQuests >= 100) addLegacy(player, "100 Missions", "Dungeon Veteran milestone recorded.");
+    const gateLevel = Math.floor(player.level / 5) * 5;
+    if (gateLevel >= 5 && gateLevel > world.storyGateLevel && !world.storyGate) {
+      world.storyGate = { level: gateLevel, title: "Unknown Gate", objective: `Complete 3 daily quests at Level ${gateLevel}+`, xp: 300 + gateLevel * 40, gold: 150 + gateLevel * 20, entered: false };
+      speak(player, "An unknown gate has appeared.");
+    }
   }
 
   function claimGate(player) {
@@ -119,6 +124,32 @@
     return world.settings.voice;
   }
 
+  function enterStoryGate(player) {
+    const gate = worldFor(player).storyGate;
+    if (!gate) return false;
+    gate.entered = true;
+    return true;
+  }
+
+  function clearStoryGate(player) {
+    const world = worldFor(player);
+    const gate = world.storyGate;
+    if (!gate || !gate.entered) return false;
+    giveRewards(player, { xp: gate.xp, gold: gate.gold, statPoints: 2, reason: `Story Gate Level ${gate.level}` });
+    world.storyGateLevel = gate.level;
+    world.storyGate = null;
+    addLegacy(player, `Gate Level ${gate.level} Cleared`, "An unknown gate yielded to persistent training.");
+    return true;
+  }
+
+  function ignoreStoryGate(player) {
+    const world = worldFor(player);
+    if (!world.storyGate) return false;
+    world.storyGateLevel = world.storyGate.level;
+    world.storyGate = null;
+    return true;
+  }
+
   function setNarration(player, narration) {
     worldFor(player).settings.narration = ["narrator", "sentinel", "oracle"].includes(narration) ? narration : "narrator";
     speak(player, "Voice profile updated.");
@@ -127,7 +158,7 @@
 
   window.HunterProgression.worldFor = worldFor;
   window.HunterProgression.worldLogin = runLogin;
-  window.HunterProgression.worldActions = { claimGate, claimWelcome, toggleVoice, setNarration };
+  window.HunterProgression.worldActions = { claimGate, claimWelcome, enterStoryGate, clearStoryGate, ignoreStoryGate, toggleVoice, setNarration };
   const existingQuestHandler = window.HunterProgression.onQuestCompleted;
   window.HunterProgression.onQuestCompleted = (player, quest) => { existingQuestHandler?.(player, quest); onQuest(player, quest); };
 })();

@@ -827,6 +827,9 @@
       z-index: 20;
     }
 
+    .sw-xp-float { position: fixed; z-index: 90; left: 50%; top: 46%; color: #aef6ff; font-weight: 900; font-size: 1.35rem; text-shadow: 0 0 18px #37c8ff; pointer-events: none; animation: swXpFloat 1.25s ease-out forwards; }
+    @keyframes swXpFloat { from { opacity: 0; transform: translate(-50%, 10px) scale(.8); } 20% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -90px) scale(1.15); } }
+
     .sw-system-console {
       margin-top: 24px;
       padding: 24px;
@@ -1547,6 +1550,7 @@ if (profile?.upgrades.extraDailyQuest) {
         xp = Math.max(0, Math.round(Number(xp) || 0));
         player.xp += xp;
         player.totalXp += xp;
+        if (xp) { showXpFloat(xp); playSystemSound("xp"); }
         const leveled = [];
         while (player.xp >= xpForLevel(player.level)) {
           player.xp -= xpForLevel(player.level);
@@ -1649,11 +1653,39 @@ if (profile?.upgrades.extraDailyQuest) {
   text.textContent = `NEW RANK UNLOCKED: ${rank}`;
 
   box.classList.add("active");
+  playSystemSound("rank");
 
   setTimeout(() => {
     box.classList.remove("active");
   }, 2500);
 }
+
+      function playSystemSound(type = "click") {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContext) return;
+          const audio = new AudioContext();
+          const oscillator = audio.createOscillator();
+          const gain = audio.createGain();
+          const notes = { click: [340, .04], xp: [660, .08], rank: [330, .35], boss: [120, .45] };
+          const [frequency, duration] = notes[type] || notes.click;
+          oscillator.type = type === "boss" ? "sawtooth" : "sine";
+          oscillator.frequency.setValueAtTime(frequency, audio.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(type === "rank" ? frequency * 2 : frequency * .72, audio.currentTime + duration);
+          gain.gain.setValueAtTime(.045, audio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + duration);
+          oscillator.connect(gain).connect(audio.destination);
+          oscillator.start(); oscillator.stop(audio.currentTime + duration);
+        } catch (error) {}
+      }
+
+      function showXpFloat(amount) {
+        const text = document.createElement("div");
+        text.className = "sw-xp-float";
+        text.textContent = `+${amount} XP`;
+        document.body.append(text);
+        window.setTimeout(() => text.remove(), 1300);
+      }
 
       function escapeHtml(value) {
         return String(value)
@@ -1795,6 +1827,7 @@ if (profile?.upgrades.extraDailyQuest) {
         });
         pushFeed(`${player.name} summoned a ${contract.rank}-Rank Boss Quest for ${xp} XP.`);
         showToast(`${contract.rank}-Rank Boss Quest`, `${player.name}'s contract is locked at ${xp} XP.`);
+        playSystemSound("boss");
         saveState();
         render();
       });
@@ -1919,6 +1952,7 @@ if (profile?.upgrades.extraDailyQuest) {
           document.getElementById("sw-reset").style.display = "none";
         }
         await loadServerState();
+        document.addEventListener("click", event => { if (event.target.matches("button")) playSystemSound("click"); });
         render();
         if (serverMode) {
           window.setInterval(refreshSharedState, 5000);
@@ -1931,6 +1965,7 @@ if (profile?.upgrades.extraDailyQuest) {
         addXp,
         pushFeed,
         showToast,
+        playSystemSound,
         rankFor
       };
       init();

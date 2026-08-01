@@ -13,10 +13,11 @@
         loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {},
         contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 },
         constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 },
-        comboDays: 0, comboDate: "", headquarters: 0, loginDate: ""
+        comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null,
+        statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" }
       };
     }
-    const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "" };
+    const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null, statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" } };
     Object.keys(defaults).forEach(key => { if (profile.adventure[key] === undefined) profile.adventure[key] = defaults[key]; });
     Object.keys(defaults.potions).forEach(key => { if (profile.adventure.potions[key] === undefined) profile.adventure.potions[key] = defaults.potions[key]; });
     if (profile.adventure.migrationVersion !== 1) {
@@ -82,6 +83,15 @@
     const isPushupQuest = /push-?ups?/i.test(questText);
     const numbers = [...questText.matchAll(/\b(\d+)\b/g)].map(match => Number(match[1]));
     const pushups = isPushupQuest ? (numbers.length >= 2 && /sets?/i.test(questText) ? numbers[0] * numbers[1] : numbers[0] || 0) : 0;
+    const isSquatQuest = /squats?/i.test(questText);
+    const squats = isSquatQuest ? (numbers.length >= 2 && /sets?/i.test(questText) ? numbers[0] * numbers[1] : numbers[0] || 0) : 0;
+    const stats = adventure.statistics;
+    stats.workouts += 1;
+    stats.pushups += pushups;
+    stats.squats += squats;
+    stats.minutes += 10;
+    stats.highestStreak = Math.max(stats.highestStreak || 0, player.streak || 0);
+    stats.firstTrackedDate = stats.firstTrackedDate || dateKey();
 
     adventure.mastery.pushups += isPushupQuest ? 1 : 0;
     adventure.contracts.pushups += pushups;
@@ -161,6 +171,8 @@
   function claimEliteBoss(player) {
     const adventure = adventureFor(player);
     if (!adventure.eliteBoss) return false;
+    adventure.eliteBoss.phases = adventure.eliteBoss.phases || ["Finish 30 controlled squats", "Finish 20 push-ups at your pace", "Hold a 60-second plank, split if needed"];
+    if ((Number(adventure.eliteBoss.phase) || 0) < adventure.eliteBoss.phases.length) return false;
     giveRewards(player, { xp: adventure.eliteBoss.xp, gold: adventure.eliteBoss.gold, statPoints: 5, reason: adventure.eliteBoss.name });
     addLoot(player, "Elite Boss Core", "Epic");
     adventure.eliteBoss = null;
@@ -193,9 +205,39 @@
     return true;
   }
 
+  function sendShadowMission(player) {
+    const adventure = adventureFor(player);
+    const shadow = getProfile(player).equippedShadow;
+    if (player.level < 35 || !shadow || adventure.shadowMission) return false;
+    adventure.shadowLevels[shadow] = adventure.shadowLevels[shadow] || 1;
+    adventure.shadowMission = { shadow, readyAt: Date.now() + 30 * 60 * 1000 };
+    return true;
+  }
+
+  function advanceEliteBoss(player) {
+    const boss = adventureFor(player).eliteBoss;
+    if (!boss) return false;
+    boss.phases = boss.phases || ["Finish 30 controlled squats", "Finish 20 push-ups at your pace", "Hold a 60-second plank, split if needed"];
+    boss.phase = Number(boss.phase) || 0;
+    if (boss.phase >= boss.phases.length) return false;
+    boss.phase += 1;
+    return boss.phase >= boss.phases.length ? "defeated" : "phase";
+  }
+
+  function claimShadowMission(player) {
+    const adventure = adventureFor(player);
+    const mission = adventure.shadowMission;
+    if (!mission || Date.now() < mission.readyAt) return false;
+    const level = adventure.shadowLevels[mission.shadow] || 1;
+    giveRewards(player, { xp: 180 + level * 40, gold: 120 + level * 30, reason: `${mission.shadow} Mission` });
+    adventure.shadowLevels[mission.shadow] = level + 1;
+    adventure.shadowMission = null;
+    return true;
+  }
+
   window.HunterProgression.adventureFor = adventureFor;
   window.HunterProgression.login = login;
-  window.HunterProgression.actions = { claimEmergency, openBox, summonEliteBoss, claimEliteBoss, claimRandomEvent, playLottery, usePotion };
+  window.HunterProgression.actions = { claimEmergency, openBox, summonEliteBoss, advanceEliteBoss, claimEliteBoss, claimRandomEvent, playLottery, usePotion, sendShadowMission, claimShadowMission };
   const priorQuestHandler = window.HunterProgression.onQuestCompleted;
   window.HunterProgression.onQuestCompleted = (player, quest) => { priorQuestHandler?.(player, quest); onQuest(player, quest); };
 })();
