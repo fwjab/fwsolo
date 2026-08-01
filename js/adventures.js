@@ -13,13 +13,14 @@
         loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {},
         contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 },
         constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 },
-        comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null,
+        comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null, vitalityRecovery: { period: "", uses: 0 },
         statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" }
       };
     }
-    const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null, statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" } };
+    const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null, vitalityRecovery: { period: "", uses: 0 }, statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" } };
     Object.keys(defaults).forEach(key => { if (profile.adventure[key] === undefined) profile.adventure[key] = defaults[key]; });
     Object.keys(defaults.potions).forEach(key => { if (profile.adventure.potions[key] === undefined) profile.adventure.potions[key] = defaults.potions[key]; });
+    if (!profile.adventure.vitalityRecovery || typeof profile.adventure.vitalityRecovery !== "object") profile.adventure.vitalityRecovery = { period: "", uses: 0 };
     if (profile.adventure.migrationVersion !== 1) {
       const completedQuests = Math.max(0, Number(profile.completedQuests) || 0);
       const estimatedPushupQuests = Math.floor(completedQuests / 6);

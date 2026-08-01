@@ -1512,7 +1512,18 @@ const dailyQuestSignature = "dynamic";
             const expectedLastDaily = previousDay.toISOString().slice(0, 10);
             if (player.lastDaily !== expectedLastDaily) {
               const adventure = window.HunterProgression?.adventureFor?.(player);
-              if (adventure?.streakShielded) {
+              const profile = window.HunterProgression?.getProfile?.(player);
+              const recovery = adventure?.vitalityRecovery;
+              const recoveryPeriod = String(Math.floor(new Date(`${today}T00:00:00`).getTime() / 604800000));
+              const recoveryCapacity = Math.floor(Math.max(0, Number(profile?.stats?.vit) || 0) / 10);
+              if (recovery && recovery.period !== recoveryPeriod) {
+                recovery.period = recoveryPeriod;
+                recovery.uses = 0;
+              }
+              if (recovery && recovery.uses < recoveryCapacity) {
+                recovery.uses += 1;
+                showToast("Vitality Recovery", `${player.name}'s VIT protected this week's streak.`);
+              } else if (adventure?.streakShielded) {
                 adventure.streakShielded = false;
                 showToast("Recovery Potion", `${player.name}'s streak was protected.`);
               } else {
