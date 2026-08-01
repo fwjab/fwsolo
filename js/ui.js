@@ -10,6 +10,7 @@
 
   function renderDailyLogin(players) {
     const today = window.HunterProgression.actions.easternDayKey();
+    const dismissedKey = `nightforgeDailyLoginDismissed:${today}`;
     let popup = document.getElementById("sw-daily-login");
     if (!popup) {
       popup = document.createElement("div");
@@ -19,7 +20,7 @@
     }
     const claimable = players.some(player => window.HunterProgression.adventureFor(player).dailyLoginDate !== today);
     popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · DAILY PRESENCE</p><h2>Daily Login Available</h2><p>Select your hunter to claim today's reward. Resets at midnight Eastern Time.</p><p class="sw-muted">Reward: +120 XP · +75 Gold${players.some(player => player.streak >= 7) ? " · Streak hunters also receive a Recovery Potion" : ""}</p><div class="sw-daily-login-players">${players.map(player => { const claimed = window.HunterProgression.adventureFor(player).dailyLoginDate === today; return `<button data-action="daily-login" data-id="${player.id}" ${claimed ? "disabled" : ""}><b>${escapeHtml(player.name)}</b><span>${claimed ? "Claimed today" : "Claim reward"}</span></button>`; }).join("")}</div>${claimable ? "" : "<p class=\"sw-muted\">Every hunter has claimed today’s reward. Return after midnight EST.</p>"}<button class="sw-daily-login-exit" data-action="daily-close">Exit for now</button></div>`;
-    popup.style.display = claimable ? "grid" : "none";
+    popup.style.display = claimable && localStorage.getItem(dismissedKey) !== "true" ? "grid" : "none";
   }
 
   function openPlayerSession(players) {
@@ -170,7 +171,12 @@
       if (claimed) { saveGame(); window.HunterWorkout.showToast("Daily Login Claimed", `${player.name} received 120 XP and 75 Gold.`); renderConsole(); }
       return;
     }
-    if (action === "daily-close") { document.getElementById("sw-daily-login").style.display = "none"; return; }
+    if (action === "daily-close") {
+      const today = window.HunterProgression.actions.easternDayKey();
+      localStorage.setItem(`nightforgeDailyLoginDismissed:${today}`, "true");
+      document.getElementById("sw-daily-login").style.display = "none";
+      return;
+    }
     if (action === "player-session") {
       localStorage.setItem("nightforgePlayerSession", id);
       document.getElementById("sw-player-session").style.display = "none";
