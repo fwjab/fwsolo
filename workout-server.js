@@ -152,6 +152,12 @@ if (request.method === "GET" && requestPath.endsWith(".js")) {
     return;
 }
 
+    if (request.method === "GET" && requestPath === "/assets/nightforge-hero-original.png") {
+      response.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
+      response.end(fs.readFileSync(path.join(__dirname, "assets", "nightforge-hero-original.png")));
+      return;
+    }
+
 // Serve CSS
 if (request.method === "GET" && requestPath.endsWith(".css")) {
     const filePath = path.resolve(__dirname, `.${requestPath}`);

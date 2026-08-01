@@ -370,6 +370,8 @@
       border: 1px solid rgba(146, 179, 255, .22);
       border-radius: 8px;
       background:
+        linear-gradient(rgba(5, 10, 22, .52), rgba(5, 10, 22, .84)),
+        url("/assets/nightforge-hero-original.png") center / cover,
         radial-gradient(circle at 76% 42%, rgba(62, 175, 255, .24), transparent 19%),
         radial-gradient(circle at 76% 42%, transparent 0 24%, rgba(90, 178, 255, .2) 24.4% 25.2%, transparent 25.6% 33%, rgba(166, 94, 255, .2) 33.4% 34.1%, transparent 34.6%),
         linear-gradient(rgba(7, 15, 29, .58), rgba(7, 15, 29, .84)),
@@ -520,7 +522,13 @@
       display: grid;
       gap: 16px;
       min-width: 0;
+      position: relative;
+      overflow: hidden;
+      border-color: rgba(127, 161, 255, .34);
     }
+
+    .sw-player::before { content: "HUNTER STATUS"; position: absolute; top: 14px; right: -12px; color: rgba(157, 182, 255, .1); font-size: .65rem; font-weight: 800; letter-spacing: .22em; transform: rotate(90deg); pointer-events: none; }
+    .sw-player[data-rank="B"], .sw-player[data-rank="A"], .sw-player[data-rank="S"], .sw-player[data-rank="National"], .sw-player[data-rank="Monarch"] { background: linear-gradient(135deg, rgba(36, 23, 79, .94), rgba(10, 18, 42, .88)); box-shadow: 0 20px 52px rgba(0, 0, 0, .32), inset 0 0 32px rgba(128, 77, 240, .12); }
 
     .sw-player-head {
       display: flex;
@@ -551,6 +559,8 @@
       color: #b8d1ff;
       font-size: .82rem;
       font-weight: 700;
+      border: 1px solid rgba(123, 167, 255, .35);
+      box-shadow: 0 0 18px rgba(87, 141, 255, .18);
     }
 
     .sw-level {
@@ -658,7 +668,13 @@
 
     .sw-form-card {
       padding: 18px;
+      position: relative;
+      overflow: hidden;
     }
+
+    .sw-form-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: linear-gradient(#8de9ff, #8963ff, #ff79c6); }
+    #sw-boss-quest-form { border-color: rgba(213, 153, 255, .48); background: linear-gradient(135deg, rgba(69, 30, 103, .76), rgba(12, 19, 45, .92)); }
+    #sw-boss-quest-form h3::after { content: "RANK LOCKED"; margin-left: 9px; color: #d99aff; font-size: .65rem; letter-spacing: .12em; }
 
     .sw-form-card h3,
     .sw-card h3 {
@@ -708,6 +724,23 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) 120px;
       gap: 10px;
+      position: relative;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .sw-quest:hover { transform: translateX(4px); border-color: rgba(124, 191, 255, .58); }
+    .sw-quest:has(input:checked) { border-color: rgba(99, 227, 197, .54); background: linear-gradient(90deg, rgba(25, 109, 109, .26), rgba(16, 29, 56, .9)); }
+    .sw-quest:has(input:checked) .sw-quest-title { color: #bfffe9; }
+    .sw-quest-boss { border-color: rgba(223, 153, 255, .6); background: linear-gradient(110deg, rgba(102, 42, 139, .35), rgba(12, 20, 49, .9)); }
+    .sw-quest-boss::after { content: "BOSS CONTRACT"; position: absolute; right: 68px; top: 8px; color: #e5bbff; font-size: .6rem; letter-spacing: .13em; font-weight: 800; }
+
+    #sw-auth-form {
+      grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr) auto auto auto;
+      align-items: center;
+    }
+
+    #sw-auth-form input {
+      min-height: 38px;
     }
     .sw-rank-up {
   position: fixed;
@@ -908,8 +941,8 @@
       <div class="sw-brand">
         <div class="sw-sigil" aria-hidden="true">◆</div>
         <div>
-          <h1>Hunter Workout System</h1>
-          <p>Two-player quests, XP, ranks, and daily streaks.</p>
+          <h1>Nightforge Training</h1>
+          <p>Shared hunter quests, XP, ranks, and daily streaks.</p>
         </div>
       </div>
       <div class="sw-actions">
@@ -921,7 +954,7 @@
 
     <section class="sw-hero" aria-label="Workout system overview">
       <div class="sw-system-panel">
-        <p class="sw-kicker">System Online</p>
+        <p class="sw-kicker">Nightforge Online</p>
         <h2>Daily quest accepted.</h2>
         <p class="sw-copy" id="sw-quote">Discipline is the mana bar. Refill it with reps.</p>
         <div class="sw-status-feed" id="sw-status-feed"></div>
@@ -997,7 +1030,7 @@
             Player
             <select id="sw-quest-player"></select>
           </label>
-          <p class="sw-muted">Summon a random bonus challenge. The reward is rolled by the system.</p>
+          <p class="sw-muted">Contracts and XP rewards are locked to the selected hunter's current rank.</p>
           <button class="sw-btn sw-btn-primary" type="submit">Summon Boss Quest</button>
         </div>
       </form>
@@ -1244,50 +1277,17 @@
     ];
 }
 
-const dailyQuestSignature = "dynamic";      const bossQuestBank = [
-        "Boss Quest: 100 push-ups, One Punch Hero trial",
-"Boss Quest: 2 minute plank, Iron Body technique",
-"Boss Quest: 50 squats, Demon Leg training",
-"Boss Quest: 60 jumping jacks, Speed Ninja warmup",
-"Boss Quest: 3 rounds of 15 burpees, War Arc survival",
-"Boss Quest: 5 minute jog, Shinobi endurance run",
-"Boss Quest: 40 lunges, Samurai stance drill",
-"Boss Quest: 20 pull-ups, Titan strength test",
-"Boss Quest: 1 minute wall sit, Stone Body defense",
-"Boss Quest: 30 sit-ups, Spirit core awakening",
-
-"Boss Quest: 4 rounds of 25 mountain climbers, Beast mode rush",
-"Boss Quest: 45 second plank each side, Dual blade balance",
-"Boss Quest: 80 high knees, Lightning step training",
-"Boss Quest: 25 push-ups, Dragon fist initiation",
-"Boss Quest: 50 calf raises, Sky jump training",
-"Boss Quest: 3 minute jog, Wind runner technique",
-"Boss Quest: 30 squat jumps, Explosive aura burst",
-"Boss Quest: 20 dips, Iron arm conditioning",
-"Boss Quest: 2 minute plank, Shadow endurance test",
-"Boss Quest: 40 crunches, Core chakra control",
-
-"Boss Quest: 5 rounds of 10 burpees, Survival gauntlet",
-"Boss Quest: 60 second sprint, Flash step challenge",
-"Boss Quest: 30 push-ups, Hero exam phase one",
-"Boss Quest: 100 jumping jacks, Energy overflow drill",
-"Boss Quest: 20 lunges each leg, Warrior balance training",
-"Boss Quest: 3 minute plank, Absolute defense form",
-"Boss Quest: 50 squats, Earth breaker training",
-"Boss Quest: 25 sit-ups, Inner power awakening",
-"Boss Quest: 4 rounds of 20 high knees, Speed burst combo",
-"Boss Quest: 10 minute walk, Recovery arc training",
-
-"Boss Quest: 30 burpees, Final boss warmup",
-"Boss Quest: 2 minute wall sit, Unbreakable stance",
-"Boss Quest: 40 push-ups, Limit breaker trial",
-"Boss Quest: 60 crunches, Core overload mode",
-"Boss Quest: 20 jump squats, Power surge attack",
-"Boss Quest: 5 minute jog, Endless stamina arc",
-"Boss Quest: 3 rounds of 30 mountain climbers, Beast assault",
-"Boss Quest: 90 second plank, Titan endurance",
-"Boss Quest: 35 lunges, Blade dancer training",
-"Boss Quest: 50 jumping jacks, Aura charge sequence"];
+const dailyQuestSignature = "dynamic";
+      const bossQuestPools = {
+        E: { xp: [70, 90], quests: ["10-minute recovery walk", "2 rounds of 8 squats and 8 wall push-ups", "30-second plank with rest as needed", "5 minutes of gentle stretching"] },
+        D: { xp: [95, 120], quests: ["2 rounds of 12 squats and 10 incline push-ups", "45-second plank with rest as needed", "3 rounds of 20 jumping jacks", "12-minute easy walk or light jog"] },
+        C: { xp: [125, 155], quests: ["3 rounds of 12 push-ups and 15 squats", "60-second plank split into comfortable sets", "3 rounds of 20 mountain climbers", "15-minute steady walk or easy jog"] },
+        B: { xp: [160, 195], quests: ["3 rounds of 15 push-ups and 20 squats", "90-second plank split into comfortable sets", "3 rounds of 12 reverse lunges per side", "20-minute recovery walk with good posture"] },
+        A: { xp: [205, 245], quests: ["4 rounds of 15 push-ups and 20 squats", "2-minute plank split into comfortable sets", "4 rounds of 20 high knees at a controlled pace", "25-minute steady walk or jog"] },
+        S: { xp: [255, 300], quests: ["4 rounds of 18 push-ups and 25 squats", "3 rounds of 45-second plank with recovery", "4 rounds of 15 alternating lunges per side", "25-minute outdoor walk or easy jog"] },
+        National: { xp: [315, 370], quests: ["5 rounds of 15 push-ups and 20 squats", "4 rounds of 45-second plank with recovery", "5 rounds of 20 controlled mountain climbers", "30-minute steady walk, jog, or bike ride"] },
+        Monarch: { xp: [390, 460], quests: ["5 rounds of 18 push-ups and 25 squats", "5 rounds of 45-second plank with recovery", "5 rounds of 15 reverse lunges per side", "35-minute steady walk, jog, or bike ride"] }
+      };
       const defaultState = {
         quoteIndex: 4,
         feed: ["System initialized: party quest board is live."],
@@ -1395,13 +1395,87 @@ const dailyQuestSignature = "dynamic";      const bossQuestBank = [
         return randomInt(20, 40);
       }
 
-      function randomBossXp() {
-        return randomInt(85, 180);
+      function bossContractFor(player) {
+        const rank = rankFor(player.level);
+        const pool = bossQuestPools[rank] || bossQuestPools.E;
+        return {
+          rank,
+          title: `${rank}-Rank Boss Quest: ${pool.quests[randomInt(0, pool.quests.length - 1)]}`,
+          xp: randomInt(pool.xp[0], pool.xp[1])
+        };
+      }
+
+      function questBaseline(player) {
+        const baseline = structuredClone(player);
+        delete baseline.quests;
+        delete baseline.dailyBaseline;
+        delete baseline.claimedQuestKeys;
+        return baseline;
+      }
+
+      function questKey(quest) {
+        return String(quest.title || "").trim().toLowerCase().replace(/\s+/g, " ");
+      }
+
+      function rewardSeedFor(quest) {
+        if (!Number.isInteger(quest.rewardSeed)) quest.rewardSeed = Math.floor(Math.random() * 2_147_483_647);
+        return quest.rewardSeed;
+      }
+
+      function applyQuestRewards(quest, callback) {
+        let seed = rewardSeedFor(quest) || 1;
+        const nativeRandom = Math.random;
+        Math.random = () => {
+          seed = (seed * 48_271) % 2_147_483_647;
+          return seed / 2_147_483_647;
+        };
+        try {
+          callback();
+        } finally {
+          Math.random = nativeRandom;
+        }
+      }
+
+      function progressSnapshot(player) {
+        const snapshot = structuredClone(player);
+        delete snapshot.quests;
+        delete snapshot.dailyBaseline;
+        delete snapshot.claimedQuestKeys;
+        return snapshot;
+      }
+
+      function restoreProgressSnapshot(player, snapshot) {
+        const quests = player.quests;
+        const baseline = player.dailyBaseline;
+        const claimedQuestKeys = player.claimedQuestKeys;
+        Object.keys(player).forEach(key => delete player[key]);
+        Object.assign(player, structuredClone(snapshot));
+        player.quests = quests;
+        player.dailyBaseline = baseline;
+        player.claimedQuestKeys = claimedQuestKeys;
+      }
+
+      function rebuildQuestRewards(player) {
+        if (!player.dailyBaseline) return;
+        const quests = player.quests;
+        const claimedQuestKeys = Array.isArray(player.claimedQuestKeys) ? player.claimedQuestKeys : [];
+        const feedBefore = structuredClone(state.feed);
+        Object.keys(player).forEach(key => delete player[key]);
+        Object.assign(player, structuredClone(player.dailyBaseline));
+        player.quests = quests;
+        player.claimedQuestKeys = [...new Set([...claimedQuestKeys, ...player.quests.filter(quest => quest.done).map(questKey)])];
+        player.quests.filter(quest => quest.done).forEach(quest => {
+          addXp(player, quest.xp, quest.title);
+          applyQuestRewards(quest, () => window.HunterProgression?.onQuestCompleted?.(player, quest));
+        });
+        updateDailyStreak(player, true);
+        state.feed = feedBefore;
       }
 
       function getDailyQuests(player) {
         const today = todayKey();
         if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
+          const isNewQuestDay = player.questDate !== today;
           if (player.questDate && player.questDate !== today && player.lastDaily) {
             const previousDay = new Date(`${today}T00:00:00`);
             previousDay.setDate(previousDay.getDate() - 1);
@@ -1418,6 +1492,7 @@ const dailyQuestSignature = "dynamic";      const bossQuestBank = [
           }
           player.questDate = today;
           player.questSignature = dailyQuestSignature;
+          if (isNewQuestDay) player.claimedQuestKeys = [];
           
 
 const quests = starterQuestsFor(player);
@@ -1429,10 +1504,14 @@ if (profile?.upgrades.extraDailyQuest) {
   });
 }
 
-player.quests = quests.map((quest, index) => ({
+        player.dailyBaseline = questBaseline(player);
+        player.quests = quests.map((quest, index) => ({
     id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
     title: quest.title,
     xp: quest.xp,
+    rewardSeed: Math.floor(Math.random() * 2_147_483_647),
+    rewardSnapshot: null,
+    completedOrder: 0,
     done: false,
     custom: false
 }));
@@ -1479,32 +1558,51 @@ player.quests = quests.map((quest, index) => ({
         const player = state.players.find(item => item.id === playerId);
         const quest = getDailyQuests(player).find(item => item.id === questId);
         if (!quest || quest.done === checked) return;
-        quest.done = checked;
-        if (checked) {
-          addXp(player, quest.xp, quest.title);
-          window.HunterProgression?.onQuestCompleted?.(player, quest);
-          updateDailyStreak(player);
-          pushFeed(`${player.name} cleared quest: ${quest.title}`);
-        } else {
-          player.xp = Math.max(0, player.xp - quest.xp);
-          player.totalXp = Math.max(0, player.totalXp - quest.xp);
-          player.log.unshift({
-            text: `Quest unchecked: ${quest.title}`,
-            date: new Date().toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
-          });
+        const key = questKey(quest);
+        const alreadyCleared = (player.claimedQuestKeys || []).includes(key) || getDailyQuests(player).some(item => item.id !== quest.id && item.done && questKey(item) === key);
+        if (checked && alreadyCleared) {
+          showToast("Already Cleared", "That exact quest can only count once per day.");
+          render();
+          return;
         }
+        player.claimedQuestKeys = Array.isArray(player.claimedQuestKeys) ? player.claimedQuestKeys : [];
+        if (checked) {
+          player.claimedQuestKeys.push(key);
+          quest.done = true;
+          if (quest.rewardSnapshot?.after) {
+            restoreProgressSnapshot(player, quest.rewardSnapshot.after);
+          } else {
+            quest.rewardSnapshot = { before: progressSnapshot(player) };
+            addXp(player, quest.xp, quest.title);
+            applyQuestRewards(quest, () => window.HunterProgression?.onQuestCompleted?.(player, quest));
+            updateDailyStreak(player);
+            quest.rewardSnapshot.after = progressSnapshot(player);
+          }
+          quest.completedOrder = Math.max(0, ...getDailyQuests(player).map(item => item.completedOrder || 0)) + 1;
+        } else {
+          const latestOrder = Math.max(...getDailyQuests(player).filter(item => item.done).map(item => item.completedOrder || 0));
+          if (!quest.rewardSnapshot?.before || quest.completedOrder !== latestOrder) {
+            showToast("Uncheck Latest First", "Remove the most recently completed quest first so all rewards stay exact.");
+            render();
+            return;
+          }
+          quest.done = false;
+          player.claimedQuestKeys = player.claimedQuestKeys.filter(item => item !== key);
+          restoreProgressSnapshot(player, quest.rewardSnapshot.before);
+        }
+        pushFeed(checked ? `${player.name} cleared quest: ${quest.title}` : `${player.name} removed quest credit: ${quest.title}`);
         saveState();
         render();
       }
 
-      function updateDailyStreak(player) {
+      function updateDailyStreak(player, silent = false) {
         const quests = getDailyQuests(player);
         const allDone = quests.every(quest => quest.done);
         if (allDone && player.lastDaily !== todayKey()) {
           player.streak += 1;
           player.lastDaily = todayKey();
           addXp(player, 75, "Daily quest bonus");
-          pushFeed(`${player.name} completed the full daily quest and gained a streak bonus.`);
+          if (!silent) pushFeed(`${player.name} completed the full daily quest and gained a streak bonus.`);
         }
       }
 
@@ -1561,7 +1659,7 @@ player.quests = quests.map((quest, index) => ({
             : `<div class="sw-log-item">No achievements logged yet.</div>`;
 
           return `
-            <article class="sw-player">
+            <article class="sw-player" data-rank="${rankFor(player.level)}">
               <div class="sw-player-head">
                 <div class="sw-name-wrap">
                   <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
@@ -1585,7 +1683,7 @@ player.quests = quests.map((quest, index) => ({
 
               <div class="sw-quest-list">
                 ${quests.map(quest => `
-                  <label class="sw-quest">
+                  <label class="sw-quest ${quest.boss ? "sw-quest-boss" : ""}">
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""}>
                     <span>
                       <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
@@ -1659,18 +1757,19 @@ player.quests = quests.map((quest, index) => ({
       document.getElementById("sw-boss-quest-form").addEventListener("submit", event => {
         event.preventDefault();
         const player = state.players.find(item => item.id === document.getElementById("sw-quest-player").value);
-        const title = bossQuestBank[randomInt(0, bossQuestBank.length - 1)];
         const profile = window.HunterProgression?.getProfile?.(player);
-        const xp = randomBossXp() + ((profile?.upgrades.bossChance || 0) * 10);
+        const contract = bossContractFor(player);
+        const xp = contract.xp + ((profile?.upgrades.bossChance || 0) * 10);
         getDailyQuests(player).push({
           id: `${todayKey()}-custom-${Math.random().toString(16).slice(2)}`,
-          title,
+          title: contract.title,
           xp,
           done: false,
-          boss: true
+          boss: true,
+          bossRank: contract.rank
         });
-        pushFeed(`${player.name} summoned ${title} for ${xp} XP.`);
-        showToast("Boss Quest Summoned", `${title} appeared for ${player.name}. Reward: ${xp} XP.`);
+        pushFeed(`${player.name} summoned a ${contract.rank}-Rank Boss Quest for ${xp} XP.`);
+        showToast(`${contract.rank}-Rank Boss Quest`, `${player.name}'s contract is locked at ${xp} XP.`);
         saveState();
         render();
       });

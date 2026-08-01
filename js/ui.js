@@ -112,7 +112,7 @@
     if (action === "shadow") return finish(equipShadow(player, id), "Shadow equipped.", "Shadow unavailable.");
     if (action === "theme") return finish(equipTheme(player, id), "Theme equipped.", "Theme unavailable.");
     if (action === "upgrade") return finish(buyUpgrade(player, id), "Upgrade applied.", "Not enough gold or upgrade limit reached.");
-    if (action === "use-item") { const used = removeItem(player, id); if (used) { player.quests = []; player.questDate = ""; } return finish(used, "Quest Refresh used. A new quest list has been issued.", "Item unavailable."); }
+    if (action === "use-item") { const used = removeItem(player, id); if (used) { player.quests = []; } return finish(used, "Quest Refresh used. A new quest list has been issued. Cleared quests remain locked for today.", "Item unavailable."); }
     if (action === "emergency") return finish(window.HunterProgression.actions.claimEmergency(player), "Emergency quest cleared.", "No emergency quest active.");
     if (action === "elite-summon") return finish(window.HunterProgression.actions.summonEliteBoss(player), "Elite boss summoned.", "Elite bosses unlock at Level 10.");
     if (action === "elite-claim") return finish(window.HunterProgression.actions.claimEliteBoss(player), "Elite boss defeated.", "No elite boss active.");
