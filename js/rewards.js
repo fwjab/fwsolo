@@ -7,8 +7,9 @@ function giveGold(player, amount, reason = "System reward") {
 
 function giveXP(player, amount, reason = "System reward") {
   const profile = getProfile(player);
-  const boostedAmount = Math.round((Number(amount) || 0) * (1 + profile.upgrades.xpBoost * 0.05 + Math.max(0, profile.stats.str - 10) * 0.01));
-  window.HunterWorkout?.addXp(player, boostedAmount, reason);
+  const rankMultiplier = window.HunterProgression.rankXpMultiplier?.(player) || 1;
+  const boostedAmount = Math.round((Number(amount) || 0) * rankMultiplier * (1 + profile.upgrades.xpBoost * 0.05 + Math.max(0, profile.stats.str - 10) * 0.01));
+  window.HunterWorkout?.addXp(player, boostedAmount, reason, true);
 }
 
 function giveStatPoint(player, amount = 1) {

@@ -64,6 +64,18 @@ function getProfile(player) {
 window.HunterProgression.getProfile = getProfile;
 window.HunterProgression.rankOrder = ["E", "D", "C", "B", "A", "S", "National", "Monarch"];
 
+window.HunterProgression.rankXpMultiplier = player => {
+  const level = Math.max(1, Number(player?.level) || 1);
+  if (level >= 35) return 0.48;
+  if (level >= 30) return 0.54;
+  if (level >= 25) return 0.60;
+  if (level >= 20) return 0.68;
+  if (level >= 15) return 0.76;
+  if (level >= 10) return 0.84;
+  if (level >= 5) return 0.92;
+  return 1;
+};
+
 window.HunterProgression.allocateStat = (player, statName) => {
   const profile = getProfile(player);
   if (!Object.prototype.hasOwnProperty.call(profile.stats, statName) || profile.statPoints < 1) return false;

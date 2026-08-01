@@ -124,9 +124,10 @@
 
   function renderProfile(player) {
     const profile = getProfile(player);
+    const rankEfficiency = Math.round((window.HunterProgression.rankXpMultiplier(player) || 1) * 100);
     const effects = { str: "+1% XP per point above 10", agi: "+0.5% gold per point above 10", end: "Faster Shadow missions and stronger boss damage", vit: "One automatic weekly streak-save per 10 VIT" };
     const attributes = Object.entries(profile.stats).map(([key, value]) => `<span><b>${value}</b>${key.toUpperCase()}<button data-action="stat" data-id="${key}" ${profile.statPoints < 1 ? "disabled" : ""}>+</button><small>${effects[key]}</small></span>`).join("");
-    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("Stat Points", profile.statPoints)}${stat("Shadow", profile.equippedShadow || "None")}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Spend ${profile.statPoints} Attribute Points</p><h3>Hunter Attributes</h3><div class="sw-mini-stats sw-attribute-grid">${attributes}</div><p class="sw-muted">Strength scales XP, Agility scales gold, and Endurance improves boss and Shadow Army performance.</p></div></div>`;
+    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("XP Efficiency", `${rankEfficiency}%`)}${stat("Shadow", profile.equippedShadow || "None")}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Spend ${profile.statPoints} Attribute Points</p><h3>Hunter Attributes</h3><div class="sw-mini-stats sw-attribute-grid">${attributes}</div><p class="sw-muted">Higher ranks earn less XP per reward, while Strength, Agility, and Endurance scale from this hunter’s own stats.</p></div></div>`;
   }
 
   function renderConsole(tab = activeTab) {

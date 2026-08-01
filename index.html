@@ -1576,8 +1576,9 @@ if (profile?.upgrades.extraDailyQuest) {
         return player.quests;
       }
 
-      function addXp(player, xp, reason) {
-        xp = Math.max(0, Math.round(Number(xp) || 0));
+      function addXp(player, xp, reason, alreadyRankScaled = false) {
+        const rankMultiplier = alreadyRankScaled ? 1 : (window.HunterProgression?.rankXpMultiplier?.(player) || 1);
+        xp = Math.max(0, Math.round((Number(xp) || 0) * rankMultiplier));
         player.xp += xp;
         player.totalXp += xp;
         if (xp) { showXpFloat(xp); playSystemSound("xp"); }
