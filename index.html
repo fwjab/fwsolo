@@ -828,6 +828,13 @@
     }
 
     .sw-xp-float { position: fixed; z-index: 90; left: 50%; top: 46%; color: #aef6ff; font-weight: 900; font-size: 1.35rem; text-shadow: 0 0 18px #37c8ff; pointer-events: none; animation: swXpFloat 1.25s ease-out forwards; }
+    .sw-daily-login { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; padding: 20px; background: rgba(2, 5, 15, .76); backdrop-filter: blur(8px); }
+    .sw-daily-login-card { width: min(510px, 100%); padding: 26px; border: 1px solid rgba(115, 205, 255, .58); border-radius: 18px; background: radial-gradient(circle at top right, rgba(112, 67, 229, .35), transparent 44%), linear-gradient(135deg, #101935, #070a1a); box-shadow: 0 0 58px rgba(66, 173, 255, .22); }
+    .sw-daily-login-card h2 { margin: 4px 0 8px; font-size: 2rem; }
+    .sw-daily-login-card p { color: #bed0ed; }
+    .sw-daily-login-players { display: grid; gap: 10px; margin-top: 18px; }
+    .sw-daily-login-players button { display: flex; justify-content: space-between; align-items: center; padding: 13px 15px; border: 1px solid rgba(138, 193, 255, .34); border-radius: 10px; color: #f1f8ff; background: rgba(255, 255, 255, .05); cursor: pointer; }
+    .sw-daily-login-players button:not(:disabled):hover { border-color: #8eeeff; background: rgba(73, 170, 255, .18); }
     @keyframes swXpFloat { from { opacity: 0; transform: translate(-50%, 10px) scale(.8); } 20% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -90px) scale(1.15); } }
 
     .sw-system-console {

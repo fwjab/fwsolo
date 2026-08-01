@@ -8,6 +8,20 @@
   const cards = (items, render) => `<div class="sw-system-list">${items.map(render).join("")}</div>`;
   const card = (title, body, action = "") => `<article><div><h3>${title}</h3>${body ? `<small>${body}</small>` : ""}</div>${action}</article>`;
 
+  function renderDailyLogin(players) {
+    const today = window.HunterProgression.actions.easternDayKey();
+    let popup = document.getElementById("sw-daily-login");
+    if (!popup) {
+      popup = document.createElement("div");
+      popup.id = "sw-daily-login";
+      popup.className = "sw-daily-login";
+      document.body.append(popup);
+    }
+    const claimable = players.some(player => window.HunterProgression.adventureFor(player).dailyLoginDate !== today);
+    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · DAILY PRESENCE</p><h2>Daily Login Available</h2><p>Select your hunter to claim today's reward. Resets at midnight Eastern Time.</p><p class="sw-muted">Reward: +120 XP · +75 Gold${players.some(player => player.streak >= 7) ? " · Streak hunters also receive a Recovery Potion" : ""}</p><div class="sw-daily-login-players">${players.map(player => { const claimed = window.HunterProgression.adventureFor(player).dailyLoginDate === today; return `<button data-action="daily-login" data-id="${player.id}" ${claimed ? "disabled" : ""}><b>${escapeHtml(player.name)}</b><span>${claimed ? "Claimed today" : "Claim reward"}</span></button>`; }).join("")}</div>${claimable ? "" : "<p class=\"sw-muted\">Every hunter has claimed today’s reward. Return after midnight EST.</p>"}</div>`;
+    popup.style.display = claimable ? "grid" : "none";
+  }
+
   function renderShadows(player) {
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
@@ -106,6 +120,7 @@
     if (!root || !window.HunterWorkout) return;
     const players = window.HunterWorkout.players();
     if (!players.length) return;
+    renderDailyLogin(players);
     if (!players.some(item => item.id === selectedPlayerId)) selectedPlayerId = players[0].id;
     const player = currentPlayer();
     const profile = getProfile(player);
@@ -134,7 +149,14 @@
   document.addEventListener("change", event => { if (event.target.id === "sw-console-player") { selectedPlayerId = event.target.value; renderConsole(); } });
   document.addEventListener("click", event => {
     const tab = event.target.dataset.consoleTab; if (tab) return renderConsole(tab);
-    const action = event.target.dataset.action; if (!action) return; const player = currentPlayer(); const id = event.target.dataset.id;
+    const action = event.target.dataset.action; if (!action) return; const id = event.target.dataset.id;
+    if (action === "daily-login") {
+      const player = window.HunterWorkout.players().find(item => item.id === id);
+      const claimed = player && window.HunterProgression.actions.claimDailyLogin(player);
+      if (claimed) { saveGame(); window.HunterWorkout.showToast("Daily Login Claimed", `${player.name} received 120 XP and 75 Gold.`); renderConsole(); }
+      return;
+    }
+    const player = currentPlayer();
     if (action === "buy") return finish(buyItem(player, id) || (() => { const cosmetic = cosmetics.find(item => item.name === id); const profile = getProfile(player); if (!cosmetic || profile.gold < cosmetic.price || profile.themes.includes(cosmetic.name)) return false; profile.gold -= cosmetic.price; profile.themes.push(cosmetic.name); return equipTheme(player, cosmetic.name); })(), "Purchase complete.", "Not enough gold or already owned.");
     if (action === "title") return finish(equipTitle(player, id), "Title equipped.", "That title is still locked.");
     if (action === "summon") return finish(summonShadow(player, id), "Shadow added to your army.", "Not enough gold or fragments.");

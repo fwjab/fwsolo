@@ -13,11 +13,11 @@
         loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {},
         contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 },
         constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 },
-        comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null, vitalityRecovery: { period: "", uses: 0 },
+        comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", dailyLoginDate: "", shadowLevels: {}, shadowMission: null, vitalityRecovery: { period: "", uses: 0 },
         statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" }
       };
     }
-    const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", shadowLevels: {}, shadowMission: null, vitalityRecovery: { period: "", uses: 0 }, statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" } };
+    const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "", dailyLoginDate: "", shadowLevels: {}, shadowMission: null, vitalityRecovery: { period: "", uses: 0 }, statistics: { workouts: 0, pushups: 0, squats: 0, minutes: 0, highestStreak: 0, firstTrackedDate: "" } };
     Object.keys(defaults).forEach(key => { if (profile.adventure[key] === undefined) profile.adventure[key] = defaults[key]; });
     Object.keys(defaults.potions).forEach(key => { if (profile.adventure.potions[key] === undefined) profile.adventure.potions[key] = defaults.potions[key]; });
     if (!profile.adventure.vitalityRecovery || typeof profile.adventure.vitalityRecovery !== "object") profile.adventure.vitalityRecovery = { period: "", uses: 0 };
@@ -206,6 +206,22 @@
     return true;
   }
 
+  function easternDayKey() {
+    const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+    const get = type => parts.find(item => item.type === type)?.value;
+    return `${get("year")}-${get("month")}-${get("day")}`;
+  }
+
+  function claimDailyLogin(player) {
+    const adventure = adventureFor(player);
+    const today = easternDayKey();
+    if (adventure.dailyLoginDate === today) return false;
+    adventure.dailyLoginDate = today;
+    giveRewards(player, { xp: 120, gold: 75, reason: "Daily Login · EST" });
+    if ((Number(player.streak) || 0) >= 7) adventure.potions.recovery += 1;
+    return true;
+  }
+
   function sendShadowMission(player) {
     const adventure = adventureFor(player);
     const shadow = getProfile(player).equippedShadow;
@@ -239,7 +255,7 @@
 
   window.HunterProgression.adventureFor = adventureFor;
   window.HunterProgression.login = login;
-  window.HunterProgression.actions = { claimEmergency, openBox, summonEliteBoss, advanceEliteBoss, claimEliteBoss, claimRandomEvent, playLottery, usePotion, sendShadowMission, claimShadowMission };
+  window.HunterProgression.actions = { claimEmergency, openBox, summonEliteBoss, advanceEliteBoss, claimEliteBoss, claimRandomEvent, playLottery, usePotion, sendShadowMission, claimShadowMission, claimDailyLogin, easternDayKey };
   const priorQuestHandler = window.HunterProgression.onQuestCompleted;
   window.HunterProgression.onQuestCompleted = (player, quest) => { priorQuestHandler?.(player, quest); onQuest(player, quest); };
 })();
