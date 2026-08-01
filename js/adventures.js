@@ -19,6 +19,22 @@
     const defaults = { dailyFortune: null, randomEvent: null, emergency: null, eliteBoss: null, loot: [], boxes: [], potions: { recovery: 0, doubleXp: 0, doubleXpArmed: false }, shadowFragments: {}, contracts: { pushups: 0, totalPushups: 0 }, mastery: { pushups: 0 }, constellations: [], awakenings: [], hidden: { earlyBird: 0, perfectDays: 0 }, comboDays: 0, comboDate: "", headquarters: 0, loginDate: "" };
     Object.keys(defaults).forEach(key => { if (profile.adventure[key] === undefined) profile.adventure[key] = defaults[key]; });
     Object.keys(defaults.potions).forEach(key => { if (profile.adventure.potions[key] === undefined) profile.adventure.potions[key] = defaults.potions[key]; });
+    if (profile.adventure.migrationVersion !== 1) {
+      const completedQuests = Math.max(0, Number(profile.completedQuests) || 0);
+      const estimatedPushupQuests = Math.floor(completedQuests / 6);
+      profile.adventure.mastery.pushups = Math.max(profile.adventure.mastery.pushups || 0, estimatedPushupQuests);
+      profile.adventure.contracts.pushups = Math.max(profile.adventure.contracts.pushups || 0, estimatedPushupQuests * 45);
+      profile.adventure.contracts.totalPushups = Math.max(profile.adventure.contracts.totalPushups || 0, estimatedPushupQuests * 45);
+      profile.adventure.shadowFragments["Iron Knight"] = Math.max(profile.adventure.shadowFragments["Iron Knight"] || 0, Math.floor(completedQuests / 8));
+      profile.adventure.shadowFragments["Shadow Wolf"] = Math.max(profile.adventure.shadowFragments["Shadow Wolf"] || 0, Math.floor(completedQuests / 12));
+      profile.adventure.shadowFragments["Shadow Mage"] = Math.max(profile.adventure.shadowFragments["Shadow Mage"] || 0, Math.floor(completedQuests / 20));
+      profile.adventure.shadowFragments["Shadow Dragon"] = Math.max(profile.adventure.shadowFragments["Shadow Dragon"] || 0, Math.floor(completedQuests / 50));
+      if (completedQuests >= 50 && profile.adventure.boxes.length === 0) profile.adventure.boxes.push("Rare");
+      if (completedQuests >= 100 && profile.adventure.contracts.pushups >= 250 && !profile.themes.includes("Golden King")) profile.themes.push("Golden King");
+      profile.adventure.migrationVersion = 1;
+      window.HunterProgression.adventureMigrationOccurred = true;
+      unlockMilestones(player);
+    }
     return profile.adventure;
   }
 

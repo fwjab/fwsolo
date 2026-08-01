@@ -98,7 +98,8 @@
   window.HunterProgression.renderConsole = renderConsole;
   window.addEventListener("hunter:state-updated", () => renderConsole());
   loadGame();
+  window.HunterProgression.adventureMigrationOccurred = false;
   const loggedIn = window.HunterWorkout.players().map(window.HunterProgression.login).some(Boolean);
-  if (loggedIn) saveGame();
+  if (loggedIn || window.HunterProgression.adventureMigrationOccurred) saveGame();
   renderConsole();
 })();
