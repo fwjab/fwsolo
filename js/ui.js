@@ -22,6 +22,18 @@
     popup.style.display = claimable ? "grid" : "none";
   }
 
+  function openPlayerSession(players) {
+    let popup = document.getElementById("sw-player-session");
+    if (!popup) {
+      popup = document.createElement("div");
+      popup.id = "sw-player-session";
+      popup.className = "sw-daily-login sw-player-session";
+      document.body.append(popup);
+    }
+    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · HUNTER SESSION</p><h2>Enter Hunter Console</h2><p>Choose your hunter. You can update only your own quests, progression, and achievements. Other hunters remain visible as read-only records.</p><div class="sw-daily-login-players">${players.map(player => `<button data-action="player-session" data-id="${player.id}"><b>${escapeHtml(player.name)}</b><span>Enter console</span></button>`).join("")}</div></div>`;
+    popup.style.display = "grid";
+  }
+
   function renderShadows(player) {
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
@@ -120,6 +132,8 @@
     if (!root || !window.HunterWorkout) return;
     const players = window.HunterWorkout.players();
     if (!players.length) return;
+    const activeSession = localStorage.getItem("nightforgePlayerSession");
+    if (!players.some(player => player.id === activeSession)) openPlayerSession(players);
     renderDailyLogin(players);
     if (!players.some(item => item.id === selectedPlayerId)) selectedPlayerId = players[0].id;
     const player = currentPlayer();
@@ -157,6 +171,13 @@
       return;
     }
     if (action === "daily-close") { document.getElementById("sw-daily-login").style.display = "none"; return; }
+    if (action === "player-session") {
+      localStorage.setItem("nightforgePlayerSession", id);
+      document.getElementById("sw-player-session").style.display = "none";
+      window.HunterWorkout.render();
+      renderConsole();
+      return;
+    }
     const player = currentPlayer();
     if (action === "buy") return finish(buyItem(player, id) || (() => { const cosmetic = cosmetics.find(item => item.name === id); const profile = getProfile(player); if (!cosmetic || profile.gold < cosmetic.price || profile.themes.includes(cosmetic.name)) return false; profile.gold -= cosmetic.price; profile.themes.push(cosmetic.name); return equipTheme(player, cosmetic.name); })(), "Purchase complete.", "Not enough gold or already owned.");
     if (action === "title") return finish(equipTitle(player, id), "Title equipped.", "That title is still locked.");
@@ -196,6 +217,7 @@
     window.setTimeout(() => overlay.remove(), 3000);
   };
   window.addEventListener("hunter:state-updated", () => renderConsole());
+  document.getElementById("sw-session-open")?.addEventListener("click", () => openPlayerSession(window.HunterWorkout.players()));
   loadGame();
   window.HunterProgression.adventureMigrationOccurred = false;
   window.HunterProgression.worldMigrationOccurred = false;
