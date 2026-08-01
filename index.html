@@ -669,6 +669,10 @@
       white-space: nowrap;
     }
 
+    .sw-plank-timer { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: #aef4ff; font-size: .78rem; }
+    .sw-plank-timer strong { min-width: 42px; font-variant-numeric: tabular-nums; }
+    .sw-plank-timer button { border: 1px solid rgba(109, 211, 255, .44); border-radius: 6px; color: #dff8ff; background: rgba(72, 161, 255, .12); cursor: pointer; }
+
     .sw-log {
       display: grid;
       gap: 8px;
@@ -1145,6 +1149,7 @@
       const storageKey = "hunterWorkoutSystem.v1";
       const serverMode = location.protocol !== "file:";
       const maxPlayers = 10;
+      const plankTimers = new Map();
       let lastSyncedState = "";
       const todayKey = () => {
   const now = new Date();
@@ -1721,6 +1726,25 @@ if (profile?.upgrades.extraDailyQuest) {
           .replaceAll("'", "&#039;");
       }
 
+      function formatTimer(seconds) { return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
+      function updatePlankTimer(key) { const timer = plankTimers.get(key); const label = document.querySelector(`[data-plank-time="${key}"]`); if (label && timer) label.textContent = formatTimer(timer.remaining); }
+      function togglePlankTimer(playerId, questId, seconds) {
+        const key = `${playerId}-${questId}`; let timer = plankTimers.get(key);
+        if (!timer) { timer = { remaining: seconds, interval: null }; plankTimers.set(key, timer); }
+        if (timer.interval) { clearInterval(timer.interval); timer.interval = null; return; }
+        timer.interval = setInterval(() => { timer.remaining = Math.max(0, timer.remaining - 1); updatePlankTimer(key); if (!timer.remaining) { clearInterval(timer.interval); timer.interval = null; playSystemSound("rank"); showToast("Plank Complete", "Timer complete. Mark the quest when you finish your set."); } }, 1000);
+      }
+      function resetPlankTimer(playerId, questId, seconds) { const key = `${playerId}-${questId}`; const timer = plankTimers.get(key); if (timer?.interval) clearInterval(timer.interval); plankTimers.set(key, { remaining: seconds, interval: null }); updatePlankTimer(key); }
+
+      function escapeHtmlOld(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
       function render() {
         const playersRoot = document.getElementById("sw-players");
         const achievementSelect = document.getElementById("sw-achievement-player");
@@ -1772,6 +1796,7 @@ if (profile?.upgrades.extraDailyQuest) {
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""} ${isActivePlayer ? "" : "disabled"}>
                     <span>
                       <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
+                      ${/planks?/i.test(quest.title) ? (() => { const seconds = Number((quest.title.match(/(\d+)\s*second/i) || [])[1]) || 30; const key = `${player.id}-${quest.id}`; const remaining = plankTimers.get(key)?.remaining ?? seconds; return `<span class="sw-plank-timer"><strong data-plank-time="${key}">${formatTimer(remaining)}</strong><button type="button" data-plank-toggle data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Start / Pause</button><button type="button" data-plank-reset data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Reset</button></span>`; })() : ""}
                       <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
                     </span>
                     <span class="sw-xp-pill">+${quest.xp}</span>
@@ -1812,6 +1837,15 @@ if (profile?.upgrades.extraDailyQuest) {
             completeQuest(event.currentTarget.dataset.player, event.currentTarget.dataset.quest, event.currentTarget.checked);
           });
         });
+
+        document.querySelectorAll("[data-plank-toggle]").forEach(button => button.addEventListener("click", event => {
+          const element = event.currentTarget;
+          togglePlankTimer(element.dataset.player, element.dataset.quest, Number(element.dataset.seconds));
+        }));
+        document.querySelectorAll("[data-plank-reset]").forEach(button => button.addEventListener("click", event => {
+          const element = event.currentTarget;
+          resetPlankTimer(element.dataset.player, element.dataset.quest, Number(element.dataset.seconds));
+        }));
 
         document.querySelectorAll("[data-name-for]").forEach(nameEl => {
           nameEl.addEventListener("blur", event => {
