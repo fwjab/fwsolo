@@ -1,6 +1,0 @@
-function saveGame(){
-
-}
-function loadGame(){
-
-}

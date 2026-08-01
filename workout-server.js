@@ -10,12 +10,18 @@ const adminPasscode = "j@bultra";
 const maxPlayers = 10;
 const appFile = path.join(__dirname, "index.html");
 const saveFile = path.join(__dirname, "workout-save.json");
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("✅ Connected to MongoDB"))
-.catch((err) => console.error("❌ MongoDB connection error:", err));
+let useMongo = Boolean(process.env.MONGO_URI);
+
+if (useMongo) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch(error => {
+      useMongo = false;
+      console.error("MongoDB connection failed; using local save instead:", error.message);
+    });
+} else {
+  console.log("No MONGO_URI set; using local workout-save.json.");
+}
 const defaultState = {
   quoteIndex: 4,
   feed: ["Shared party system initialized."],
@@ -26,7 +32,17 @@ const defaultState = {
 };
 
 async function readState() {
-  let state = await GameState.findOne();
+  if (!useMongo) {
+    try {
+      const state = JSON.parse(fs.readFileSync(saveFile, "utf8"));
+      if (state && Array.isArray(state.players)) return state;
+    } catch (error) {
+      if (error.code !== "ENOENT") console.error("Could not read local save:", error.message);
+    }
+    return structuredClone(defaultState);
+  }
+
+  const state = await GameState.findOne();
 
   if (!state) {
     state = await GameState.create(defaultState);
@@ -36,6 +52,11 @@ async function readState() {
 }
 
 async function writeState(state) {
+  if (!useMongo) {
+    fs.writeFileSync(saveFile, JSON.stringify(state, null, 2));
+    return;
+  }
+
   await GameState.findByIdAndUpdate(
     state._id,
     state,
@@ -112,11 +133,12 @@ function readBody(request) {
 
 const server = http.createServer(async (request, response) => {
   try {
+    const requestPath = new URL(request.url, `http://${request.headers.host || "localhost"}`).pathname;
     // Serve JavaScript
-if (request.method === "GET" && request.url.endsWith(".js")) {
-    const filePath = path.join(__dirname, request.url.slice(1));
+if (request.method === "GET" && requestPath.endsWith(".js")) {
+    const filePath = path.resolve(__dirname, `.${requestPath}`);
 
-    if (fs.existsSync(filePath)) {
+    if (filePath.startsWith(`${__dirname}${path.sep}`) && fs.existsSync(filePath)) {
         response.writeHead(200, {
             "Content-Type": "application/javascript; charset=utf-8",
             "Cache-Control": "no-store"
@@ -131,10 +153,10 @@ if (request.method === "GET" && request.url.endsWith(".js")) {
 }
 
 // Serve CSS
-if (request.method === "GET" && request.url.endsWith(".css")) {
-    const filePath = path.join(__dirname, request.url.slice(1));
+if (request.method === "GET" && requestPath.endsWith(".css")) {
+    const filePath = path.resolve(__dirname, `.${requestPath}`);
 
-    if (fs.existsSync(filePath)) {
+    if (filePath.startsWith(`${__dirname}${path.sep}`) && fs.existsSync(filePath)) {
         response.writeHead(200, {
             "Content-Type": "text/css; charset=utf-8",
             "Cache-Control": "no-store"
