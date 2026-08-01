@@ -676,7 +676,7 @@
     .sw-log {
       display: grid;
       gap: 8px;
-      max-height: 210px;
+      max-height: 124px;
       overflow: auto;
       padding-right: 4px;
     }
@@ -846,12 +846,33 @@
 
     .sw-system-console {
       margin-top: 24px;
+      scroll-margin-top: 86px;
       padding: 24px;
       border: 1px solid rgba(151, 99, 255, 0.38);
       border-radius: 20px;
       background: linear-gradient(135deg, rgba(19, 11, 42, 0.96), rgba(9, 13, 30, 0.98));
       box-shadow: 0 0 36px rgba(102, 64, 220, 0.16);
     }
+
+    .sw-task-dock { position: sticky; top: 10px; z-index: 25; display: flex; align-items: center; gap: 9px; margin: 18px 0; padding: 10px; overflow-x: auto; border: 1px solid rgba(116, 198, 255, .34); border-radius: 13px; background: linear-gradient(90deg, rgba(9, 18, 44, .96), rgba(32, 16, 72, .93)); box-shadow: 0 12px 30px rgba(0, 0, 0, .25); backdrop-filter: blur(13px); }
+    .sw-task-dock-title { flex: 0 0 auto; color: #aeeaff; font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+    .sw-task-dock button { flex: 0 0 auto; border: 1px solid rgba(154, 126, 255, .45); border-radius: 8px; padding: 8px 10px; color: #edf7ff; background: rgba(92, 65, 179, .2); font: inherit; font-size: .78rem; cursor: pointer; }
+    .sw-task-dock button:hover { border-color: #86e7ff; background: rgba(57, 157, 255, .2); box-shadow: 0 0 15px rgba(86, 197, 255, .22); }
+    .sw-rank-scale { display: grid; grid-template-columns: repeat(8, minmax(25px, 1fr)); gap: 4px; margin: 12px 0; }
+    .sw-rank-tier { display: grid; place-items: center; min-height: 30px; border: 1px solid rgba(150, 174, 255, .2); border-radius: 7px; color: #aebbd3; background: rgba(255,255,255,.035); font-size: .66rem; font-weight: 900; }
+    .sw-rank-tier.is-populated { color: #f4f7ff; border-color: rgba(126, 215, 255, .55); background: linear-gradient(135deg, rgba(86, 204, 255, .25), rgba(118, 73, 234, .28)); box-shadow: 0 0 12px rgba(89, 199, 255, .16); }
+    .sw-ladder-hunters { display: grid; gap: 8px; }
+    .sw-ladder-hunter { display: grid; grid-template-columns: 25px 29px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px; border-left: 2px solid rgba(124, 193, 255, .56); background: rgba(255,255,255,.035); }
+    .sw-ladder-position { color: #8fb8e9; font-size: .75rem; font-weight: 800; }
+    .sw-ladder-rank { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: #f5f4ff; background: linear-gradient(135deg, #355aab, #5b32ab); font-weight: 900; font-size: .72rem; }
+    .sw-ladder-info { min-width: 0; display: grid; gap: 2px; }
+    .sw-ladder-info b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .84rem; }
+    .sw-ladder-info small { overflow: hidden; color: #aebbd3; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }
+    .sw-ladder-theme { max-width: 74px; overflow: hidden; color: #bca8ff; font-size: .62rem; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+    .sw-ladder-hunter[data-rank="Monarch"] { border-left-color: #ff78cb; background: linear-gradient(90deg, rgba(167, 47, 133, .2), rgba(255,255,255,.03)); }
+    .sw-ladder-hunter[data-rank="National"], .sw-ladder-hunter[data-rank="S"] { border-left-color: #f4ca72; }
+    #sw-rank-ladder + .sw-muted { display: none; }
+    @media (max-width: 560px) { .sw-task-dock { margin-inline: -2px; } .sw-task-dock-title { display: none; } .sw-ladder-theme { display: none; } }
     .sw-console-head, .sw-console-tabs, .sw-system-list article, .sw-mini-stats { display: flex; gap: 12px; }
     .sw-console-head { justify-content: space-between; align-items: end; }
     .sw-console-head h2 { margin: 0; }
@@ -1034,6 +1055,7 @@
         </div>
         <div class="sw-card">
           <h3>Rank Ladder</h3>
+          <div id="sw-rank-ladder" aria-live="polite"></div>
 <p class="sw-muted">
   E Rank — Level 1<br>
   D Rank — Level 5<br>
@@ -1047,6 +1069,16 @@
         </div>
       </aside>
     </section>
+
+    <nav class="sw-task-dock" aria-label="Hunter progression shortcuts">
+      <span class="sw-task-dock-title">Hunter Tasks</span>
+      <button type="button" data-console-tab="missions">Missions</button>
+      <button type="button" data-console-tab="profile">Attributes</button>
+      <button type="button" data-console-tab="shadows">Shadow Army</button>
+      <button type="button" data-console-tab="stats">Statistics</button>
+      <button type="button" data-console-tab="headquarters">Headquarters</button>
+      <button type="button" data-console-tab="archive">Archive</button>
+    </nav>
 
     <section class="sw-players" id="sw-players" aria-label="Player status cards"></section>
 
@@ -1748,6 +1780,24 @@ if (profile?.upgrades.extraDailyQuest) {
           .replaceAll("'", "&#039;");
       }
 
+      function renderRankLadder() {
+        const root = document.getElementById("sw-rank-ladder");
+        if (!root) return;
+        const ranks = ["E", "D", "C", "B", "A", "S", "National", "Monarch"];
+        const rankLevels = { E: 1, D: 5, C: 10, B: 15, A: 20, S: 25, National: 30, Monarch: 35 };
+        const rankedPlayers = [...state.players].sort((first, second) => second.level - first.level || second.totalXp - first.totalXp || first.name.localeCompare(second.name));
+        const occupiedRanks = new Set(rankedPlayers.map(player => rankFor(player.level)));
+        const scale = [...ranks].reverse().map(rank => `<span class="sw-rank-tier ${occupiedRanks.has(rank) ? "is-populated" : ""}" title="${rank} Rank starts at level ${rankLevels[rank]}">${rank === "National" ? "N" : rank === "Monarch" ? "M" : rank}</span>`).join("");
+        const hunters = rankedPlayers.map((player, index) => {
+          const profile = window.HunterProgression?.getProfile?.(player) || {};
+          const rank = rankFor(player.level);
+          const cosmetic = profile.equippedTheme || "Blue Hunter";
+          const shadow = profile.equippedShadow || "No Shadow";
+          return `<article class="sw-ladder-hunter" data-rank="${rank}"><span class="sw-ladder-position">#${index + 1}</span><span class="sw-ladder-rank">${rank === "National" ? "N" : rank === "Monarch" ? "M" : rank}</span><span class="sw-ladder-info"><b>${escapeHtml(player.name)}</b><small>${rank} Rank · Lv ${player.level} · ${escapeHtml(shadow)}</small></span><span class="sw-ladder-theme" title="${escapeHtml(cosmetic)}">${escapeHtml(cosmetic)}</span></article>`;
+        }).join("") || `<p class="sw-muted">No hunter records found.</p>`;
+        root.innerHTML = `<div class="sw-rank-scale" aria-label="Rank scale from Monarch to E">${scale}</div><div class="sw-ladder-hunters">${hunters}</div>`;
+      }
+
       function render() {
         const playersRoot = document.getElementById("sw-players");
         const achievementSelect = document.getElementById("sw-achievement-player");
@@ -1758,6 +1808,7 @@ if (profile?.upgrades.extraDailyQuest) {
         const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id;
 
         state.players.forEach(getDailyQuests);
+        renderRankLadder();
 
         playersRoot.innerHTML = state.players.map(player => {
           const isActivePlayer = player.id === activePlayerId;
