@@ -3,5 +3,8 @@ function saveGame() {
 }
 
 function loadGame() {
-  window.HunterWorkout?.players().forEach(getProfile);
+  if (!window.HunterWorkout) return;
+  window.HunterProgression.migrationOccurred = false;
+  window.HunterWorkout.players().forEach(getProfile);
+  if (window.HunterProgression.migrationOccurred) saveGame();
 }
