@@ -61,7 +61,8 @@
 
   function renderSettings(player) {
     const world = window.HunterProgression.worldFor(player);
-    return cards([{ title: "System Voice", detail: world.settings.voice ? "Enabled: quest clears and rank evaluations are announced." : "Disabled: use your device's speech engine for optional announcements.", action: "voice" }], item => card(item.title, item.detail, `<button data-action="${item.action}">${world.settings.voice ? "Disable" : "Enable"}</button>`));
+    const styles = [{ id: "narrator", name: "Narrator", detail: "Measured system voice with a dramatic briefing tone." }, { id: "sentinel", name: "Sentinel", detail: "Lower, direct hunter-report delivery." }, { id: "oracle", name: "Oracle", detail: "Calmer, more mysterious system delivery." }];
+    return `${cards([{ title: "System Voice", detail: world.settings.voice ? "Enabled: quest clears and rank evaluations are announced." : "Disabled: use your device's speech engine for optional announcements.", action: "voice" }], item => card(item.title, item.detail, `<button data-action="${item.action}">${world.settings.voice ? "Disable" : "Enable"}</button>`))}<div class="sw-system-list">${styles.map(style => `<article><div><b>${style.name}</b><p>${style.detail}</p></div><button data-action="voice-style" data-id="${style.id}">${world.settings.narration === style.id ? "Selected" : "Use Voice"}</button></article>`).join("")}</div>`;
   }
 
   function renderCodex(player) {
@@ -124,6 +125,7 @@
     if (action === "gate") return finish(window.HunterProgression.worldActions.claimGate(player), "Dimension Gate cleared.", "No gate is currently open.");
     if (action === "welcome") return finish(window.HunterProgression.worldActions.claimWelcome(player), "Recovery package claimed.", "No welcome package is waiting.");
     if (action === "voice") { const enabled = window.HunterProgression.worldActions.toggleVoice(player); return finish(true, `System voice ${enabled ? "enabled" : "disabled"}.`, ""); }
+    if (action === "voice-style") return finish(Boolean(window.HunterProgression.worldActions.setNarration(player, id)), "Narrator profile updated.", "Voice profile unavailable.");
   });
   window.HunterProgression.renderConsole = renderConsole;
   window.HunterProgression.showCinematic = rank => {

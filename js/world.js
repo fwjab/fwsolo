@@ -10,10 +10,11 @@
     const adventure = window.HunterProgression.adventureFor(player);
     if (!profile.world || typeof profile.world !== "object") profile.world = {};
     const world = profile.world;
-    const defaults = { migrationVersion: 0, firstLogin: "", lastLogin: "", systemScan: "", reputation: "Unknown Hunter", legacy: [], dimensionGate: null, eclipse: null, welcomePackage: null, memoryCrystals: 0, bossesCleared: 0, criticals: 0, rankAtLastCheck: "E", settings: { voice: false } };
+    const defaults = { migrationVersion: 0, firstLogin: "", lastLogin: "", systemScan: "", reputation: "Unknown Hunter", legacy: [], dimensionGate: null, eclipse: null, welcomePackage: null, memoryCrystals: 0, bossesCleared: 0, criticals: 0, rankAtLastCheck: "E", settings: { voice: false, narration: "narrator" } };
     Object.keys(defaults).forEach(key => { if (world[key] === undefined) world[key] = defaults[key]; });
-    if (!world.settings || typeof world.settings !== "object") world.settings = { voice: false };
+    if (!world.settings || typeof world.settings !== "object") world.settings = { voice: false, narration: "narrator" };
     if (world.settings.voice === undefined) world.settings.voice = false;
+    if (!world.settings.narration) world.settings.narration = "narrator";
     if (world.migrationVersion !== 1) {
       const rank = window.HunterWorkout.rankFor(player.level);
       const quests = profile.completedQuests || 0;
@@ -34,7 +35,16 @@
 
   function speak(player, text) {
     const world = worldFor(player);
-    if (world.settings.voice && "speechSynthesis" in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    if (!world.settings.voice || !("speechSynthesis" in window)) return;
+    const style = world.settings.narration || "narrator";
+    const voices = window.speechSynthesis.getVoices();
+    const voiceMatch = style === "oracle" ? /zira|aria|samantha|female/i : style === "sentinel" ? /david|mark|guy|male/i : /david|zira|aria|samantha|narrator/i;
+    const utterance = new SpeechSynthesisUtterance(`${style === "narrator" ? "System notice. " : style === "sentinel" ? "Hunter report. " : "The system observes. "}${text}`);
+    utterance.voice = voices.find(item => voiceMatch.test(item.name)) || voices[0] || null;
+    utterance.rate = style === "narrator" ? .86 : style === "sentinel" ? .92 : .82;
+    utterance.pitch = style === "sentinel" ? .72 : style === "oracle" ? 1.05 : .88;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
   }
 
   function addLegacy(player, title, detail) {
@@ -109,9 +119,15 @@
     return world.settings.voice;
   }
 
+  function setNarration(player, narration) {
+    worldFor(player).settings.narration = ["narrator", "sentinel", "oracle"].includes(narration) ? narration : "narrator";
+    speak(player, "Voice profile updated.");
+    return worldFor(player).settings.narration;
+  }
+
   window.HunterProgression.worldFor = worldFor;
   window.HunterProgression.worldLogin = runLogin;
-  window.HunterProgression.worldActions = { claimGate, claimWelcome, toggleVoice };
+  window.HunterProgression.worldActions = { claimGate, claimWelcome, toggleVoice, setNarration };
   const existingQuestHandler = window.HunterProgression.onQuestCompleted;
   window.HunterProgression.onQuestCompleted = (player, quest) => { existingQuestHandler?.(player, quest); onQuest(player, quest); };
 })();

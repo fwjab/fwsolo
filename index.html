@@ -549,6 +549,22 @@
       min-width: 0;
     }
 
+    .sw-player-companion {
+      width: 62px;
+      height: 62px;
+      margin-right: 10px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(137, 207, 255, .58);
+      border-radius: 14px;
+      background: linear-gradient(rgba(7, 11, 30, .12), rgba(7, 11, 30, .12)), url("/assets/nightforge-shadow-roster.png") 0 0 / 200% 200%;
+      box-shadow: 0 0 18px rgba(84, 174, 255, .35), inset 0 0 12px rgba(180, 121, 255, .18);
+    }
+    .sw-player-companion.wolf { background-position: 100% 0; border-color: rgba(125, 127, 255, .66); }
+    .sw-player-companion.mage { background-position: 0 100%; border-color: rgba(204, 126, 255, .7); }
+    .sw-player-companion.dragon { background-position: 100% 100%; border-color: rgba(88, 237, 220, .7); }
+    .sw-player-companion.none { background: radial-gradient(circle, rgba(119, 186, 255, .28), transparent 45%), rgba(8, 16, 37, .84); }
+    .sw-player-companion.none::after { content: "◇"; display: grid; place-items: center; height: 100%; color: #91dfff; font-size: 1.7rem; }
+
     .sw-player-name {
       margin: 0;
       font-size: 1.35rem;
@@ -1669,6 +1685,7 @@ if (profile?.upgrades.extraDailyQuest) {
           return `
             <article class="sw-player" data-rank="${rankFor(player.level)}">
               <div class="sw-player-head">
+                <div class="sw-player-companion ${(() => { const shadow = window.HunterProgression?.getProfile?.(player)?.equippedShadow; return shadow === "Shadow Wolf" ? "wolf" : shadow === "Shadow Mage" ? "mage" : shadow === "Shadow Dragon" ? "dragon" : shadow === "Iron Knight" ? "iron" : "none"; })()}" aria-label="Equipped shadow companion"></div>
                 <div class="sw-name-wrap">
                   <h3 class="sw-player-name" contenteditable="true" data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
                   <span class="sw-rank">${rankFor(player.level)}</span>

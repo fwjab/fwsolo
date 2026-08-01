@@ -152,9 +152,10 @@ if (request.method === "GET" && requestPath.endsWith(".js")) {
     return;
 }
 
-    if (request.method === "GET" && requestPath === "/assets/nightforge-hero-original.png") {
+    if (request.method === "GET" && ["/assets/nightforge-hero-original.png", "/assets/nightforge-shadow-roster.png"].includes(requestPath)) {
+      const assetName = path.basename(requestPath);
       response.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });
-      response.end(fs.readFileSync(path.join(__dirname, "assets", "nightforge-hero-original.png")));
+      response.end(fs.readFileSync(path.join(__dirname, "assets", assetName)));
       return;
     }
 
