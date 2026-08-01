@@ -18,7 +18,7 @@
       document.body.append(popup);
     }
     const claimable = players.some(player => window.HunterProgression.adventureFor(player).dailyLoginDate !== today);
-    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · DAILY PRESENCE</p><h2>Daily Login Available</h2><p>Select your hunter to claim today's reward. Resets at midnight Eastern Time.</p><p class="sw-muted">Reward: +120 XP · +75 Gold${players.some(player => player.streak >= 7) ? " · Streak hunters also receive a Recovery Potion" : ""}</p><div class="sw-daily-login-players">${players.map(player => { const claimed = window.HunterProgression.adventureFor(player).dailyLoginDate === today; return `<button data-action="daily-login" data-id="${player.id}" ${claimed ? "disabled" : ""}><b>${escapeHtml(player.name)}</b><span>${claimed ? "Claimed today" : "Claim reward"}</span></button>`; }).join("")}</div>${claimable ? "" : "<p class=\"sw-muted\">Every hunter has claimed today’s reward. Return after midnight EST.</p>"}</div>`;
+    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · DAILY PRESENCE</p><h2>Daily Login Available</h2><p>Select your hunter to claim today's reward. Resets at midnight Eastern Time.</p><p class="sw-muted">Reward: +120 XP · +75 Gold${players.some(player => player.streak >= 7) ? " · Streak hunters also receive a Recovery Potion" : ""}</p><div class="sw-daily-login-players">${players.map(player => { const claimed = window.HunterProgression.adventureFor(player).dailyLoginDate === today; return `<button data-action="daily-login" data-id="${player.id}" ${claimed ? "disabled" : ""}><b>${escapeHtml(player.name)}</b><span>${claimed ? "Claimed today" : "Claim reward"}</span></button>`; }).join("")}</div>${claimable ? "" : "<p class=\"sw-muted\">Every hunter has claimed today’s reward. Return after midnight EST.</p>"}<button class="sw-daily-login-exit" data-action="daily-close">Exit for now</button></div>`;
     popup.style.display = claimable ? "grid" : "none";
   }
 
@@ -156,6 +156,7 @@
       if (claimed) { saveGame(); window.HunterWorkout.showToast("Daily Login Claimed", `${player.name} received 120 XP and 75 Gold.`); renderConsole(); }
       return;
     }
+    if (action === "daily-close") { document.getElementById("sw-daily-login").style.display = "none"; return; }
     const player = currentPlayer();
     if (action === "buy") return finish(buyItem(player, id) || (() => { const cosmetic = cosmetics.find(item => item.name === id); const profile = getProfile(player); if (!cosmetic || profile.gold < cosmetic.price || profile.themes.includes(cosmetic.name)) return false; profile.gold -= cosmetic.price; profile.themes.push(cosmetic.name); return equipTheme(player, cosmetic.name); })(), "Purchase complete.", "Not enough gold or already owned.");
     if (action === "title") return finish(equipTitle(player, id), "Title equipped.", "That title is still locked.");
