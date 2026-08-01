@@ -1,5 +1,5 @@
 (() => {
-  const tabs = ["profile", "missions", "shadows", "headquarters", "codex", "shop", "titles", "cosmetics", "upgrades", "inventory"];
+  const tabs = ["profile", "missions", "shadows", "guild", "headquarters", "archive", "codex", "shop", "titles", "cosmetics", "upgrades", "inventory", "settings"];
   let selectedPlayerId = "";
   let activeTab = "profile";
   const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" })[character]);
@@ -21,7 +21,12 @@
   function renderMissions(player) {
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
+    const world = window.HunterProgression.worldFor(player);
     const missionCards = [];
+    missionCards.push(card("Daily System Scan", world.systemScan || "Scanning Hunter..."));
+    if (world.eclipse?.active) missionCards.push(card("Eclipse Event", "24 hours · Double XP · Double Gold · Exclusive missions active."));
+    if (world.welcomePackage) missionCards.push(card("Welcome Back, Hunter", `Recovery package: +${world.welcomePackage.xp} XP · +${world.welcomePackage.gold} G · Recovery Potion`, `<button data-action="welcome">Claim Package</button>`));
+    if (world.dimensionGate) missionCards.push(card("Dimension Gate Open", `${world.dimensionGate.title} · ${world.dimensionGate.objective} · +${world.dimensionGate.xp} XP · +${world.dimensionGate.gold} G`, `<button data-action="gate">Clear Gate</button>`));
     missionCards.push(card("Hunter Radar", `System scan complete · ${adventure.eliteBoss ? "1 Elite Boss detected" : "Boss activity is low"} · ${adventure.hidden.earlyBird < 10 ? "1 hidden quest nearby" : "Hidden quest trail resolved"}`));
     if (adventure.dailyFortune) missionCards.push(card("Daily Fortune", adventure.dailyFortune.text));
     if (adventure.randomEvent) missionCards.push(card(adventure.randomEvent.text, "A rare login event is available.", `<button data-action="event">Claim · ${adventure.randomEvent.gold} G</button>`));
@@ -38,6 +43,25 @@
     const adventure = window.HunterProgression.adventureFor(player);
     const rooms = ["Small Room", "Training Hall", "Trophy Wall", "Shadow Barracks", "Vault", "Mission Terminal"];
     return `<div class="sw-hq"><div class="sw-hq-core"><p class="sw-kicker">Hunter Headquarters</p><h3>${rooms[adventure.headquarters - 1]}</h3><p>Your base grows through real training, never purchases.</p></div><div class="sw-room-grid">${rooms.map((room, index) => `<div class="sw-room ${index < adventure.headquarters ? "is-built" : ""}"><b>${index < adventure.headquarters ? "◆" : "◇"}</b><span>${room}</span><small>${index < adventure.headquarters ? "Unlocked" : `${[0, 25, 75, 120, 200, 300][index]} quest clears`}</small></div>`).join("")}</div></div>`;
+  }
+
+  function renderGuild(player) {
+    const profile = getProfile(player);
+    const world = window.HunterProgression.worldFor(player);
+    const rank = window.HunterWorkout.rankFor(player.level);
+    const guild = rank === "Monarch" ? "Shadow Palace" : rank === "S" || rank === "National" ? "Grand Guild" : rank === "A" ? "Elite Guild" : rank === "C" || rank === "B" ? "Training Hall" : "Small Guild Room";
+    const biography = `The hunter began as the weakest. Since then, ${profile.completedQuests} missions have been cleared, ${profile.titles.length} titles have been unlocked, and ${profile.shadows.length} shadows answer the call.`;
+    return `<div class="sw-console-grid"><div class="sw-hunter-card sw-guild-card"><p class="sw-kicker">Hunter Guild</p><h3>${guild}</h3><p>${rank} Rank · ${world.reputation}</p><div class="sw-mini-stats">${stat("Lifetime XP", player.totalXp)}${stat("Gold", profile.gold)}${stat("Bosses", world.bossesCleared)}${stat("Crystals", world.memoryCrystals)}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Hunter Biography</p><h3>${player.name}</h3><p>${biography}</p><p class="sw-muted">First record: ${world.firstLogin || "Today"}</p></div></div>`;
+  }
+
+  function renderArchive(player) {
+    const world = window.HunterProgression.worldFor(player);
+    return cards(world.legacy, item => card(item.title, item.detail));
+  }
+
+  function renderSettings(player) {
+    const world = window.HunterProgression.worldFor(player);
+    return cards([{ title: "System Voice", detail: world.settings.voice ? "Enabled: quest clears and rank evaluations are announced." : "Disabled: use your device's speech engine for optional announcements.", action: "voice" }], item => card(item.title, item.detail, `<button data-action="${item.action}">${world.settings.voice ? "Disable" : "Enable"}</button>`));
   }
 
   function renderCodex(player) {
@@ -64,13 +88,16 @@
     if (activeTab === "profile") content = `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("Stat Points", profile.statPoints)}${stat("Shadow", profile.equippedShadow || "None")}</div></div><div class="sw-hunter-card"><h3>Hunter Attributes</h3><div class="sw-mini-stats">${Object.entries(profile.stats).map(([key, value]) => stat(key.toUpperCase(), value)).join("")}</div><p class="sw-muted">Theme: ${escapeHtml(profile.equippedTheme)} · Current fortune: ${adventure.dailyFortune?.type || "none"}</p></div></div>`;
     if (activeTab === "missions") content = renderMissions(player);
     if (activeTab === "shadows") content = renderShadows(player);
+    if (activeTab === "guild") content = renderGuild(player);
     if (activeTab === "headquarters") content = renderHeadquarters(player);
+    if (activeTab === "archive") content = renderArchive(player);
     if (activeTab === "codex") content = renderCodex(player);
     if (activeTab === "shop") content = cards(shopItems, item => card(item.name, `${item.price} Gold`, `<button data-action="buy" data-id="${item.id}">Buy</button>`));
     if (activeTab === "titles") content = cards(titles, item => card(item.name, item.unlock, `<button data-action="title" data-id="${item.name}" ${!item.available(player) ? "disabled" : ""}>${profile.title === item.name ? "Equipped" : "Equip"}</button>`));
     if (activeTab === "cosmetics") content = cards(cosmetics, item => card(item.name, `${item.price} Gold`, profile.themes.includes(item.name) ? `<button data-action="theme" data-id="${item.name}">${profile.equippedTheme === item.name ? "Equipped" : "Equip"}</button>` : `<button data-action="buy" data-id="${item.name}">Unlock</button>`));
     if (activeTab === "upgrades") content = cards(upgrades, item => card(item.name, `${item.cost} Gold`, `<button data-action="upgrade" data-id="${item.id}">Upgrade</button>`));
     if (activeTab === "inventory") content = cards([{ name: "Mystery Boxes", detail: `${adventure.boxes.length} stored`, action: adventure.boxes.length ? "open-box" : "" }, { name: "Hunter Lottery", detail: "750 Gold · win a mystery box", action: "lottery" }, { name: "Double XP Potion", detail: `${adventure.potions.doubleXp} stored · doubles your next cleared quest`, action: "potion" }, { name: "Recovery Potion", detail: `${adventure.potions.recovery} stored · protects your current streak`, action: "recovery" }, ...profile.inventory.map(item => ({ name: item.name, detail: "Consumable", action: "use-item" }))], item => card(item.name, item.detail, item.action ? `<button data-action="${item.action}" data-id="${item.name}">${item.action === "open-box" ? "Open Box" : item.action === "lottery" ? "Play" : "Use"}</button>` : ""));
+    if (activeTab === "settings") content = renderSettings(player);
     root.innerHTML = `<div class="sw-console-head"><div><p class="sw-kicker">System Console</p><h2>Hunter Progression</h2></div><label>Active Hunter<select id="sw-console-player">${players.map(item => `<option value="${item.id}" ${item.id === player.id ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")}</select></label></div><div class="sw-console-tabs">${nav}</div><div class="sw-console-content">${content}</div>`;
   }
 
@@ -94,12 +121,26 @@
     if (action === "lottery") return finish(window.HunterProgression.actions.playLottery(player), "Lottery reward added to your inventory.", "You need 750 Gold.");
     if (action === "potion") return finish(window.HunterProgression.actions.usePotion(player, "doubleXp"), "Double XP armed for your next quest.", "You do not have a Double XP Potion.");
     if (action === "recovery") return finish(window.HunterProgression.actions.usePotion(player, "recovery"), "Recovery protection is active.", "You do not have a Recovery Potion.");
+    if (action === "gate") return finish(window.HunterProgression.worldActions.claimGate(player), "Dimension Gate cleared.", "No gate is currently open.");
+    if (action === "welcome") return finish(window.HunterProgression.worldActions.claimWelcome(player), "Recovery package claimed.", "No welcome package is waiting.");
+    if (action === "voice") { const enabled = window.HunterProgression.worldActions.toggleVoice(player); return finish(true, `System voice ${enabled ? "enabled" : "disabled"}.`, ""); }
   });
   window.HunterProgression.renderConsole = renderConsole;
+  window.HunterProgression.showCinematic = rank => {
+    const existing = document.getElementById("sw-cinematic-rank");
+    if (existing) existing.remove();
+    const overlay = document.createElement("div");
+    overlay.id = "sw-cinematic-rank";
+    overlay.innerHTML = `<div><p>HUNTER RANK INCREASED</p><b>${rank}</b><span>RANK EVALUATION COMPLETE</span></div>`;
+    document.body.append(overlay);
+    window.setTimeout(() => overlay.remove(), 3000);
+  };
   window.addEventListener("hunter:state-updated", () => renderConsole());
   loadGame();
   window.HunterProgression.adventureMigrationOccurred = false;
+  window.HunterProgression.worldMigrationOccurred = false;
   const loggedIn = window.HunterWorkout.players().map(window.HunterProgression.login).some(Boolean);
-  if (loggedIn || window.HunterProgression.adventureMigrationOccurred) saveGame();
+  const worldLoggedIn = window.HunterWorkout.players().map(window.HunterProgression.worldLogin).some(Boolean);
+  if (loggedIn || worldLoggedIn || window.HunterProgression.adventureMigrationOccurred || window.HunterProgression.worldMigrationOccurred) saveGame();
   renderConsole();
 })();

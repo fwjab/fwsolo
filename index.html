@@ -819,6 +819,13 @@
     .sw-room.is-built { color: #f2edff; border-color: rgba(174, 130, 255, .55); background: radial-gradient(circle at 15% 15%, #8455d54d, transparent 40%), rgba(31, 17, 65, .62); }
     .sw-room.is-built b { color: #b991ff; text-shadow: 0 0 15px #a673ff; }
     .sw-room small { color: #aaa5c1; }
+    .sw-guild-card { background: radial-gradient(circle at 85% 15%, rgba(194, 144, 255, .38), transparent 28%), linear-gradient(135deg, rgba(39, 22, 83, .86), rgba(9, 11, 26, .96)); }
+    #sw-cinematic-rank { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: radial-gradient(circle, rgba(58, 29, 142, .78), rgba(2, 3, 12, .94)); animation: cinematicFlash 3s ease forwards; pointer-events: none; }
+    #sw-cinematic-rank > div { display: grid; justify-items: center; gap: 8px; color: white; text-align: center; text-shadow: 0 0 24px #a66cff; }
+    #sw-cinematic-rank p, #sw-cinematic-rank span { letter-spacing: .2em; font-size: .78rem; }
+    #sw-cinematic-rank b { color: #c398ff; font-size: clamp(6rem, 24vw, 16rem); line-height: .8; text-shadow: 0 0 40px #6f37ff, 0 0 90px #bd9aff; animation: emblemRise .8s cubic-bezier(.15,.8,.2,1) both; }
+    @keyframes cinematicFlash { 0%, 100% { opacity: 0; } 8%, 82% { opacity: 1; } }
+    @keyframes emblemRise { from { transform: scale(.25) rotate(-18deg); filter: blur(10px); } to { transform: scale(1) rotate(0); filter: blur(0); } }
     :root[data-hunter-theme="purple"] { --sw-accent: #a85cff; }
     :root[data-hunter-theme="red"] { --sw-accent: #ed4f78; }
     :root[data-hunter-theme="gold"] { --sw-accent: #e6b84d; }
@@ -1816,6 +1823,7 @@ player.quests = quests.map((quest, index) => ({
   <script src="js/shop.js"></script>
   <script src="js/save.js"></script>
   <script src="js/adventures.js"></script>
+  <script src="js/world.js"></script>
   <script src="js/ui.js"></script>
 </div>
 </body>
