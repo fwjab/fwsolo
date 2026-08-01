@@ -992,6 +992,7 @@
       <div class="sw-actions">
         <span class="sw-sync-mode" id="sw-sync-mode">Local save</span>
         <button class="sw-btn" id="sw-session-open" type="button">Switch Hunter</button>
+        <button class="sw-btn" id="sw-admin-access" type="button">Admin Access</button>
         <button class="sw-btn" id="sw-reroll" type="button">New Quote</button>
         <button class="sw-btn sw-btn-danger" id="sw-reset" type="button">Reset Save</button>
       </div>
@@ -1150,6 +1151,7 @@
       const serverMode = location.protocol !== "file:";
       const maxPlayers = 10;
       const plankTimers = new Map();
+      let adminSessionPasscode = "";
       let lastSyncedState = "";
       const todayKey = () => {
   const now = new Date();
@@ -2000,6 +2002,23 @@ if (profile?.upgrades.extraDailyQuest) {
         pushFeed("Motivation quote refreshed.");
         saveState();
         render();
+      });
+
+      document.getElementById("sw-admin-access").addEventListener("click", async () => {
+        if (!serverMode) return showToast("Admin Locked", "Admin Access requires the shared server.");
+        const passcode = prompt("Enter admin passcode:");
+        if (!passcode) return;
+        try {
+          const response = await fetch("/api/admin/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ passcode }) });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Admin verification failed.");
+          adminSessionPasscode = passcode;
+          document.querySelectorAll("#sw-admin-form, #sw-admin-player-form, #sw-admin-delete-form").forEach(form => { form.style.display = "block"; });
+          document.querySelectorAll("#sw-admin-passcode, #sw-player-admin-passcode, #sw-delete-player-passcode").forEach(input => { input.value = passcode; });
+          showToast("Admin Online", "Admin controls unlocked for this browser session.");
+        } catch (error) {
+          showToast("Admin Denied", error.message);
+        }
       });
 
       document.getElementById("sw-reset").addEventListener("click", () => {

@@ -259,6 +259,17 @@ state.players = nextState.players;
       return;
     }
 
+    if (request.url === "/api/admin/verify" && request.method === "POST") {
+      const body = await readBody(request);
+      const { passcode } = JSON.parse(body);
+      if (passcode !== adminPasscode) {
+        sendJson(response, 403, { error: "Wrong passcode." });
+        return;
+      }
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
     if (request.url === "/api/admin/players" && request.method === "POST") {
       const body = await readBody(request);
       const { passcode, name } = JSON.parse(body);
