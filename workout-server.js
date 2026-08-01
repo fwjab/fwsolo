@@ -3,7 +3,9 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const mongoose = require("mongoose");
+const admin = require("firebase-admin");
 const GameState = require("./models/GameState");
+const NotificationSubscription = require("./models/NotificationSubscription");
 const port = Number(process.env.PORT || 4177);
 const host = "0.0.0.0";
 const adminPasscode = "j@bultra";
@@ -11,6 +13,53 @@ const maxPlayers = 10;
 const appFile = path.join(__dirname, "index.html");
 const saveFile = path.join(__dirname, "workout-save.json");
 let useMongo = Boolean(process.env.MONGO_URI);
+let firebaseMessaging = null;
+
+function cleanPushText(value, maxLength) {
+  return String(value || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function cleanPushData(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).slice(0, 8).map(([key, item]) => [
+    cleanPushText(key, 40),
+    cleanPushText(item, 160)
+  ]).filter(([key]) => key));
+}
+
+function firebaseWebConfig() {
+  const config = {
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+    vapidKey: process.env.FIREBASE_VAPID_KEY
+  };
+  return Object.values(config).filter((value, index) => index !== 6).every(Boolean) ? config : null;
+}
+
+function initializeFirebaseMessaging() {
+  const rawCredentials = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+  if (!rawCredentials) {
+    console.log("Firebase push is disabled: FIREBASE_SERVICE_ACCOUNT_JSON is not set.");
+    return;
+  }
+  try {
+    const serviceAccount = JSON.parse(rawCredentials);
+    serviceAccount.private_key = String(serviceAccount.private_key || "").replace(/\\n/g, "\n");
+    if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) throw new Error("Service account JSON is incomplete.");
+    const app = admin.apps.length ? admin.app() : admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+    firebaseMessaging = admin.messaging(app);
+    console.log("Firebase Cloud Messaging is configured.");
+  } catch (error) {
+    console.error("Firebase push is disabled: invalid service account configuration:", error.message);
+  }
+}
+
+initializeFirebaseMessaging();
 
 if (useMongo) {
   mongoose.connect(process.env.MONGO_URI)
@@ -62,6 +111,103 @@ async function writeState(state) {
     state,
     { new: true, upsert: true }
   );
+}
+
+function pushEnabled() {
+  return Boolean(useMongo && firebaseMessaging && firebaseWebConfig());
+}
+
+function invalidFirebaseToken(error) {
+  return ["messaging/registration-token-not-registered", "messaging/invalid-registration-token"].includes(error?.code);
+}
+
+async function removeInvalidNotificationToken(token) {
+  if (!useMongo || !token) return;
+  await NotificationSubscription.deleteOne({ token });
+}
+
+async function sendPushToToken(token, title, body, data = {}) {
+  if (!pushEnabled()) return { sent: false, reason: "Push is not configured." };
+  const safeTitle = cleanPushText(title, 70);
+  const safeBody = cleanPushText(body, 180);
+  if (!safeTitle || !safeBody || typeof token !== "string" || token.length > 4096) return { sent: false, reason: "Invalid push payload." };
+  const payload = {
+    token,
+    data: { ...cleanPushData(data), notificationTitle: safeTitle, notificationBody: safeBody, url: data.url && String(data.url).startsWith("/") ? String(data.url) : "/" },
+    webpush: {
+      fcmOptions: { link: data.url && String(data.url).startsWith("/") ? String(data.url) : "/" }
+    }
+  };
+  try {
+    const messageId = await firebaseMessaging.send(payload);
+    return { sent: true, messageId };
+  } catch (error) {
+    if (invalidFirebaseToken(error)) await removeInvalidNotificationToken(token);
+    console.error("Firebase push send failed:", error.code || error.message);
+    return { sent: false, reason: error.code || "Firebase send failed." };
+  }
+}
+
+async function sendPushToPlayer(playerId, title, body, data = {}) {
+  if (!pushEnabled() || !playerId) return { sent: 0 };
+  const subscriptions = await NotificationSubscription.find({ playerId }).select("token").lean();
+  const results = await Promise.all(subscriptions.map(subscription => sendPushToToken(subscription.token, title, body, { ...data, playerId })));
+  return { sent: results.filter(result => result.sent).length };
+}
+
+async function sendPushToAllPlayers(title, body, data = {}) {
+  if (!pushEnabled()) return { sent: 0 };
+  const subscriptions = await NotificationSubscription.find({}).select("token playerId").lean();
+  const results = await Promise.all(subscriptions.map(subscription => sendPushToToken(subscription.token, title, body, { ...data, playerId: subscription.playerId })));
+  return { sent: results.filter(result => result.sent).length };
+}
+
+function queuePush(task) {
+  Promise.resolve(task).catch(error => console.error("Push event failed:", error.message));
+}
+
+function rankFor(level) {
+  if (level >= 35) return "Monarch";
+  if (level >= 30) return "National";
+  if (level >= 25) return "S";
+  if (level >= 20) return "A";
+  if (level >= 15) return "B";
+  if (level >= 10) return "C";
+  if (level >= 5) return "D";
+  return "E";
+}
+
+function dailyQuestComplete(player) {
+  return Array.isArray(player?.quests) && player.quests.length > 0 && player.quests.every(quest => quest.done);
+}
+
+function notifyProgressChanges(previousState, nextState) {
+  const previousPlayers = new Map((previousState.players || []).map(player => [player.id, player]));
+  for (const player of nextState.players || []) {
+    const before = previousPlayers.get(player.id);
+    if (!before) continue;
+    if (Number(player.level) > Number(before.level)) {
+      queuePush(sendPushToPlayer(player.id, "Level Up", `${player.name} reached Level ${player.level}.`, { type: "level-up", url: "/" }));
+      const previousRank = rankFor(Number(before.level) || 1);
+      const newRank = rankFor(Number(player.level) || 1);
+      if (previousRank !== newRank) {
+        queuePush(sendPushToPlayer(player.id, "Rank Evaluation Complete", `${player.name} advanced to ${newRank} Rank. A ${newRank}-Rank Boss Quest is now available.`, { type: "rank-up", rank: newRank, url: "/" }));
+      }
+    }
+    if (!dailyQuestComplete(before) && dailyQuestComplete(player)) {
+      queuePush(sendPushToPlayer(player.id, "Daily Quests Complete", "All daily quests are cleared. Your streak bonus has been recorded.", { type: "daily-complete", url: "/" }));
+    }
+  }
+}
+
+function easternDayKey(now = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+}
+
+function safeSecretMatch(request) {
+  const expected = process.env.PUSH_CRON_SECRET;
+  const received = String(request.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  return Boolean(expected && received && expected.length === received.length && require("crypto").timingSafeEqual(Buffer.from(expected), Buffer.from(received)));
 }
 
 function xpForLevel(level) {
@@ -189,6 +335,81 @@ if (request.method === "GET" && requestPath.endsWith(".css")) {
     return;
 }
 
+    if (request.url === "/api/push/config" && request.method === "GET") {
+      const config = firebaseWebConfig();
+      sendJson(response, 200, { enabled: Boolean(pushEnabled()), config: config ? { ...config, measurementId: config.measurementId || undefined } : null });
+      return;
+    }
+
+    if (request.url === "/api/push/subscribe" && request.method === "POST") {
+      if (!pushEnabled()) {
+        sendJson(response, 503, { error: "Push notifications are not configured yet." });
+        return;
+      }
+      const body = JSON.parse(await readBody(request));
+      const playerId = cleanPushText(body.playerId, 80);
+      const token = String(body.token || "").trim();
+      if (!playerId || !token || token.length < 20 || token.length > 4096 || /\s/.test(token)) {
+        sendJson(response, 400, { error: "Invalid notification subscription." });
+        return;
+      }
+      const state = await readState();
+      if (!state.players.some(player => player.id === playerId)) {
+        sendJson(response, 404, { error: "Hunter record not found." });
+        return;
+      }
+      await NotificationSubscription.findOneAndUpdate(
+        { token },
+        { $set: { playerId, lastSeenAt: new Date() }, $setOnInsert: { createdAt: new Date() } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.url === "/api/push/unsubscribe" && request.method === "POST") {
+      const body = JSON.parse(await readBody(request));
+      const token = String(body.token || "").trim();
+      if (!token || token.length > 4096) {
+        sendJson(response, 400, { error: "Invalid notification token." });
+        return;
+      }
+      await removeInvalidNotificationToken(token);
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.url === "/api/internal/push/daily-reset" && request.method === "POST") {
+      if (!safeSecretMatch(request)) {
+        sendJson(response, 401, { error: "Unauthorized." });
+        return;
+      }
+      if (!pushEnabled()) {
+        sendJson(response, 503, { error: "Push notifications are not configured." });
+        return;
+      }
+      const state = await readState();
+      const today = easternDayKey();
+      state.notificationMeta = state.notificationMeta || {};
+      let sent = 0;
+      if (state.notificationMeta.dailyQuestDay !== today) {
+        state.notificationMeta.dailyQuestDay = today;
+        await writeState(state);
+        const results = await Promise.all(state.players.map(player => sendPushToPlayer(player.id, "Daily Quests Available", "The System has generated new training missions for today.", { type: "daily-quests", url: "/" })));
+        sent += results.reduce((sum, result) => sum + result.sent, 0);
+      }
+      const easternHour = Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "2-digit", hourCycle: "h23" }).format(new Date()));
+      if (easternHour >= 20 && state.notificationMeta.streakWarningDay !== today) {
+        state.notificationMeta.streakWarningDay = today;
+        await writeState(state);
+        const atRisk = state.players.filter(player => Number(player.streak) > 0 && player.lastDaily !== today);
+        const results = await Promise.all(atRisk.map(player => sendPushToPlayer(player.id, "Streak at Risk", `${player.name}, complete today's quests before midnight Eastern to protect your ${player.streak}-day streak.`, { type: "streak-warning", url: "/" })));
+        sent += results.reduce((sum, result) => sum + result.sent, 0);
+      }
+      sendJson(response, 200, { ok: true, sent, day: today });
+      return;
+    }
+
     if (request.url === "/api/state" && request.method === "GET") {
       const state = await readState();
 sendJson(response, 200, state);
@@ -203,6 +424,7 @@ sendJson(response, 200, state);
         return;
       }
      const state = await readState();
+      const previousState = typeof state.toObject === "function" ? state.toObject() : structuredClone(state);
 
 const currentIds = state.players
   .map(player => player.id)
@@ -215,8 +437,9 @@ const currentIds = state.players
       }
       state.quoteIndex = nextState.quoteIndex;
 state.feed = nextState.feed;
-state.players = nextState.players;
+      state.players = nextState.players;
       await writeState(state);
+      notifyProgressChanges(previousState, nextState);
       sendJson(response, 200, { ok: true });
       return;
     }
@@ -266,6 +489,23 @@ state.players = nextState.players;
         sendJson(response, 403, { error: "Wrong passcode." });
         return;
       }
+      sendJson(response, 200, { ok: true });
+      return;
+    }
+
+    if (request.url === "/api/admin/announce" && request.method === "POST") {
+      const body = JSON.parse(await readBody(request));
+      if (body.passcode !== adminPasscode) {
+        sendJson(response, 403, { error: "Wrong passcode." });
+        return;
+      }
+      const title = cleanPushText(body.title, 70);
+      const message = cleanPushText(body.message, 180);
+      if (!title || !message) {
+        sendJson(response, 400, { error: "Announcement title and message are required." });
+        return;
+      }
+      queuePush(sendPushToAllPlayers(title, message, { type: "party-announcement", url: "/" }));
       sendJson(response, 200, { ok: true });
       return;
     }
@@ -332,7 +572,8 @@ state.players = nextState.players;
 
     sendJson(response, 404, { error: "Not found." });
   } catch (error) {
-    sendJson(response, 500, { error: error.message });
+    console.error("Request failed:", error.message);
+    sendJson(response, 500, { error: "Server request failed." });
   }
 });
 

@@ -100,7 +100,9 @@
   function renderSettings(player) {
     const world = window.HunterProgression.worldFor(player);
     const styles = [{ id: "narrator", name: "Narrator", detail: "Measured system voice with a dramatic briefing tone." }, { id: "sentinel", name: "Sentinel", detail: "Lower, direct hunter-report delivery." }, { id: "oracle", name: "Oracle", detail: "Calmer, more mysterious system delivery." }];
-    return `${cards([{ title: "System Voice", detail: world.settings.voice ? "Enabled: quest clears and rank evaluations are announced." : "Disabled: use your device's speech engine for optional announcements.", action: "voice" }], item => card(item.title, item.detail, `<button data-action="${item.action}">${world.settings.voice ? "Disable" : "Enable"}</button>`))}<div class="sw-system-list">${styles.map(style => `<article><div><b>${style.name}</b><p>${style.detail}</p></div><button data-action="voice-style" data-id="${style.id}">${world.settings.narration === style.id ? "Selected" : "Use Voice"}</button></article>`).join("")}</div>`;
+    const push = window.HunterPush?.status?.() || { state: "checking", detail: "Checking push notification support." };
+    const pushButton = push.state === "enabled" ? `<button data-action="push-disable">Disable Push Notifications</button>` : push.state === "blocked" || push.state === "unsupported" || push.state === "unavailable" ? "" : `<button data-action="push-enable">Enable Push Notifications</button>`;
+    return `${cards([{ title: "System Voice", detail: world.settings.voice ? "Enabled: quest clears and rank evaluations are announced." : "Disabled: use your device's speech engine for optional announcements.", action: "voice" }, { title: "Push Notifications", detail: push.detail, action: "push" }], item => card(item.title, item.detail, item.action === "voice" ? `<button data-action="voice">${world.settings.voice ? "Disable" : "Enable"}</button>` : pushButton))}<div class="sw-system-list">${styles.map(style => `<article><div><b>${style.name}</b><p>${style.detail}</p></div><button data-action="voice-style" data-id="${style.id}">${world.settings.narration === style.id ? "Selected" : "Use Voice"}</button></article>`).join("")}</div>`;
   }
 
   function renderCodex(player) {
@@ -140,6 +142,20 @@
     if (!players.some(player => player.id === activeSession)) openPlayerSession(players);
     renderDailyLogin(players);
     const player = currentPlayer();
+    if (action === "push-enable") {
+      window.HunterPush?.enable().then(enabled => {
+        window.HunterWorkout.showToast(enabled ? "Push Enabled" : "Push Unavailable", window.HunterPush.status().detail);
+        renderConsole();
+      }).catch(error => window.HunterWorkout.showToast("Push Unavailable", error.message));
+      return;
+    }
+    if (action === "push-disable") {
+      window.HunterPush?.disable().then(() => {
+        window.HunterWorkout.showToast("Push Disabled", window.HunterPush.status().detail);
+        renderConsole();
+      }).catch(error => window.HunterWorkout.showToast("Push Error", error.message));
+      return;
+    }
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
     const nav = tabs.map(item => `<button class="sw-console-tab ${item === activeTab ? "is-active" : ""}" data-console-tab="${item}">${item}</button>`).join("");
@@ -229,6 +245,7 @@
     window.setTimeout(() => overlay.remove(), 3000);
   };
   window.addEventListener("hunter:state-updated", () => renderConsole());
+  window.addEventListener("hunter:push-status", () => { if (activeTab === "settings") renderConsole(); });
   document.getElementById("sw-session-open")?.addEventListener("click", () => openPlayerSession(window.HunterWorkout.players()));
   loadGame();
   window.HunterProgression.adventureMigrationOccurred = false;
