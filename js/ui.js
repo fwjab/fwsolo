@@ -142,20 +142,6 @@
     if (!players.some(player => player.id === activeSession)) openPlayerSession(players);
     renderDailyLogin(players);
     const player = currentPlayer();
-    if (action === "push-enable") {
-      window.HunterPush?.enable().then(enabled => {
-        window.HunterWorkout.showToast(enabled ? "Push Enabled" : "Push Unavailable", window.HunterPush.status().detail);
-        renderConsole();
-      }).catch(error => window.HunterWorkout.showToast("Push Unavailable", error.message));
-      return;
-    }
-    if (action === "push-disable") {
-      window.HunterPush?.disable().then(() => {
-        window.HunterWorkout.showToast("Push Disabled", window.HunterPush.status().detail);
-        renderConsole();
-      }).catch(error => window.HunterWorkout.showToast("Push Error", error.message));
-      return;
-    }
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
     const nav = tabs.map(item => `<button class="sw-console-tab ${item === activeTab ? "is-active" : ""}" data-console-tab="${item}">${item}</button>`).join("");
@@ -207,6 +193,20 @@
       return;
     }
     const player = currentPlayer();
+    if (action === "push-enable") {
+      window.HunterPush?.enable().then(enabled => {
+        window.HunterWorkout.showToast(enabled ? "Push Enabled" : "Push Unavailable", window.HunterPush.status().detail);
+        renderConsole();
+      }).catch(error => window.HunterWorkout.showToast("Push Unavailable", error.message));
+      return;
+    }
+    if (action === "push-disable") {
+      window.HunterPush?.disable().then(() => {
+        window.HunterWorkout.showToast("Push Disabled", window.HunterPush.status().detail);
+        renderConsole();
+      }).catch(error => window.HunterWorkout.showToast("Push Error", error.message));
+      return;
+    }
     if (action === "buy") return finish(buyItem(player, id) || (() => { const cosmetic = cosmetics.find(item => item.name === id); const profile = getProfile(player); if (!cosmetic || profile.gold < cosmetic.price || profile.themes.includes(cosmetic.name)) return false; profile.gold -= cosmetic.price; profile.themes.push(cosmetic.name); return equipTheme(player, cosmetic.name); })(), "Purchase complete.", "Not enough gold or already owned.");
     if (action === "title") return finish(equipTitle(player, id), "Title equipped.", "That title is still locked.");
     if (action === "summon") return finish(summonShadow(player, id), "Shadow added to your army.", "Not enough gold or fragments.");
