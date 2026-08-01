@@ -1815,11 +1815,12 @@ if (profile?.upgrades.extraDailyQuest) {
           `;
         }).join("");
 
-        const playerOptions = state.players.filter(player => player.id === activePlayerId).map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
-        achievementSelect.innerHTML = playerOptions;
-        questSelect.innerHTML = playerOptions;
-        adminSelect.innerHTML = playerOptions;
-        deleteSelect.innerHTML = playerOptions;
+        const activePlayerOptions = state.players.filter(player => player.id === activePlayerId).map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
+        const adminPlayerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
+        achievementSelect.innerHTML = activePlayerOptions;
+        questSelect.innerHTML = activePlayerOptions;
+        adminSelect.innerHTML = adminPlayerOptions;
+        deleteSelect.innerHTML = adminPlayerOptions;
 
         document.getElementById("sw-quote").textContent = quoteBank[state.quoteIndex];
         document.getElementById("sw-status-feed").innerHTML = state.feed.map(line => (
