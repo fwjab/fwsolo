@@ -22,6 +22,7 @@
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
     const missionCards = [];
+    missionCards.push(card("Hunter Radar", `System scan complete · ${adventure.eliteBoss ? "1 Elite Boss detected" : "Boss activity is low"} · ${adventure.hidden.earlyBird < 10 ? "1 hidden quest nearby" : "Hidden quest trail resolved"}`));
     if (adventure.dailyFortune) missionCards.push(card("Daily Fortune", adventure.dailyFortune.text));
     if (adventure.randomEvent) missionCards.push(card(adventure.randomEvent.text, "A rare login event is available.", `<button data-action="event">Claim · ${adventure.randomEvent.gold} G</button>`));
     if (adventure.emergency) missionCards.push(card("Emergency Quest Detected", `${adventure.emergency.objective} · +${adventure.emergency.xp} XP · +${adventure.emergency.gold} G · Rare reward chance`, `<button data-action="emergency">Clear Emergency</button>`));
@@ -43,7 +44,9 @@
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
     const mastered = Math.floor(adventure.mastery.pushups / 5) + 1;
-    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Codex</p><h3>Collected Knowledge</h3><div class="sw-mini-stats">${stat("Loot", adventure.loot.length)}${stat("Boxes", adventure.boxes.length)}${stat("Constellations", adventure.constellations.length)}${stat("Awakenings", adventure.awakenings.length)}</div><p class="sw-muted">${adventure.loot.slice(0, 4).map(item => `${item.rarity} ${item.name}`).join(" · ") || "No loot collected yet."}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Exercise Mastery</p><h3>Push-Up Mastery · Level ${mastered}</h3><p>${adventure.mastery.pushups} push-up quests cleared. Next level at ${mastered * 5} clears.</p><p class="sw-muted">Constellations: ${adventure.constellations.join(", ") || "None yet"}<br>Awakenings: ${adventure.awakenings.join(", ") || "Not awakened"}</p></div></div>`;
+    const rank = window.HunterWorkout.rankFor(player.level);
+    const license = rank === "E" || rank === "D" ? "Hunter Shop" : rank === "C" || rank === "B" ? "Elite Boss Terminal" : "Shadow Barracks";
+    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Codex</p><h3>Collected Knowledge</h3><div class="sw-mini-stats">${stat("Loot", adventure.loot.length)}${stat("Boxes", adventure.boxes.length)}${stat("Constellations", adventure.constellations.length)}${stat("Awakenings", adventure.awakenings.length)}</div><p class="sw-muted">${adventure.loot.slice(0, 4).map(item => `${item.rarity} ${item.name}`).join(" · ") || "No loot collected yet."}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Exercise Mastery</p><h3>Push-Up Mastery · Level ${mastered}</h3><p>${adventure.mastery.pushups} push-up quests cleared. Next level at ${mastered * 5} clears. Current bonus: +${Math.min(100, mastered * 10)} XP per push-up quest.</p><p class="sw-muted">Constellations: ${adventure.constellations.join(", ") || "None yet"}<br>Awakenings: ${adventure.awakenings.join(", ") || "Not awakened"}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Hunter License</p><h3>${rank} License</h3><p>Current authorization: ${license}</p><p class="sw-muted">E: Shop · C: Elite Bosses · A: Shadow Barracks</p></div></div>`;
   }
 
   function renderConsole(tab = activeTab) {

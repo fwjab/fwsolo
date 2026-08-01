@@ -84,6 +84,10 @@
     if (hour >= 21) giveGold(player, 35, "Night Hunt bonus");
     if (profile.adventure.dailyFortune?.type === "xp") giveXP(player, Math.round(quest.xp * 0.15), "Daily Fortune");
     if (profile.adventure.dailyFortune?.type === "gold") giveGold(player, 20, "Daily Fortune");
+    if (isPushupQuest) {
+      const masteryLevel = Math.floor(adventure.mastery.pushups / 5) + 1;
+      giveXP(player, Math.min(100, masteryLevel * 10), `Push-Up Mastery Level ${masteryLevel}`);
+    }
     if (adventure.potions.doubleXpArmed) {
       giveXP(player, quest.xp, "Double XP Potion");
       adventure.potions.doubleXpArmed = false;
@@ -95,6 +99,7 @@
     if (roll(0.12) && !adventure.emergency) adventure.emergency = { objective: "20 Burpees", xp: 1200, gold: 500, rare: true };
     if (profile.completedQuests >= 100 && adventure.contracts.pushups >= 250 && !profile.themes.includes("Golden King")) profile.themes.push("Golden King");
     unlockMilestones(player);
+    if (roll(0.28)) window.HunterWorkout?.showToast("SYSTEM", pick(["The System is observing your growth.", "Your physical abilities have increased.", "Your body has adapted to today's training.", "Potential detected.", "Hunter status improving."]));
   }
 
   function login(player) {
@@ -125,6 +130,8 @@
     if (rarity === "Rare" || rarity === "Epic") adventure.potions.doubleXp += 1;
     if (rarity === "Legendary" || rarity === "Mythic") adventure.potions.recovery += 1;
     if (rarity === "Legendary" || rarity === "Mythic") addLoot(player, "Monarch Relic", rarity);
+    if (rarity === "Legendary" && !getProfile(player).themes.includes("Red Monarch")) getProfile(player).themes.push("Red Monarch");
+    if (rarity === "Mythic" && !getProfile(player).themes.includes("Golden King")) getProfile(player).themes.push("Golden King");
     return rarity;
   }
 

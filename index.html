@@ -1395,6 +1395,20 @@ const dailyQuestSignature = "dynamic";      const bossQuestBank = [
       function getDailyQuests(player) {
         const today = todayKey();
         if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
+          if (player.questDate && player.questDate !== today && player.lastDaily) {
+            const previousDay = new Date(`${today}T00:00:00`);
+            previousDay.setDate(previousDay.getDate() - 1);
+            const expectedLastDaily = previousDay.toISOString().slice(0, 10);
+            if (player.lastDaily !== expectedLastDaily) {
+              const adventure = window.HunterProgression?.adventureFor?.(player);
+              if (adventure?.streakShielded) {
+                adventure.streakShielded = false;
+                showToast("Recovery Potion", `${player.name}'s streak was protected.`);
+              } else {
+                player.streak = 0;
+              }
+            }
+          }
           player.questDate = today;
           player.questSignature = dailyQuestSignature;
           
