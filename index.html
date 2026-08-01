@@ -87,7 +87,15 @@
       z-index: -1;
       pointer-events: none;
       overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(3, 7, 18, .14) 0%, rgba(5, 9, 23, .44) 44%, rgba(3, 6, 15, .92) 100%),
+        radial-gradient(ellipse at 74% 20%, rgba(82, 194, 255, .28), transparent 30%),
+        url("/assets/nightforge-hero-original.png") center top / cover no-repeat;
+      opacity: .72;
+      filter: saturate(1.12) contrast(1.08);
     }
+
+    .sw-bg-art > * { position: relative; z-index: 1; }
 
     .sw-bg-art::before {
       content: "";
