@@ -93,6 +93,13 @@
     return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Records</p><h3>Lifetime Statistics</h3><div class="sw-mini-stats">${stat("Workouts", records.workouts || profile.completedQuests)}${stat("Push-Ups", records.pushups || 0)}${stat("Squats", records.squats || 0)}${stat("Minutes", records.minutes || 0)}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Growth Analysis</p><h3>Consistency Report</h3><div class="sw-mini-stats">${stat("Bosses", world.bossesCleared)}${stat("Highest Streak", Math.max(records.highestStreak || 0, player.streak || 0))}${stat("Lifetime XP", player.totalXp)}${stat("Avg XP/Day", Math.round((player.totalXp || 0) / days))}</div></div></div>`;
   }
 
+  function renderProfile(player) {
+    const profile = getProfile(player);
+    const effects = { str: "+1% XP per point above 10", agi: "+0.5% gold per point above 10", end: "Faster Shadow missions and stronger boss damage", vit: "Reserved for future recovery systems" };
+    const attributes = Object.entries(profile.stats).map(([key, value]) => `<span><b>${value}</b>${key.toUpperCase()}<button data-action="stat" data-id="${key}" ${profile.statPoints < 1 ? "disabled" : ""}>+</button><small>${effects[key]}</small></span>`).join("");
+    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("Stat Points", profile.statPoints)}${stat("Shadow", profile.equippedShadow || "None")}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Spend ${profile.statPoints} Attribute Points</p><h3>Hunter Attributes</h3><div class="sw-mini-stats sw-attribute-grid">${attributes}</div><p class="sw-muted">Strength scales XP, Agility scales gold, and Endurance improves boss and Shadow Army performance.</p></div></div>`;
+  }
+
   function renderConsole(tab = activeTab) {
     activeTab = tab;
     const root = document.getElementById("sw-system-console");
@@ -106,6 +113,7 @@
     const nav = tabs.map(item => `<button class="sw-console-tab ${item === activeTab ? "is-active" : ""}" data-console-tab="${item}">${item}</button>`).join("");
     let content = "";
     if (activeTab === "profile") content = `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("Stat Points", profile.statPoints)}${stat("Shadow", profile.equippedShadow || "None")}</div></div><div class="sw-hunter-card"><h3>Hunter Attributes</h3><div class="sw-mini-stats">${Object.entries(profile.stats).map(([key, value]) => stat(key.toUpperCase(), value)).join("")}</div><p class="sw-muted">Theme: ${escapeHtml(profile.equippedTheme)} · Current fortune: ${adventure.dailyFortune?.type || "none"}</p></div></div>`;
+    if (activeTab === "profile") content = renderProfile(player);
     if (activeTab === "missions") content = renderMissions(player);
     if (activeTab === "shadows") content = renderShadows(player);
     if (activeTab === "guild") content = renderGuild(player);
@@ -133,6 +141,7 @@
     if (action === "shadow") return finish(equipShadow(player, id), "Shadow equipped.", "Shadow unavailable.");
     if (action === "theme") return finish(equipTheme(player, id), "Theme equipped.", "Theme unavailable.");
     if (action === "upgrade") return finish(buyUpgrade(player, id), "Upgrade applied.", "Not enough gold or upgrade limit reached.");
+    if (action === "stat") return finish(window.HunterProgression.allocateStat(player, id), `${id.toUpperCase()} increased. Your hunter bonuses have scaled.`, "No attribute points available.");
     if (action === "use-item") { const used = removeItem(player, id); if (used) { player.quests = []; } return finish(used, "Quest Refresh used. A new quest list has been issued. Cleared quests remain locked for today.", "Item unavailable."); }
     if (action === "emergency") return finish(window.HunterProgression.actions.claimEmergency(player), "Emergency quest cleared.", "No emergency quest active.");
     if (action === "elite-summon") return finish(window.HunterProgression.actions.summonEliteBoss(player), "Elite boss summoned.", "Elite bosses unlock at Level 10.");

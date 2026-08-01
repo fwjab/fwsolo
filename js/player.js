@@ -63,3 +63,11 @@ function getProfile(player) {
 
 window.HunterProgression.getProfile = getProfile;
 window.HunterProgression.rankOrder = ["E", "D", "C", "B", "A", "S", "National", "Monarch"];
+
+window.HunterProgression.allocateStat = (player, statName) => {
+  const profile = getProfile(player);
+  if (!Object.prototype.hasOwnProperty.call(profile.stats, statName) || profile.statPoints < 1) return false;
+  profile.stats[statName] += 1;
+  profile.statPoints -= 1;
+  return true;
+};

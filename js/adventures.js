@@ -210,7 +210,8 @@
     const shadow = getProfile(player).equippedShadow;
     if (player.level < 35 || !shadow || adventure.shadowMission) return false;
     adventure.shadowLevels[shadow] = adventure.shadowLevels[shadow] || 1;
-    adventure.shadowMission = { shadow, readyAt: Date.now() + 30 * 60 * 1000 };
+    const minutes = Math.max(10, 30 - Math.floor(Math.max(0, getProfile(player).stats.end - 10) / 2));
+    adventure.shadowMission = { shadow, readyAt: Date.now() + minutes * 60 * 1000 };
     return true;
   }
 
@@ -220,7 +221,7 @@
     boss.phases = boss.phases || ["Finish 30 controlled squats", "Finish 20 push-ups at your pace", "Hold a 60-second plank, split if needed"];
     boss.phase = Number(boss.phase) || 0;
     if (boss.phase >= boss.phases.length) return false;
-    boss.phase += 1;
+    boss.phase += 1 + Math.floor(Math.max(0, getProfile(player).stats.end - 10) / 20);
     return boss.phase >= boss.phases.length ? "defeated" : "phase";
   }
 

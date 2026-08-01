@@ -1,12 +1,13 @@
 function giveGold(player, amount, reason = "System reward") {
   const profile = getProfile(player);
-  profile.gold = Math.max(0, profile.gold + Math.round(Number(amount) || 0));
-  window.HunterWorkout?.pushFeed(`${player.name} received ${amount} gold: ${reason}.`);
+  const scaledAmount = Math.round((Number(amount) || 0) * (1 + Math.max(0, profile.stats.agi - 10) * 0.005));
+  profile.gold = Math.max(0, profile.gold + scaledAmount);
+  window.HunterWorkout?.pushFeed(`${player.name} received ${scaledAmount} gold: ${reason}.`);
 }
 
 function giveXP(player, amount, reason = "System reward") {
   const profile = getProfile(player);
-  const boostedAmount = Math.round((Number(amount) || 0) * (1 + profile.upgrades.xpBoost * 0.05));
+  const boostedAmount = Math.round((Number(amount) || 0) * (1 + profile.upgrades.xpBoost * 0.05 + Math.max(0, profile.stats.str - 10) * 0.01));
   window.HunterWorkout?.addXp(player, boostedAmount, reason);
 }
 
