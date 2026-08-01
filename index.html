@@ -797,10 +797,32 @@
     .sw-mini-stats { flex-wrap: wrap; margin-top: 16px; }
     .sw-mini-stats span { display: grid; min-width: 80px; color: #a8a8c3; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .06em; }
     .sw-mini-stats b { color: #fff; font-size: 1rem; }
+    .sw-shadow-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .sw-shadow-card { position: relative; overflow: hidden; min-height: 190px; padding: 20px; border-radius: 16px; border: 1px solid rgba(140, 102, 255, 0.36); background: linear-gradient(135deg, #120d29, #070a1b); }
+    .sw-shadow-card::after { content: ""; position: absolute; inset: -30%; opacity: .35; background: radial-gradient(circle, var(--shadow-glow), transparent 58%); pointer-events: none; }
+    .sw-shadow-card > * { position: relative; z-index: 1; }
+    .sw-shadow-card h3 { margin: 6px 0; font-size: 1.15rem; }
+    .sw-shadow-card p { color: #c2bfdb; line-height: 1.45; }
+    .sw-shadow-card button { width: 100%; border: 1px solid color-mix(in srgb, var(--shadow-glow), white 15%); color: white; background: color-mix(in srgb, var(--shadow-glow), transparent 76%); border-radius: 9px; padding: 9px; cursor: pointer; }
+    .sw-shadow-card.is-owned { box-shadow: 0 0 28px color-mix(in srgb, var(--shadow-glow), transparent 76%); }
+    .sw-shadow-crest { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid var(--shadow-glow); border-radius: 50%; color: var(--shadow-glow); font-size: 1.45rem; box-shadow: 0 0 20px var(--shadow-glow); }
+    .sw-shadow-iron { --shadow-glow: #8aa2ca; }
+    .sw-shadow-wolf { --shadow-glow: #5a73ff; }
+    .sw-shadow-mage { --shadow-glow: #ba60ff; }
+    .sw-shadow-dragon { --shadow-glow: #ef5ab6; }
+    .sw-hq { display: grid; gap: 16px; }
+    .sw-hq-core { padding: 24px; border-radius: 16px; background: linear-gradient(125deg, rgba(68, 43, 151, .42), rgba(8, 11, 27, .9)), radial-gradient(circle at 88% 20%, #a060ff55, transparent 22%); border: 1px solid rgba(171, 135, 255, .38); }
+    .sw-hq-core h3 { margin: 5px 0; font-size: 1.5rem; }
+    .sw-room-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .sw-room { display: grid; gap: 6px; min-height: 105px; padding: 14px; border: 1px solid rgba(168, 158, 221, .18); border-radius: 12px; color: #7f7c99; background: rgba(255, 255, 255, .02); }
+    .sw-room b { color: #706c90; font-size: 1.2rem; }
+    .sw-room.is-built { color: #f2edff; border-color: rgba(174, 130, 255, .55); background: radial-gradient(circle at 15% 15%, #8455d54d, transparent 40%), rgba(31, 17, 65, .62); }
+    .sw-room.is-built b { color: #b991ff; text-shadow: 0 0 15px #a673ff; }
+    .sw-room small { color: #aaa5c1; }
     :root[data-hunter-theme="purple"] { --sw-accent: #a85cff; }
     :root[data-hunter-theme="red"] { --sw-accent: #ed4f78; }
     :root[data-hunter-theme="gold"] { --sw-accent: #e6b84d; }
-    @media (max-width: 640px) { .sw-console-head, .sw-system-list article { align-items: stretch; flex-direction: column; } .sw-console-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .sw-console-head, .sw-system-list article { align-items: stretch; flex-direction: column; } .sw-console-grid, .sw-shadow-grid { grid-template-columns: 1fr; } .sw-room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
     .sw-toast.is-visible {
       opacity: 1;
@@ -1779,6 +1801,7 @@ player.quests = quests.map((quest, index) => ({
   <script src="js/upgrades.js"></script>
   <script src="js/shop.js"></script>
   <script src="js/save.js"></script>
+  <script src="js/adventures.js"></script>
   <script src="js/ui.js"></script>
 </div>
 </body>
