@@ -1,9 +1,11 @@
 (() => {
   const tabs = ["profile", "missions", "shadows", "guild", "headquarters", "archive", "codex", "stats", "shop", "titles", "cosmetics", "upgrades", "inventory", "settings"];
-  let selectedPlayerId = "";
   let activeTab = "profile";
   const escapeHtml = value => String(value).replace(/[&<>'"]/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" })[character]);
-  const currentPlayer = () => window.HunterWorkout?.players().find(item => item.id === selectedPlayerId) || window.HunterWorkout?.players()[0];
+  const currentPlayer = () => {
+    const players = window.HunterWorkout?.players() || [];
+    return players.find(item => item.id === localStorage.getItem("nightforgePlayerSession")) || players[0];
+  };
   const stat = (label, value) => `<span><b>${value}</b>${label}</span>`;
   const cards = (items, render) => `<div class="sw-system-list">${items.map(render).join("")}</div>`;
   const card = (title, body, action = "") => `<article><div><h3>${title}</h3>${body ? `<small>${body}</small>` : ""}</div>${action}</article>`;
@@ -136,7 +138,6 @@
     const activeSession = localStorage.getItem("nightforgePlayerSession");
     if (!players.some(player => player.id === activeSession)) openPlayerSession(players);
     renderDailyLogin(players);
-    if (!players.some(item => item.id === selectedPlayerId)) selectedPlayerId = players[0].id;
     const player = currentPlayer();
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
@@ -157,11 +158,10 @@
     if (activeTab === "upgrades") content = cards(upgrades, item => card(item.name, `${item.cost} Gold`, `<button data-action="upgrade" data-id="${item.id}">Upgrade</button>`));
     if (activeTab === "inventory") content = cards([{ name: "Mystery Boxes", detail: `${adventure.boxes.length} stored`, action: adventure.boxes.length ? "open-box" : "" }, { name: "Hunter Lottery", detail: "750 Gold · win a mystery box", action: "lottery" }, { name: "Double XP Potion", detail: `${adventure.potions.doubleXp} stored · doubles your next cleared quest`, action: "potion" }, { name: "Recovery Potion", detail: `${adventure.potions.recovery} stored · protects your current streak`, action: "recovery" }, ...profile.inventory.map(item => ({ name: item.name, detail: "Consumable", action: "use-item" }))], item => card(item.name, item.detail, item.action ? `<button data-action="${item.action}" data-id="${item.name}">${item.action === "open-box" ? "Open Box" : item.action === "lottery" ? "Play" : "Use"}</button>` : ""));
     if (activeTab === "settings") content = renderSettings(player);
-    root.innerHTML = `<div class="sw-console-head"><div><p class="sw-kicker">System Console</p><h2>Hunter Progression</h2></div><label>Active Hunter<select id="sw-console-player">${players.map(item => `<option value="${item.id}" ${item.id === player.id ? "selected" : ""}>${escapeHtml(item.name)}</option>`).join("")}</select></label></div><div class="sw-console-tabs">${nav}</div><div class="sw-console-content">${content}</div>`;
+    root.innerHTML = `<div class="sw-console-head"><div><p class="sw-kicker">System Console</p><h2>Hunter Progression</h2></div><label>Active Hunter<strong>${escapeHtml(player.name)}</strong><small>Use Switch Hunter to change sessions.</small></label></div><div class="sw-console-tabs">${nav}</div><div class="sw-console-content">${content}</div>`;
   }
 
   function finish(success, successText, errorText) { window.HunterWorkout.showToast(success ? "System Updated" : "System Locked", success ? successText : errorText); if (success) { saveGame(); renderConsole(); } }
-  document.addEventListener("change", event => { if (event.target.id === "sw-console-player") { selectedPlayerId = event.target.value; renderConsole(); } });
   document.addEventListener("click", event => {
     const tab = event.target.dataset.consoleTab; if (tab) return renderConsole(tab);
     const action = event.target.dataset.action; if (!action) return; const id = event.target.dataset.id;
