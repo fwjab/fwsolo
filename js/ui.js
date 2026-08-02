@@ -183,13 +183,15 @@
 
   function finish(success, successText, errorText) { window.HunterWorkout.showToast(success ? "System Updated" : "System Locked", success ? successText : errorText); if (success) { saveGame(); renderConsole(); } }
   document.addEventListener("click", event => {
-    const tab = event.target.dataset.consoleTab;
+    const control = event.target.closest?.("[data-console-tab], [data-action]");
+    if (!control) return;
+    const tab = control.dataset.consoleTab;
     if (tab) {
       renderConsole(tab);
       document.getElementById("sw-system-console")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
-    const action = event.target.dataset.action; if (!action) return; const id = event.target.dataset.id;
+    const action = control.dataset.action; if (!action) return; const id = control.dataset.id;
     if (action === "daily-login") {
       const player = window.HunterWorkout.players().find(item => item.id === id);
       const claimed = player && window.HunterProgression.actions.claimDailyLogin(player);
