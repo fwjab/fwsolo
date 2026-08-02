@@ -1207,6 +1207,8 @@
       let lastSyncedState = "";
       let pendingSaveCount = 0;
       let saveQueue = Promise.resolve();
+      let serverStateReady = !serverMode;
+      const playerSyncRevisions = {};
       const todayKey = () => {
   const now = new Date();
 
@@ -1421,6 +1423,7 @@ const dailyQuestSignature = "dynamic";
             state = sharedState;
             lastSyncedState = JSON.stringify(state);
             localStorage.setItem(storageKey, lastSyncedState);
+            state.players.forEach(player => { playerSyncRevisions[player.id] = Number(player.syncRevision) || 0; });
           }
           setSyncMode("Shared party sync");
         } catch (error) {
@@ -1433,7 +1436,7 @@ const dailyQuestSignature = "dynamic";
         const payload = JSON.stringify(state);
         localStorage.setItem(storageKey, payload);
         window.dispatchEvent(new CustomEvent("hunter:state-updated"));
-        if (!serverMode) return;
+        if (!serverMode || !serverStateReady) return;
         const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id || "";
         pendingSaveCount += 1;
         setSyncMode("Saving progress");
@@ -1442,11 +1445,26 @@ const dailyQuestSignature = "dynamic";
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "X-Hunter-Session": activePlayerId
+              "X-Hunter-Session": activePlayerId,
+              "X-Hunter-Revision": String(playerSyncRevisions[activePlayerId] || 0)
             },
             body: payload
           });
-          if (!response.ok) throw new Error("Save failed.");
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            if (response.status === 409 && result.state?.players) {
+              state = result.state;
+              state.players.forEach(player => { playerSyncRevisions[player.id] = Number(player.syncRevision) || 0; });
+              lastSyncedState = JSON.stringify(state);
+              localStorage.setItem(storageKey, lastSyncedState);
+              render();
+              showToast("Progress Refreshed", "A newer save was found, so the old browser copy was blocked.");
+            }
+            throw new Error(result.error || "Save failed.");
+          }
+          playerSyncRevisions[activePlayerId] = Number(result.playerRevision) || 0;
+          const activePlayer = state.players.find(player => player.id === activePlayerId);
+          if (activePlayer) activePlayer.syncRevision = playerSyncRevisions[activePlayerId];
           lastSyncedState = payload;
         }).then(() => {
           setSyncMode("Shared party sync");
@@ -1469,6 +1487,7 @@ const dailyQuestSignature = "dynamic";
             state = incoming;
             lastSyncedState = incomingText;
             localStorage.setItem(storageKey, incomingText);
+            state.players.forEach(player => { playerSyncRevisions[player.id] = Number(player.syncRevision) || 0; });
             render();
           }
           setSyncMode("Shared party sync");
@@ -2160,6 +2179,7 @@ if (profile?.upgrades.extraDailyQuest) {
           document.querySelectorAll("#sw-admin-form, #sw-admin-player-form, #sw-admin-delete-form").forEach(form => { form.style.display = "none"; });
         }
         await loadServerState();
+        serverStateReady = true;
         document.addEventListener("click", event => { if (event.target.matches("button")) playSystemSound("click"); });
         render();
         if (serverMode) {
