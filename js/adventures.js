@@ -65,7 +65,7 @@
     const profile = getProfile(player);
     if (adventure.shadowFragments[shadowName] >= required && !profile.shadows.includes(shadowName)) {
       profile.shadows.push(shadowName);
-      profile.equippedShadow = shadowName;
+      activateShadow(player, shadowName);
       window.HunterWorkout?.showToast("ARISE", `${shadowName} has joined your Shadow Army.`);
     }
   }

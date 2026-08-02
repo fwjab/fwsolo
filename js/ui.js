@@ -40,10 +40,13 @@
   function renderShadows(player) {
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
-    return `<div class="sw-shadow-grid">${shadows.map(shadow => {
+    const activeShadows = activeShadowsFor(player);
+    const slots = shadowSlotsFor(player);
+    return `<div class="sw-hunter-card"><p class="sw-kicker">Active Shadow Army</p><h3>${activeShadows.length}/${slots} shadows deployed</h3><p class="sw-muted">${activeShadows.length ? activeShadows.join(" · ") : "No shadows are currently deployed."}</p></div><div class="sw-shadow-grid">${shadows.map(shadow => {
       const owned = profile.shadows.includes(shadow.name);
+      const active = activeShadows.includes(shadow.name);
       const fragments = adventure.shadowFragments[shadow.name] || 0;
-      return `<article class="sw-shadow-card sw-shadow-${shadow.className} ${owned ? "is-owned" : ""}"><div class="sw-shadow-crest">${shadow.crest}</div><div><p class="sw-kicker">${owned ? "Shadow Bound" : `${fragments}/${shadow.fragments} fragments`}</p><h3>${shadow.name}</h3><p>${shadow.description}</p></div><button data-action="${owned ? "shadow" : "summon"}" data-id="${shadow.name}">${owned ? (profile.equippedShadow === shadow.name ? "Equipped" : "Equip") : `Summon · ${shadow.cost} G`}</button></article>`;
+      return `<article class="sw-shadow-card sw-shadow-${shadow.className} ${owned ? "is-owned" : ""}"><div class="sw-shadow-crest">${shadow.crest}</div><div><p class="sw-kicker">${owned ? (active ? "Shadow Deployed" : "Shadow Bound") : `${fragments}/${shadow.fragments} fragments`}</p><h3>${shadow.name}</h3><p>${shadow.description}</p></div><button data-action="${owned ? "shadow" : "summon"}" data-id="${shadow.name}" ${owned && !active && activeShadows.length >= slots ? "disabled" : ""}>${owned ? (active ? "Dismiss" : "Deploy") : `Summon · ${shadow.cost} G`}</button></article>`;
     }).join("")}</div>`;
   }
 
@@ -60,7 +63,8 @@
       missionCards.push(card(`${adventure.eliteBoss.name} · ${hp}% HP`, phase < phases.length ? `Phase ${phase + 1}/${phases.length}: ${phases[phase]}` : "Boss broken. Claim the core below.", phase < phases.length ? `<button data-action="elite-phase">Clear Phase</button>` : ""));
     }
     const shadowMission = adventure.shadowMission;
-    if (player.level >= 35) missionCards.push(card("Monarch Shadow Mission", shadowMission ? `${shadowMission.shadow} is scouting beyond the gate.` : `Send ${profile.equippedShadow || "an equipped Shadow"} for XP, gold, and Shadow levels.`, shadowMission ? `<button data-action="shadow-claim">Claim when ready</button>` : `<button data-action="shadow-send" ${profile.equippedShadow ? "" : "disabled"}>Send Shadow</button>`));
+    const activeShadows = activeShadowsFor(player);
+    if (player.level >= 35) missionCards.push(card("Monarch Shadow Mission", shadowMission ? `${shadowMission.shadow} is scouting beyond the gate.` : `Send ${activeShadows[0] || "an active Shadow"} for XP, gold, and Shadow levels.`, shadowMission ? `<button data-action="shadow-claim">Claim when ready</button>` : `<button data-action="shadow-send" ${activeShadows.length ? "" : "disabled"}>Send Shadow</button>`));
     missionCards.push(card("Daily System Scan", world.systemScan || "Scanning Hunter..."));
     if (world.eclipse?.active) missionCards.push(card("Eclipse Event", "24 hours · Double XP · Double Gold · Exclusive missions active."));
     if (world.welcomePackage) missionCards.push(card("Welcome Back, Hunter", `Recovery package: +${world.welcomePackage.xp} XP · +${world.welcomePackage.gold} G · Recovery Potion`, `<button data-action="welcome">Claim Package</button>`));
@@ -129,7 +133,7 @@
     const rankEfficiency = Math.round((window.HunterProgression.rankXpMultiplier(player) || 1) * 100);
     const effects = { str: "+1% XP per point above 10", agi: "+0.5% gold per point above 10", end: "Faster Shadow missions and stronger boss damage", vit: "One automatic weekly streak-save per 10 VIT" };
     const attributes = Object.entries(profile.stats).map(([key, value]) => `<span><b>${value}</b>${key.toUpperCase()}<button data-action="stat" data-id="${key}" ${profile.statPoints < 1 ? "disabled" : ""}>+</button><small>${effects[key]}</small></span>`).join("");
-    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("XP Efficiency", `${rankEfficiency}%`)}${stat("Shadow", profile.equippedShadow || "None")}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Spend ${profile.statPoints} Attribute Points</p><h3>Hunter Attributes</h3><div class="sw-mini-stats sw-attribute-grid">${attributes}</div><p class="sw-muted">Higher ranks earn stronger XP rewards to match their harder requirements, while attributes scale from this hunter’s own stats.</p></div></div>`;
+    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">${escapeHtml(profile.title)}</p><h3>${escapeHtml(player.name)}</h3><p>${window.HunterWorkout.rankFor(player.level)} Rank · Level ${player.level}</p><div class="sw-mini-stats">${stat("Gold", profile.gold)}${stat("Quest Clears", profile.completedQuests)}${stat("XP Efficiency", `${rankEfficiency}%`)}${stat("Shadow Army", `${activeShadowsFor(player).length}/${shadowSlotsFor(player)}`)}</div></div><div class="sw-hunter-card"><p class="sw-kicker">Spend ${profile.statPoints} Attribute Points</p><h3>Hunter Attributes</h3><div class="sw-mini-stats sw-attribute-grid">${attributes}</div><p class="sw-muted">Higher ranks earn stronger XP rewards to match their harder requirements, while attributes scale from this hunter’s own stats.</p></div></div>`;
   }
 
   function renderConsole(tab = activeTab) {

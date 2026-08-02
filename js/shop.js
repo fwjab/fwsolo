@@ -19,7 +19,7 @@ function buyItem(player, itemId) {
     if (profile.gold < item.price || profile.shadows.includes(item.id)) return false;
     profile.gold -= item.price;
     profile.shadows.push(item.id);
-    profile.equippedShadow = item.id;
+    activateShadow(player, item.id);
     return true;
   }
   if (item.type === "upgrade") {

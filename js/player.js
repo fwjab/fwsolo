@@ -5,6 +5,7 @@ const defaultProgression = () => ({
   statPoints: 0,
   title: "Rookie Hunter",
   equippedShadow: null,
+  activeShadows: [],
   equippedTheme: "Blue Hunter",
   inventory: [],
   titles: ["Rookie Hunter"],
@@ -61,6 +62,14 @@ function getProfile(player) {
   Object.keys(defaults.stats).forEach(key => {
     if (player.progression.stats[key] === undefined) player.progression.stats[key] = defaults.stats[key];
   });
+  if (!Array.isArray(player.progression.activeShadows)) player.progression.activeShadows = [];
+  player.progression.activeShadows = [...new Set(player.progression.activeShadows.filter(shadow => player.progression.shadows.includes(shadow)))];
+  if (!player.progression.activeShadows.length && player.progression.equippedShadow && player.progression.shadows.includes(player.progression.equippedShadow)) {
+    player.progression.activeShadows.push(player.progression.equippedShadow);
+  }
+  if (!player.progression.equippedShadow && player.progression.activeShadows.length) {
+    player.progression.equippedShadow = player.progression.activeShadows[0];
+  }
   backfillLegacyProgression(player, player.progression);
   return player.progression;
 }
