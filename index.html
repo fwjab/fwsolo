@@ -366,15 +366,15 @@
     .sw-hero {
       display: grid;
       grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr);
-      gap: 20px;
+      gap: 16px;
       align-items: stretch;
     }
 
     .sw-system-panel {
       position: relative;
       overflow: hidden;
-      min-height: 300px;
-      padding: 28px;
+      min-height: 260px;
+      padding: 22px;
       border: 1px solid rgba(146, 179, 255, .22);
       border-radius: 8px;
       background:
@@ -439,7 +439,7 @@
       position: relative;
       margin: 0;
       max-width: 650px;
-      font-size: clamp(2rem, 6vw, 4.8rem);
+      font-size: clamp(1.8rem, 5vw, 4rem);
       line-height: .95;
       font-weight: 800;
       letter-spacing: 0;
@@ -526,9 +526,9 @@
     }
 
     .sw-player {
-      padding: 28px;
+      padding: 22px;
       display: grid;
-      gap: 20px;
+      gap: 16px;
       min-width: 0;
       position: relative;
       overflow: hidden;
@@ -552,8 +552,8 @@
     }
 
     .sw-player-companion {
-      width: 108px;
-      height: 108px;
+      width: 94px;
+      height: 94px;
       flex: 0 0 auto;
       border: 1px solid rgba(137, 207, 255, .58);
       border-radius: 14px;
@@ -564,8 +564,8 @@
     .sw-player-companion.mage { background-position: 0 100%; border-color: rgba(204, 126, 255, .7); }
     .sw-player-companion.dragon { background-position: 100% 100%; border-color: rgba(88, 237, 220, .7); }
     .sw-player-companion.none { background: radial-gradient(circle, rgba(119, 186, 255, .28), transparent 45%), rgba(8, 16, 37, .84); }
-    .sw-player-companions { display: flex; align-items: center; min-width: 108px; padding-right: 8px; }
-    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -34px; }
+    .sw-player-companions { display: flex; align-items: center; min-width: 94px; padding-right: 8px; }
+    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -30px; }
     .sw-player-companions .sw-player-companion { position: relative; }
     .sw-player-companions .sw-player-companion:nth-child(1) { z-index: 4; }
     .sw-player-companions .sw-player-companion:nth-child(2) { z-index: 3; }
@@ -1820,6 +1820,27 @@ if (profile?.upgrades.extraDailyQuest) {
         root.innerHTML = `<div class="sw-rank-scale" aria-label="Rank scale from Monarch to E">${scale}</div><div class="sw-ladder-hunters">${hunters}</div>`;
       }
 
+      function openHunterViewer() {
+        let popup = document.getElementById("sw-main-hunter-viewer");
+        if (!popup) {
+          popup = document.createElement("div");
+          popup.id = "sw-main-hunter-viewer";
+          popup.className = "sw-daily-login sw-player-session";
+          document.body.append(popup);
+        }
+        const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id;
+        popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · HUNTER ARCHIVE</p><h2>View Hunter Record</h2><p>Choose a hunter to view their card. Only your active console can make changes.</p><div class="sw-daily-login-players">${state.players.map(player => `<button type="button" data-view-hunter-id="${player.id}"><b>${escapeHtml(player.name)}</b><span>${player.id === activePlayerId ? "Your active console" : "View read-only record"}</span></button>`).join("")}</div><button class="sw-daily-login-exit" type="button" data-close-hunter-viewer>Exit</button></div>`;
+        popup.querySelectorAll("[data-view-hunter-id]").forEach(button => {
+          button.onclick = () => {
+            localStorage.setItem("nightforgeViewedHunter", button.dataset.viewHunterId);
+            popup.style.display = "none";
+            render();
+          };
+        });
+        popup.querySelector("[data-close-hunter-viewer]").onclick = () => { popup.style.display = "none"; };
+        popup.style.display = "grid";
+      }
+
       function render() {
         const playersRoot = document.getElementById("sw-players");
         const achievementSelect = document.getElementById("sw-achievement-player");
@@ -1978,7 +1999,7 @@ if (profile?.upgrades.extraDailyQuest) {
           bossRank: contract.rank
         });
 
-        if (hunterView) hunterView.onclick = () => window.HunterProgression?.openHunterViewer?.(state.players);
+        if (hunterView) hunterView.onclick = openHunterViewer;
         pushFeed(`${player.name} summoned a ${contract.rank}-Rank Boss Quest for ${xp} XP.`);
         showToast(`${contract.rank}-Rank Boss Quest`, `${player.name}'s contract is locked at ${xp} XP.`);
         playSystemSound("boss");
