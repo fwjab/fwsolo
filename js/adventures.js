@@ -21,19 +21,30 @@
     Object.keys(defaults).forEach(key => { if (profile.adventure[key] === undefined) profile.adventure[key] = defaults[key]; });
     Object.keys(defaults.potions).forEach(key => { if (profile.adventure.potions[key] === undefined) profile.adventure.potions[key] = defaults.potions[key]; });
     if (!profile.adventure.vitalityRecovery || typeof profile.adventure.vitalityRecovery !== "object") profile.adventure.vitalityRecovery = { period: "", uses: 0 };
-    if (profile.adventure.migrationVersion !== 1) {
-      const completedQuests = Math.max(0, Number(profile.completedQuests) || 0);
+    if (profile.adventure.migrationVersion !== 2) {
+      const completedQuests = Math.max(
+        0,
+        Number(profile.completedQuests) || 0,
+        window.HunterProgression.estimateLegacyQuestClears?.(player) || 0
+      );
       const estimatedPushupQuests = Math.floor(completedQuests / 6);
+      const estimatedPushups = estimatedPushupQuests * 45;
+      const estimatedSquats = estimatedPushupQuests * 75;
       profile.adventure.mastery.pushups = Math.max(profile.adventure.mastery.pushups || 0, estimatedPushupQuests);
-      profile.adventure.contracts.pushups = Math.max(profile.adventure.contracts.pushups || 0, estimatedPushupQuests * 45);
-      profile.adventure.contracts.totalPushups = Math.max(profile.adventure.contracts.totalPushups || 0, estimatedPushupQuests * 45);
+      profile.adventure.contracts.pushups = Math.max(profile.adventure.contracts.pushups || 0, estimatedPushups);
+      profile.adventure.contracts.totalPushups = Math.max(profile.adventure.contracts.totalPushups || 0, estimatedPushups);
+      profile.adventure.statistics.workouts = Math.max(profile.adventure.statistics.workouts || 0, completedQuests);
+      profile.adventure.statistics.pushups = Math.max(profile.adventure.statistics.pushups || 0, estimatedPushups);
+      profile.adventure.statistics.squats = Math.max(profile.adventure.statistics.squats || 0, estimatedSquats);
+      profile.adventure.statistics.minutes = Math.max(profile.adventure.statistics.minutes || 0, completedQuests * 10);
+      profile.adventure.statistics.highestStreak = Math.max(profile.adventure.statistics.highestStreak || 0, player.streak || 0);
       profile.adventure.shadowFragments["Iron Knight"] = Math.max(profile.adventure.shadowFragments["Iron Knight"] || 0, Math.floor(completedQuests / 8));
       profile.adventure.shadowFragments["Shadow Wolf"] = Math.max(profile.adventure.shadowFragments["Shadow Wolf"] || 0, Math.floor(completedQuests / 12));
       profile.adventure.shadowFragments["Shadow Mage"] = Math.max(profile.adventure.shadowFragments["Shadow Mage"] || 0, Math.floor(completedQuests / 20));
       profile.adventure.shadowFragments["Shadow Dragon"] = Math.max(profile.adventure.shadowFragments["Shadow Dragon"] || 0, Math.floor(completedQuests / 50));
       if (completedQuests >= 50 && profile.adventure.boxes.length === 0) profile.adventure.boxes.push("Rare");
       if (completedQuests >= 100 && profile.adventure.contracts.pushups >= 250 && !profile.themes.includes("Golden King")) profile.themes.push("Golden King");
-      profile.adventure.migrationVersion = 1;
+      profile.adventure.migrationVersion = 2;
       window.HunterProgression.adventureMigrationOccurred = true;
       unlockMilestones(player);
     }

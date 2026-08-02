@@ -16,15 +16,19 @@ const defaultProgression = () => ({
   stats: { str: 10, agi: 10, end: 10, vit: 10 }
 });
 
-function backfillLegacyProgression(player, profile) {
-  if (profile.migrationVersion >= 1) return;
-
+function estimateLegacyQuestClears(player) {
   const totalXp = Math.max(0, Math.round(Number(player.totalXp) || 0));
-  const level = Math.max(1, Math.round(Number(player.level) || 1));
   const loggedQuestClears = Array.isArray(player.log)
     ? player.log.filter(entry => /^\+\d+ XP:/.test(entry.text || "") && !/Daily quest bonus|Achievement:|Admin adjustment/.test(entry.text || "")).length
     : 0;
-  const estimatedQuestClears = Math.max(loggedQuestClears, Math.floor(totalXp / 40));
+  return Math.max(loggedQuestClears, Math.floor(totalXp / 40));
+}
+
+function backfillLegacyProgression(player, profile) {
+  if (profile.migrationVersion >= 2) return;
+
+  const level = Math.max(1, Math.round(Number(player.level) || 1));
+  const estimatedQuestClears = estimateLegacyQuestClears(player);
   const earnedGold = estimatedQuestClears * 35 + (level - 1) * 100;
 
   profile.completedQuests = Math.max(Number(profile.completedQuests) || 0, estimatedQuestClears);
@@ -39,7 +43,7 @@ function backfillLegacyProgression(player, profile) {
   if (level >= 15 && !profile.titles.includes("Elite Hunter")) profile.titles.push("Elite Hunter");
   if (level >= 25 && !profile.titles.includes("Shadow Monarch")) profile.titles.push("Shadow Monarch");
 
-  profile.migrationVersion = 1;
+  profile.migrationVersion = 2;
   window.HunterProgression.migrationOccurred = true;
 }
 
@@ -62,6 +66,7 @@ function getProfile(player) {
 }
 
 window.HunterProgression.getProfile = getProfile;
+window.HunterProgression.estimateLegacyQuestClears = estimateLegacyQuestClears;
 window.HunterProgression.rankOrder = ["E", "D", "C", "B", "A", "S", "National", "Monarch"];
 
 window.HunterProgression.rankXpMultiplier = player => {
