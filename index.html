@@ -866,6 +866,8 @@
     .sw-task-dock-title { flex: 0 0 auto; color: #aeeaff; font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
     .sw-task-dock button { flex: 0 0 auto; border: 1px solid rgba(154, 126, 255, .45); border-radius: 8px; padding: 8px 10px; color: #edf7ff; background: rgba(92, 65, 179, .2); font: inherit; font-size: .78rem; cursor: pointer; }
     .sw-task-dock button:hover { border-color: #86e7ff; background: rgba(57, 157, 255, .2); box-shadow: 0 0 15px rgba(86, 197, 255, .22); }
+    .sw-hunter-viewer { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; color: #bcd7ff; font-size: .68rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .sw-hunter-viewer select { width: auto; min-height: 34px; padding: 6px 26px 6px 8px; font-size: .76rem; text-transform: none; }
     .sw-rank-scale { display: grid; grid-template-columns: repeat(8, minmax(25px, 1fr)); gap: 4px; margin: 12px 0; }
     .sw-rank-tier { display: grid; place-items: center; min-height: 30px; border: 1px solid rgba(150, 174, 255, .2); border-radius: 7px; color: #aebbd3; background: rgba(255,255,255,.035); font-size: .66rem; font-weight: 900; }
     .sw-rank-tier.is-populated { color: #f4f7ff; border-color: rgba(126, 215, 255, .55); background: linear-gradient(135deg, rgba(86, 204, 255, .25), rgba(118, 73, 234, .28)); box-shadow: 0 0 12px rgba(89, 199, 255, .16); }
@@ -1086,6 +1088,7 @@
       <button type="button" data-console-tab="stats">Statistics</button>
       <button type="button" data-console-tab="headquarters">Headquarters</button>
       <button type="button" data-console-tab="archive">Archive</button>
+      <label class="sw-hunter-viewer">View Hunter <select id="sw-hunter-view" aria-label="View another hunter record"></select></label>
     </nav>
 
     <section class="sw-players" id="sw-players" aria-label="Player status cards"></section>
@@ -1827,11 +1830,18 @@ if (profile?.upgrades.extraDailyQuest) {
         const deleteSelect = document.getElementById("sw-delete-player");
         const today = todayKey();
         const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id;
+        const requestedViewId = localStorage.getItem("nightforgeViewedHunter");
+        const viewedPlayerId = state.players.some(player => player.id === requestedViewId) ? requestedViewId : activePlayerId;
+        const hunterView = document.getElementById("sw-hunter-view");
+
+        if (hunterView) {
+          hunterView.innerHTML = state.players.map(player => `<option value="${player.id}" ${player.id === viewedPlayerId ? "selected" : ""}>${escapeHtml(player.name)}${player.id === activePlayerId ? " (You)" : ""}</option>`).join("");
+        }
 
         state.players.forEach(getDailyQuests);
         renderRankLadder();
 
-        playersRoot.innerHTML = state.players.map(player => {
+        playersRoot.innerHTML = state.players.filter(player => player.id === viewedPlayerId).map(player => {
           const isActivePlayer = player.id === activePlayerId;
           const needed = xpForLevel(player.level);
           const progress = Math.min(100, Math.round((player.xp / needed) * 100));
@@ -1973,6 +1983,11 @@ if (profile?.upgrades.extraDailyQuest) {
           boss: true,
           bossRank: contract.rank
         });
+
+        if (hunterView) hunterView.onchange = event => {
+          localStorage.setItem("nightforgeViewedHunter", event.currentTarget.value);
+          render();
+        };
         pushFeed(`${player.name} summoned a ${contract.rank}-Rank Boss Quest for ${xp} XP.`);
         showToast(`${contract.rank}-Rank Boss Quest`, `${player.name}'s contract is locked at ${xp} XP.`);
         playSystemSound("boss");

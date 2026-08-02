@@ -191,6 +191,7 @@
     }
     if (action === "player-session") {
       localStorage.setItem("nightforgePlayerSession", id);
+      localStorage.setItem("nightforgeViewedHunter", id);
       document.getElementById("sw-player-session").style.display = "none";
       window.HunterWorkout.render();
       window.HunterPush?.syncHunter?.();
