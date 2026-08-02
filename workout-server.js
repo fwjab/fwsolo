@@ -10,8 +10,7 @@ const adminPasscode = "j@bultra";
 const maxPlayers = 10;
 const appFile = path.join(__dirname, "index.html");
 const saveFile = path.join(__dirname, "workout-save.json");
-const mongoRequested = Boolean(process.env.MONGO_URI);
-let mongoReady = false;
+let useMongo = Boolean(process.env.MONGO_URI);
 
 function cleanPushText(value, maxLength) {
   return String(value || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
@@ -29,16 +28,12 @@ function oneSignalConfigured() {
   return Boolean(process.env.ONESIGNAL_APP_ID && process.env.ONESIGNAL_REST_API_KEY);
 }
 
-if (mongoRequested) {
-  mongoose.connection.on("connected", () => { mongoReady = true; });
-  mongoose.connection.on("disconnected", () => { mongoReady = false; });
+if (useMongo) {
   mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
-      mongoReady = true;
-      console.log("Connected to MongoDB");
-    })
+    .then(() => console.log("Connected to MongoDB"))
     .catch(error => {
-      console.error("MongoDB connection failed; shared saves are temporarily unavailable:", error.message);
+      useMongo = false;
+      console.error("MongoDB connection failed; using local save instead:", error.message);
     });
 } else {
   console.log("No MONGO_URI set; using local workout-save.json.");
@@ -53,7 +48,7 @@ const defaultState = {
 };
 
 async function readState() {
-  if (!mongoRequested) {
+  if (!useMongo) {
     try {
       const state = JSON.parse(fs.readFileSync(saveFile, "utf8"));
       if (state && Array.isArray(state.players)) return state;
@@ -63,27 +58,17 @@ async function readState() {
     return structuredClone(defaultState);
   }
 
-  if (!mongoReady) {
-    const error = new Error("Shared save is temporarily unavailable. Please try again shortly.");
-    error.statusCode = 503;
-    throw error;
-  }
-
-  const savedStates = await GameState.find({}).sort({ updatedAt: -1, _id: -1 }).limit(20);
-  const state = savedStates.sort((first, second) => {
-    const progress = item => (item.players || []).reduce((total, player) => total + (Number(player.totalXp) || 0) + (Number(player.level) || 1) * 1000, 0);
-    return progress(second) - progress(first) || new Date(second.updatedAt || second._id.getTimestamp()).getTime() - new Date(first.updatedAt || first._id.getTimestamp()).getTime();
-  })[0];
+  const state = await GameState.findOne();
 
   if (!state) {
-    return GameState.create(defaultState);
+    state = await GameState.create(defaultState);
   }
 
   return state;
 }
 
 async function writeState(state) {
-  if (!mongoRequested) {
+  if (!useMongo) {
     fs.writeFileSync(saveFile, JSON.stringify(state, null, 2));
     return;
   }
@@ -364,19 +349,11 @@ const currentIds = state.players
         sendJson(response, 403, { error: "Player roster changes require admin control." });
         return;
       }
-      const activePlayerId = cleanPushText(request.headers["x-hunter-session"], 80);
-      const incomingPlayer = nextState.players.find(player => player.id === activePlayerId);
-      const existingPlayerIndex = state.players.findIndex(player => player.id === activePlayerId);
-      if (!activePlayerId || !incomingPlayer || existingPlayerIndex === -1) {
-        sendJson(response, 400, { error: "Choose an active hunter before saving." });
-        return;
-      }
       state.quoteIndex = nextState.quoteIndex;
-      state.feed = Array.isArray(nextState.feed) ? nextState.feed.slice(0, 4) : state.feed;
-      state.players[existingPlayerIndex] = incomingPlayer;
+state.feed = nextState.feed;
+      state.players = nextState.players;
       await writeState(state);
-      const mergedState = typeof state.toObject === "function" ? state.toObject() : structuredClone(state);
-      notifyProgressChanges(previousState, mergedState);
+      notifyProgressChanges(previousState, nextState);
       sendJson(response, 200, { ok: true });
       return;
     }
@@ -510,7 +487,7 @@ const currentIds = state.players
     sendJson(response, 404, { error: "Not found." });
   } catch (error) {
     console.error("Request failed:", error.message);
-    sendJson(response, error.statusCode || 500, { error: error.statusCode ? error.message : "Server request failed." });
+    sendJson(response, 500, { error: "Server request failed." });
   }
 });
 

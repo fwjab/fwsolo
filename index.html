@@ -1415,10 +1415,7 @@ const dailyQuestSignature = "dynamic";
         lastSyncedState = payload;
         fetch("/api/state", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Hunter-Session": localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id || ""
-          },
+          headers: { "Content-Type": "application/json" },
           body: payload
         }).then(response => {
           if (!response.ok) throw new Error("Save failed.");
