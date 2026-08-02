@@ -14,21 +14,24 @@ The web API key and VAPID key are public browser configuration. The service-acco
 
 ## 2. Render Environment Variables
 
-Add these to the web service in **Render > Environment**:
+Add these three required values to the web service in **Render > Environment**:
 
 | Variable | Value |
 | --- | --- |
 | `MONGO_URI` | Your existing MongoDB connection string |
 | `FIREBASE_SERVICE_ACCOUNT_JSON` | The **entire contents** of the downloaded service-account JSON, on one line |
-| `FIREBASE_API_KEY` | Firebase web app `apiKey` |
-| `FIREBASE_AUTH_DOMAIN` | Firebase web app `authDomain` |
-| `FIREBASE_PROJECT_ID` | Firebase web app `projectId` |
-| `FIREBASE_STORAGE_BUCKET` | Firebase web app `storageBucket` |
-| `FIREBASE_MESSAGING_SENDER_ID` | Firebase web app `messagingSenderId` |
-| `FIREBASE_APP_ID` | Firebase web app `appId` |
-| `FIREBASE_MEASUREMENT_ID` | Optional Firebase web app `measurementId` |
+| `FIREBASE_WEB_CONFIG_JSON` | The complete Firebase `firebaseConfig` object as one-line JSON |
 | `FIREBASE_VAPID_KEY` | Public VAPID key from Cloud Messaging web configuration |
-| `PUSH_CRON_SECRET` | A long, random secret used only by the scheduled job |
+
+`PUSH_CRON_SECRET` is only needed later when you add scheduled daily/streak notifications.
+
+Example `FIREBASE_WEB_CONFIG_JSON` value (replace every value with your own Firebase configuration):
+
+```json
+{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"...","measurementId":"..."}
+```
+
+The older separate `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, and related variables still work, but are no longer necessary when using `FIREBASE_WEB_CONFIG_JSON`.
 
 Do **not** commit any of those values. After saving variables, redeploy the Render web service. The **Settings** tab will then show **Enable Push Notifications** for supported browsers.
 

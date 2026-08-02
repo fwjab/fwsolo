@@ -28,17 +28,28 @@ function cleanPushData(value) {
 }
 
 function firebaseWebConfig() {
-  const config = {
-    apiKey: process.env.FIREBASE_API_KEY,
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.FIREBASE_APP_ID,
-    measurementId: process.env.FIREBASE_MEASUREMENT_ID,
-    vapidKey: process.env.FIREBASE_VAPID_KEY
-  };
-  return Object.values(config).filter((value, index) => index !== 6).every(Boolean) ? config : null;
+  let webConfig = {};
+  if (process.env.FIREBASE_WEB_CONFIG_JSON) {
+    try {
+      webConfig = JSON.parse(process.env.FIREBASE_WEB_CONFIG_JSON);
+    } catch (error) {
+      console.error("Firebase push is disabled: FIREBASE_WEB_CONFIG_JSON is not valid JSON.");
+      return null;
+    }
+  } else {
+    webConfig = {
+      apiKey: process.env.FIREBASE_API_KEY,
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.FIREBASE_APP_ID,
+      measurementId: process.env.FIREBASE_MEASUREMENT_ID
+    };
+  }
+  const config = { ...webConfig, vapidKey: process.env.FIREBASE_VAPID_KEY || webConfig.vapidKey };
+  const required = [config.apiKey, config.authDomain, config.projectId, config.storageBucket, config.messagingSenderId, config.appId, config.vapidKey];
+  return required.every(Boolean) ? config : null;
 }
 
 function initializeFirebaseMessaging() {
