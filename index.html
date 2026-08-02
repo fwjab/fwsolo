@@ -523,12 +523,17 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: 20px;
+      max-width: 940px;
+    }
+    .sw-players.is-comparing {
+      max-width: none;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .sw-player {
-      padding: 22px;
+      padding: 18px;
       display: grid;
-      gap: 16px;
+      gap: 14px;
       min-width: 0;
       position: relative;
       overflow: hidden;
@@ -552,8 +557,8 @@
     }
 
     .sw-player-companion {
-      width: 94px;
-      height: 94px;
+      width: 82px;
+      height: 82px;
       flex: 0 0 auto;
       border: 1px solid rgba(137, 207, 255, .58);
       border-radius: 14px;
@@ -564,8 +569,8 @@
     .sw-player-companion.mage { background-position: 0 100%; border-color: rgba(204, 126, 255, .7); }
     .sw-player-companion.dragon { background-position: 100% 100%; border-color: rgba(88, 237, 220, .7); }
     .sw-player-companion.none { background: radial-gradient(circle, rgba(119, 186, 255, .28), transparent 45%), rgba(8, 16, 37, .84); }
-    .sw-player-companions { display: flex; align-items: center; min-width: 94px; padding-right: 8px; }
-    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -30px; }
+    .sw-player-companions { display: flex; align-items: center; min-width: 82px; padding-right: 8px; }
+    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -25px; }
     .sw-player-companions .sw-player-companion { position: relative; }
     .sw-player-companions .sw-player-companion:nth-child(1) { z-index: 4; }
     .sw-player-companions .sw-player-companion:nth-child(2) { z-index: 3; }
@@ -575,7 +580,7 @@
 
     .sw-player-name {
       margin: 0;
-      font-size: clamp(1.7rem, 3vw, 2.35rem);
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
       font-weight: 800;
       overflow-wrap: anywhere;
     }
@@ -1859,15 +1864,22 @@ if (profile?.upgrades.extraDailyQuest) {
         const viewedPlayerId = state.players.some(player => player.id === requestedViewId) ? requestedViewId : activePlayerId;
         const hunterDirectory = document.getElementById("sw-hunter-directory");
         const hunterDirectoryList = document.getElementById("sw-hunter-directory-list");
+        const viewedPlayer = state.players.find(player => player.id === viewedPlayerId);
 
         if (hunterDirectoryList) {
           hunterDirectoryList.innerHTML = state.players.map(player => `<button type="button" data-hunter-view-id="${player.id}">${escapeHtml(player.name)}${player.id === activePlayerId ? " (You)" : ""}</button>`).join("");
         }
+        if (hunterDirectory && viewedPlayer) hunterDirectory.querySelector("summary").textContent = viewedPlayerId === activePlayerId ? "View Hunter" : `Viewing: ${viewedPlayer.name}`;
 
         state.players.forEach(getDailyQuests);
         renderRankLadder();
 
-        playersRoot.innerHTML = state.players.filter(player => player.id === viewedPlayerId).map(player => {
+        const visiblePlayers = [activePlayerId, viewedPlayerId]
+          .filter((playerId, index, playerIds) => playerId && playerIds.indexOf(playerId) === index)
+          .map(playerId => state.players.find(player => player.id === playerId))
+          .filter(Boolean);
+        playersRoot.classList.toggle("is-comparing", visiblePlayers.length > 1);
+        playersRoot.innerHTML = visiblePlayers.map(player => {
           const isActivePlayer = player.id === activePlayerId;
           const needed = xpForLevel(player.level);
           const progress = Math.min(100, Math.round((player.xp / needed) * 100));
