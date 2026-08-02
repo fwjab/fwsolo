@@ -1185,6 +1185,8 @@
       const plankTimers = new Map();
       let adminSessionPasscode = "";
       let lastSyncedState = "";
+      let pendingSaveCount = 0;
+      let saveQueue = Promise.resolve();
       const todayKey = () => {
   const now = new Date();
 
@@ -1412,24 +1414,32 @@ const dailyQuestSignature = "dynamic";
         localStorage.setItem(storageKey, payload);
         window.dispatchEvent(new CustomEvent("hunter:state-updated"));
         if (!serverMode) return;
-        lastSyncedState = payload;
-        fetch("/api/state", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Hunter-Session": localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id || ""
-          },
-          body: payload
-        }).then(response => {
+        const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id || "";
+        pendingSaveCount += 1;
+        setSyncMode("Saving progress");
+        saveQueue = saveQueue.catch(() => {}).then(async () => {
+          const response = await fetch("/api/state", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Hunter-Session": activePlayerId
+            },
+            body: payload
+          });
           if (!response.ok) throw new Error("Save failed.");
+          lastSyncedState = payload;
+        }).then(() => {
           setSyncMode("Shared party sync");
         }).catch(() => {
           setSyncMode("Sync retrying");
+        }).finally(() => {
+          pendingSaveCount = Math.max(0, pendingSaveCount - 1);
         });
+        return saveQueue;
       }
 
       async function refreshSharedState() {
-        if (!serverMode || isEditing()) return;
+        if (!serverMode || isEditing() || pendingSaveCount > 0) return;
         try {
           const response = await fetch("/api/state", { cache: "no-store" });
           if (!response.ok) return;
