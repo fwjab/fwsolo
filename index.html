@@ -554,7 +554,6 @@
     .sw-player-companion {
       width: 62px;
       height: 62px;
-      margin-right: 10px;
       flex: 0 0 auto;
       border: 1px solid rgba(137, 207, 255, .58);
       border-radius: 14px;
@@ -565,6 +564,13 @@
     .sw-player-companion.mage { background-position: 0 100%; border-color: rgba(204, 126, 255, .7); }
     .sw-player-companion.dragon { background-position: 100% 100%; border-color: rgba(88, 237, 220, .7); }
     .sw-player-companion.none { background: radial-gradient(circle, rgba(119, 186, 255, .28), transparent 45%), rgba(8, 16, 37, .84); }
+    .sw-player-companions { display: flex; align-items: center; min-width: 62px; padding-right: 4px; }
+    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -18px; }
+    .sw-player-companions .sw-player-companion { position: relative; }
+    .sw-player-companions .sw-player-companion:nth-child(1) { z-index: 4; }
+    .sw-player-companions .sw-player-companion:nth-child(2) { z-index: 3; }
+    .sw-player-companions .sw-player-companion:nth-child(3) { z-index: 2; }
+    .sw-player-companions .sw-player-companion:nth-child(4) { z-index: 1; }
     .sw-player-companion.none::after { content: "◇"; display: grid; place-items: center; height: 100%; color: #91dfff; font-size: 1.7rem; }
 
     .sw-player-name {
@@ -1828,6 +1834,14 @@ if (profile?.upgrades.extraDailyQuest) {
           const needed = xpForLevel(player.level);
           const progress = Math.min(100, Math.round((player.xp / needed) * 100));
           const quests = getDailyQuests(player);
+          const profile = window.HunterProgression?.getProfile?.(player) || {};
+          const activeShadows = Array.isArray(profile.activeShadows) && profile.activeShadows.length
+            ? profile.activeShadows
+            : profile.equippedShadow ? [profile.equippedShadow] : [];
+          const shadowClass = shadowName => shadowName === "Shadow Wolf" ? "wolf" : shadowName === "Shadow Mage" ? "mage" : shadowName === "Shadow Dragon" ? "dragon" : shadowName === "Iron Knight" ? "iron" : "none";
+          const shadowCompanions = activeShadows.length
+            ? activeShadows.map(shadowName => `<div class="sw-player-companion ${shadowClass(shadowName)}" title="${escapeHtml(shadowName)}" aria-label="${escapeHtml(shadowName)} deployed"></div>`).join("")
+            : `<div class="sw-player-companion none" aria-label="No shadow deployed"></div>`;
           const log = player.log.length
             ? player.log.map(item => `<div class="sw-log-item"><b>${escapeHtml(item.date)}</b><br>${escapeHtml(item.text)}</div>`).join("")
             : `<div class="sw-log-item">No achievements logged yet.</div>`;
@@ -1835,7 +1849,7 @@ if (profile?.upgrades.extraDailyQuest) {
           return `
             <article class="sw-player ${isActivePlayer ? "" : "sw-player-readonly"}" data-rank="${rankFor(player.level)}">
               <div class="sw-player-head">
-                <div class="sw-player-companion ${(() => { const shadow = window.HunterProgression?.getProfile?.(player)?.equippedShadow; return shadow === "Shadow Wolf" ? "wolf" : shadow === "Shadow Mage" ? "mage" : shadow === "Shadow Dragon" ? "dragon" : shadow === "Iron Knight" ? "iron" : "none"; })()}" aria-label="Equipped shadow companion"></div>
+                <div class="sw-player-companions" aria-label="Active shadow army">${shadowCompanions}</div>
                 <div class="sw-name-wrap">
                   <h3 class="sw-player-name" ${isActivePlayer ? "contenteditable=\"true\"" : ""} data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
                   <span class="sw-rank">${rankFor(player.level)}</span>
