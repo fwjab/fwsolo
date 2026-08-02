@@ -521,14 +521,14 @@
     .sw-players {
       margin-top: 20px;
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
       gap: 20px;
     }
 
     .sw-player {
-      padding: 18px;
+      padding: 28px;
       display: grid;
-      gap: 16px;
+      gap: 20px;
       min-width: 0;
       position: relative;
       overflow: hidden;
@@ -552,8 +552,8 @@
     }
 
     .sw-player-companion {
-      width: 62px;
-      height: 62px;
+      width: 82px;
+      height: 82px;
       flex: 0 0 auto;
       border: 1px solid rgba(137, 207, 255, .58);
       border-radius: 14px;
@@ -564,8 +564,8 @@
     .sw-player-companion.mage { background-position: 0 100%; border-color: rgba(204, 126, 255, .7); }
     .sw-player-companion.dragon { background-position: 100% 100%; border-color: rgba(88, 237, 220, .7); }
     .sw-player-companion.none { background: radial-gradient(circle, rgba(119, 186, 255, .28), transparent 45%), rgba(8, 16, 37, .84); }
-    .sw-player-companions { display: flex; align-items: center; min-width: 62px; padding-right: 4px; }
-    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -18px; }
+    .sw-player-companions { display: flex; align-items: center; min-width: 82px; padding-right: 4px; }
+    .sw-player-companions .sw-player-companion + .sw-player-companion { margin-left: -24px; }
     .sw-player-companions .sw-player-companion { position: relative; }
     .sw-player-companions .sw-player-companion:nth-child(1) { z-index: 4; }
     .sw-player-companions .sw-player-companion:nth-child(2) { z-index: 3; }
@@ -575,12 +575,12 @@
 
     .sw-player-name {
       margin: 0;
-      font-size: 1.35rem;
+      font-size: clamp(1.7rem, 3vw, 2.35rem);
       font-weight: 800;
       overflow-wrap: anywhere;
     }
     .sw-hunter-name-line { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
-    .sw-title-badge { display: inline-flex; align-items: center; max-width: 150px; padding: 3px 7px; border: 1px solid rgba(214, 168, 255, .58); border-radius: 999px; color: #ecd7ff; background: linear-gradient(135deg, rgba(118, 63, 180, .42), rgba(35, 20, 77, .55)); box-shadow: inset 0 0 10px rgba(196, 128, 255, .15); font-size: .62rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sw-title-badge { display: inline-flex; align-items: center; max-width: 190px; padding: 5px 10px; border: 1px solid rgba(214, 168, 255, .58); border-radius: 999px; color: #ecd7ff; background: linear-gradient(135deg, rgba(118, 63, 180, .42), rgba(35, 20, 77, .55)); box-shadow: inset 0 0 10px rgba(196, 128, 255, .15); font-size: .74rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .sw-rank {
       display: inline-flex;
@@ -864,10 +864,8 @@
 
     .sw-task-dock { position: sticky; top: 10px; z-index: 25; display: flex; align-items: center; gap: 9px; margin: 18px 0; padding: 10px; overflow-x: auto; border: 1px solid rgba(116, 198, 255, .34); border-radius: 13px; background: linear-gradient(90deg, rgba(9, 18, 44, .96), rgba(32, 16, 72, .93)); box-shadow: 0 12px 30px rgba(0, 0, 0, .25); backdrop-filter: blur(13px); }
     .sw-task-dock-title { flex: 0 0 auto; color: #aeeaff; font-size: .68rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
-    .sw-task-dock button { flex: 0 0 auto; border: 1px solid rgba(154, 126, 255, .45); border-radius: 8px; padding: 8px 10px; color: #edf7ff; background: rgba(92, 65, 179, .2); font: inherit; font-size: .78rem; cursor: pointer; }
+    .sw-task-dock button { flex: 0 0 auto; border: 1px solid rgba(154, 126, 255, .45); border-radius: 8px; padding: 10px 13px; color: #edf7ff; background: rgba(92, 65, 179, .2); font: inherit; font-size: .88rem; cursor: pointer; }
     .sw-task-dock button:hover { border-color: #86e7ff; background: rgba(57, 157, 255, .2); box-shadow: 0 0 15px rgba(86, 197, 255, .22); }
-    .sw-hunter-viewer { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; color: #bcd7ff; font-size: .68rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-    .sw-hunter-viewer select { width: auto; min-height: 34px; padding: 6px 26px 6px 8px; font-size: .76rem; text-transform: none; }
     .sw-rank-scale { display: grid; grid-template-columns: repeat(8, minmax(25px, 1fr)); gap: 4px; margin: 12px 0; }
     .sw-rank-tier { display: grid; place-items: center; min-height: 30px; border: 1px solid rgba(150, 174, 255, .2); border-radius: 7px; color: #aebbd3; background: rgba(255,255,255,.035); font-size: .66rem; font-weight: 900; }
     .sw-rank-tier.is-populated { color: #f4f7ff; border-color: rgba(126, 215, 255, .55); background: linear-gradient(135deg, rgba(86, 204, 255, .25), rgba(118, 73, 234, .28)); box-shadow: 0 0 12px rgba(89, 199, 255, .16); }
@@ -1088,7 +1086,7 @@
       <button type="button" data-console-tab="stats">Statistics</button>
       <button type="button" data-console-tab="headquarters">Headquarters</button>
       <button type="button" data-console-tab="archive">Archive</button>
-      <label class="sw-hunter-viewer">View Hunter <select id="sw-hunter-view" aria-label="View another hunter record"></select></label>
+      <button type="button" id="sw-hunter-view">View Hunter</button>
     </nav>
 
     <section class="sw-players" id="sw-players" aria-label="Player status cards"></section>
@@ -1834,10 +1832,6 @@ if (profile?.upgrades.extraDailyQuest) {
         const viewedPlayerId = state.players.some(player => player.id === requestedViewId) ? requestedViewId : activePlayerId;
         const hunterView = document.getElementById("sw-hunter-view");
 
-        if (hunterView) {
-          hunterView.innerHTML = state.players.map(player => `<option value="${player.id}" ${player.id === viewedPlayerId ? "selected" : ""}>${escapeHtml(player.name)}${player.id === activePlayerId ? " (You)" : ""}</option>`).join("");
-        }
-
         state.players.forEach(getDailyQuests);
         renderRankLadder();
 
@@ -1984,10 +1978,7 @@ if (profile?.upgrades.extraDailyQuest) {
           bossRank: contract.rank
         });
 
-        if (hunterView) hunterView.onchange = event => {
-          localStorage.setItem("nightforgeViewedHunter", event.currentTarget.value);
-          render();
-        };
+        if (hunterView) hunterView.onclick = () => window.HunterProgression?.openHunterViewer?.(state.players);
         pushFeed(`${player.name} summoned a ${contract.rank}-Rank Boss Quest for ${xp} XP.`);
         showToast(`${contract.rank}-Rank Boss Quest`, `${player.name}'s contract is locked at ${xp} XP.`);
         playSystemSound("boss");

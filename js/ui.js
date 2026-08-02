@@ -37,6 +37,19 @@
     popup.style.display = "grid";
   }
 
+  function openHunterViewer(players) {
+    let popup = document.getElementById("sw-hunter-viewer");
+    if (!popup) {
+      popup = document.createElement("div");
+      popup.id = "sw-hunter-viewer";
+      popup.className = "sw-daily-login sw-player-session";
+      document.body.append(popup);
+    }
+    const activeId = localStorage.getItem("nightforgePlayerSession");
+    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · HUNTER ARCHIVE</p><h2>View Hunter Record</h2><p>Choose a hunter to view their card. Only your active session can be edited.</p><div class="sw-daily-login-players">${players.map(player => `<button data-action="view-hunter" data-id="${player.id}"><b>${escapeHtml(player.name)}</b><span>${player.id === activeId ? "Your active console" : "View read-only record"}</span></button>`).join("")}</div><button class="sw-daily-login-exit" data-action="viewer-close">Exit</button></div>`;
+    popup.style.display = "grid";
+  }
+
   function renderShadows(player) {
     const profile = getProfile(player);
     const adventure = window.HunterProgression.adventureFor(player);
@@ -189,6 +202,16 @@
       document.getElementById("sw-daily-login").style.display = "none";
       return;
     }
+    if (action === "view-hunter") {
+      localStorage.setItem("nightforgeViewedHunter", id);
+      document.getElementById("sw-hunter-viewer").style.display = "none";
+      window.HunterWorkout.render();
+      return;
+    }
+    if (action === "viewer-close") {
+      document.getElementById("sw-hunter-viewer").style.display = "none";
+      return;
+    }
     if (action === "player-session") {
       localStorage.setItem("nightforgePlayerSession", id);
       localStorage.setItem("nightforgeViewedHunter", id);
@@ -241,6 +264,7 @@
     if (action === "voice-style") return finish(Boolean(window.HunterProgression.worldActions.setNarration(player, id)), "Narrator profile updated.", "Voice profile unavailable.");
   });
   window.HunterProgression.renderConsole = renderConsole;
+  window.HunterProgression.openHunterViewer = openHunterViewer;
   window.HunterProgression.showCinematic = rank => {
     const existing = document.getElementById("sw-cinematic-rank");
     if (existing) existing.remove();
