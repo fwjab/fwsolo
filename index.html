@@ -521,19 +521,14 @@
     .sw-players {
       margin-top: 20px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 20px;
-      max-width: 940px;
-    }
-    .sw-players.is-comparing {
-      max-width: none;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
     }
 
     .sw-player {
-      padding: 18px;
+      padding: 15px;
       display: grid;
-      gap: 14px;
+      gap: 12px;
       min-width: 0;
       position: relative;
       overflow: hidden;
@@ -877,6 +872,10 @@
     .sw-hunter-directory[open] summary { border-color: #86e7ff; background: rgba(57, 157, 255, .2); }
     .sw-hunter-directory-list { position: absolute; right: 0; top: calc(100% + 8px); z-index: 35; display: grid; gap: 6px; min-width: 205px; padding: 9px; border: 1px solid rgba(126, 202, 255, .4); border-radius: 10px; background: rgba(8, 15, 37, .98); box-shadow: 0 16px 38px rgba(0, 0, 0, .42); }
     .sw-hunter-directory-list button { width: 100%; text-align: left; }
+    .sw-view-hunter-console { align-content: center; min-height: 260px; border-style: dashed; border-color: rgba(149, 199, 255, .48); background: linear-gradient(135deg, rgba(14, 31, 62, .92), rgba(22, 13, 53, .9)); }
+    .sw-view-hunter-console h3 { margin: 0; font-size: 1.3rem; }
+    .sw-view-console-select { display: grid; gap: 8px; color: #bdd9ff; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .sw-view-console-select select { min-height: 42px; font-size: .9rem; text-transform: none; }
     .sw-rank-scale { display: grid; grid-template-columns: repeat(8, minmax(25px, 1fr)); gap: 4px; margin: 12px 0; }
     .sw-rank-tier { display: grid; place-items: center; min-height: 30px; border: 1px solid rgba(150, 174, 255, .2); border-radius: 7px; color: #aebbd3; background: rgba(255,255,255,.035); font-size: .66rem; font-weight: 900; }
     .sw-rank-tier.is-populated { color: #f4f7ff; border-color: rgba(126, 215, 255, .55); background: linear-gradient(135deg, rgba(86, 204, 255, .25), rgba(118, 73, 234, .28)); box-shadow: 0 0 12px rgba(89, 199, 255, .16); }
@@ -1097,7 +1096,6 @@
       <button type="button" data-console-tab="stats">Statistics</button>
       <button type="button" data-console-tab="headquarters">Headquarters</button>
       <button type="button" data-console-tab="archive">Archive</button>
-      <details class="sw-hunter-directory" id="sw-hunter-directory"><summary>View Hunter</summary><div class="sw-hunter-directory-list" id="sw-hunter-directory-list"></div></details>
     </nav>
 
     <section class="sw-players" id="sw-players" aria-label="Player status cards"></section>
@@ -1862,14 +1860,6 @@ if (profile?.upgrades.extraDailyQuest) {
         const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id;
         const requestedViewId = localStorage.getItem("nightforgeViewedHunter");
         const viewedPlayerId = state.players.some(player => player.id === requestedViewId) ? requestedViewId : activePlayerId;
-        const hunterDirectory = document.getElementById("sw-hunter-directory");
-        const hunterDirectoryList = document.getElementById("sw-hunter-directory-list");
-        const viewedPlayer = state.players.find(player => player.id === viewedPlayerId);
-
-        if (hunterDirectoryList) {
-          hunterDirectoryList.innerHTML = state.players.map(player => `<button type="button" data-hunter-view-id="${player.id}">${escapeHtml(player.name)}${player.id === activePlayerId ? " (You)" : ""}</button>`).join("");
-        }
-        if (hunterDirectory && viewedPlayer) hunterDirectory.querySelector("summary").textContent = viewedPlayerId === activePlayerId ? "View Hunter" : `Viewing: ${viewedPlayer.name}`;
 
         state.players.forEach(getDailyQuests);
         renderRankLadder();
@@ -1878,7 +1868,7 @@ if (profile?.upgrades.extraDailyQuest) {
           .filter((playerId, index, playerIds) => playerId && playerIds.indexOf(playerId) === index)
           .map(playerId => state.players.find(player => player.id === playerId))
           .filter(Boolean);
-        playersRoot.classList.toggle("is-comparing", visiblePlayers.length > 1);
+        const viewOptions = state.players.filter(player => player.id !== activePlayerId).map(player => `<option value="${player.id}" ${player.id === viewedPlayerId ? "selected" : ""}>${escapeHtml(player.name)} · Level ${player.level}</option>`).join("");
         playersRoot.innerHTML = visiblePlayers.map(player => {
           const isActivePlayer = player.id === activePlayerId;
           const needed = xpForLevel(player.level);
@@ -1911,6 +1901,7 @@ if (profile?.upgrades.extraDailyQuest) {
                   <span>Level</span>
                 </div>
               </div>
+              ${!isActivePlayer ? `<label class="sw-view-console-select">Viewing Hunter Console<select data-inline-hunter-view>${viewOptions}</select></label>` : ""}
 
               <div>
                 <div class="sw-xp-row">
@@ -1942,7 +1933,7 @@ if (profile?.upgrades.extraDailyQuest) {
               </div>
             </article>
           `;
-        }).join("");
+        }).join("") + (visiblePlayers.length === 1 ? `<article class="sw-player sw-view-hunter-console"><p class="sw-kicker">Hunter Archive</p><h3>View Hunter Console</h3><p class="sw-muted">Choose a hunter to compare their read-only progress beside your active console.</p><label class="sw-view-console-select">Select Hunter<select data-inline-hunter-view><option value="">Choose a hunter</option>${viewOptions}</select></label></article>` : "");
 
         const activePlayerOptions = state.players.filter(player => player.id === activePlayerId).map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
         const adminPlayerOptions = state.players.map(player => `<option value="${player.id}">${escapeHtml(player.name)}</option>`).join("");
@@ -2022,13 +2013,15 @@ if (profile?.upgrades.extraDailyQuest) {
           bossRank: contract.rank
         });
 
-        document.querySelectorAll("[data-hunter-view-id]").forEach(button => {
-          button.onclick = () => {
-            localStorage.setItem("nightforgeViewedHunter", button.dataset.hunterViewId);
-            if (hunterDirectory) hunterDirectory.open = false;
+        document.querySelectorAll("[data-inline-hunter-view]").forEach(select => {
+          select.onchange = event => {
+            const nextPlayerId = event.currentTarget.value;
+            if (!nextPlayerId) return;
+            localStorage.setItem("nightforgeViewedHunter", nextPlayerId);
             render();
           };
         });
+
         pushFeed(`${player.name} summoned a ${contract.rank}-Rank Boss Quest for ${xp} XP.`);
         showToast(`${contract.rank}-Rank Boss Quest`, `${player.name}'s contract is locked at ${xp} XP.`);
         playSystemSound("boss");
