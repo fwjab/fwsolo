@@ -1,37 +1,27 @@
-# Firebase Web Push Setup
+# OneSignal Web Push Setup
 
-Push is optional. The workout system keeps working normally when Firebase is not configured.
+Push is optional. The workout system keeps working normally when OneSignal is not configured.
 
-## 1. Firebase Console
+## 1. OneSignal Dashboard
 
-1. Create or select a Firebase project at https://console.firebase.google.com.
-2. In **Project settings > General**, add a **Web app** and copy its web configuration values.
-3. In **Project settings > Cloud Messaging > Web configuration**, generate a Web Push certificate key pair and copy the public VAPID key.
-4. In **Project settings > Service accounts**, choose **Generate new private key**. Keep the downloaded JSON private.
-5. In Google Cloud for the same project, ensure the **Firebase Cloud Messaging API** is enabled and the service account can use FCM.
-
-The web API key and VAPID key are public browser configuration. The service-account JSON is private and must only be stored in Render environment variables.
+1. Create a free OneSignal account at https://onesignal.com and create a **Web** app.
+2. Set its site URL to `https://fwsololeveling.onrender.com` (use your exact production URL, without `www` unless you use it).
+3. Choose **Custom Code** setup and use the root service worker filename `OneSignalSDKWorker.js`.
+4. In **Settings > Keys & IDs**, copy the **OneSignal App ID** and **REST API Key**.
 
 ## 2. Render Environment Variables
 
-Add these three required values to the web service in **Render > Environment**:
+Add these two required values to the web service in **Render > Environment**:
 
 | Variable | Value |
 | --- | --- |
 | `MONGO_URI` | Your existing MongoDB connection string |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | The **entire contents** of the downloaded service-account JSON, on one line |
-| `FIREBASE_WEB_CONFIG_JSON` | The complete Firebase `firebaseConfig` object as one-line JSON |
-| `FIREBASE_VAPID_KEY` | Public VAPID key from Cloud Messaging web configuration |
+| `ONESIGNAL_APP_ID` | OneSignal **App ID** from Keys & IDs |
+| `ONESIGNAL_REST_API_KEY` | OneSignal **REST API Key** from Keys & IDs — keep private |
 
 `PUSH_CRON_SECRET` is only needed later when you add scheduled daily/streak notifications.
 
-Example `FIREBASE_WEB_CONFIG_JSON` value (replace every value with your own Firebase configuration):
-
-```json
-{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"...","measurementId":"..."}
-```
-
-The older separate `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, and related variables still work, but are no longer necessary when using `FIREBASE_WEB_CONFIG_JSON`.
+You do not need Firebase, a VAPID key, a service-account JSON, or a token database for OneSignal.
 
 Do **not** commit any of those values. After saving variables, redeploy the Render web service. The **Settings** tab will then show **Enable Push Notifications** for supported browsers.
 
@@ -55,9 +45,8 @@ Render may sleep or restart web services, so the Cron Job is the reliable trigge
 ## 4. How Notifications Work
 
 - A hunter enables alerts in **Hunter Progression > Settings** only after clicking the button.
-- The browser obtains an FCM registration token and stores it in MongoDB's `notificationsubscriptions` collection with that selected hunter ID.
-- Re-enabling updates the same token instead of duplicating it; disabling deletes it locally and on the server.
-- Firebase-invalid tokens are deleted automatically after a failed send.
+- OneSignal stores browser subscriptions and assigns the selected hunter as the OneSignal External ID (`hunter-<playerId>`).
+- Re-enabling does not duplicate the browser subscription; disabling opts the device out and logs out that hunter context.
 - Level, rank/Boss Quest unlock, and completed-daily notifications are detected during the normal existing shared-save request.
 - Party announcements are available through the protected `POST /api/admin/announce` endpoint with the existing admin passcode. It accepts only a short `title` and `message`.
 

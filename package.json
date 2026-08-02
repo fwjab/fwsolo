@@ -7,7 +7,6 @@
     "start": "node workout-server.js"
   },
   "dependencies": {
-    "firebase-admin": "^14.2.0",
     "mongoose": "^8.18.0"
   }
 }

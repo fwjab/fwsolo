@@ -1,85 +1,75 @@
 (() => {
   const preferenceKey = "nightforgePushPreference";
   let settings = { state: "checking", detail: "Checking push notification support." };
-  let firebaseConfig = null;
-  let messaging = null;
-  let registration = null;
+  let oneSignal = null;
 
   function update(next) {
     settings = { ...settings, ...next };
     window.dispatchEvent(new CustomEvent("hunter:push-status"));
   }
 
-  function supported() {
-    return location.protocol !== "file:" && "serviceWorker" in navigator && "Notification" in window && "PushManager" in window;
-  }
-
-  function activePlayerId() {
+  function playerExternalId() {
     const selected = localStorage.getItem("nightforgePlayerSession");
     const players = window.HunterWorkout?.players?.() || [];
-    return players.some(player => player.id === selected) ? selected : players[0]?.id || "";
+    const player = players.find(item => item.id === selected) || players[0];
+    return player ? `hunter-${player.id}` : "";
   }
 
-  async function loadFirebase() {
-    if (messaging && registration) return true;
-    if (!supported()) {
+  async function initialize() {
+    if (oneSignal) return true;
+    if (!("Notification" in window) || location.protocol === "file:") {
       update({ state: "unsupported", detail: "This browser does not support web push notifications." });
       return false;
     }
     const response = await fetch("/api/push/config", { cache: "no-store" });
-    const result = await response.json();
-    if (!result.enabled || !result.config) {
+    const config = await response.json();
+    if (!config.enabled || !config.appId) {
       update({ state: "unavailable", detail: "Push notifications are not configured on this server yet." });
       return false;
     }
-    firebaseConfig = result.config;
-    const [{ initializeApp, getApp, getApps }, { getMessaging, getToken, deleteToken, onMessage }] = await Promise.all([
-      import("https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js"),
-      import("https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging.js")
-    ]);
-    const app = getApps().some(item => item.name === "nightforge-push") ? getApp("nightforge-push") : initializeApp(firebaseConfig, "nightforge-push");
-    messaging = getMessaging(app);
-    registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-    onMessage(messaging, payload => {
-      const data = payload.data || {};
-      window.HunterWorkout?.showToast?.(data.notificationTitle || "System Message", data.notificationBody || "A new hunter update is available.");
-    });
-    const preference = localStorage.getItem(preferenceKey);
-    if (Notification.permission === "denied") update({ state: "blocked", detail: "Notifications are blocked in this browser's site settings." });
-    else if (preference === "enabled" && Notification.permission === "granted") update({ state: "enabled", detail: "Push notifications are enabled for this device." });
-    else update({ state: "disabled", detail: "Enable alerts for daily quests, ranks, streaks, and party updates." });
-    window.HunterPush.client = { getToken, deleteToken };
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    await new Promise((resolve, reject) => window.OneSignalDeferred.push(async OneSignal => {
+      try {
+        await OneSignal.init({ appId: config.appId, allowLocalhostAsSecureOrigin: location.hostname === "localhost" });
+        oneSignal = OneSignal;
+        if (localStorage.getItem(preferenceKey) === "enabled" && Notification.permission === "granted") await OneSignal.login(playerExternalId());
+        if (Notification.permission === "denied") update({ state: "blocked", detail: "Notifications are blocked in this browser's site settings." });
+        else if (localStorage.getItem(preferenceKey) === "enabled" && OneSignal.User.PushSubscription.optedIn) update({ state: "enabled", detail: "Push notifications are enabled for this device." });
+        else update({ state: "disabled", detail: "Enable alerts for daily quests, ranks, streaks, and party updates." });
+        resolve();
+      } catch (error) { reject(error); }
+    }));
     return true;
   }
 
   async function enable() {
-    if (!(await loadFirebase()) || Notification.permission === "denied") return false;
-    const permission = await Notification.requestPermission();
-    if (permission !== "granted") {
+    if (!(await initialize()) || Notification.permission === "denied") return false;
+    await oneSignal.login(playerExternalId());
+    await oneSignal.Notifications.requestPermission();
+    if (Notification.permission !== "granted") {
       localStorage.setItem(preferenceKey, "blocked");
       update({ state: "blocked", detail: "Notifications were not allowed. Enable them later in browser site settings." });
       return false;
     }
-    const token = await window.HunterPush.client.getToken(messaging, { vapidKey: firebaseConfig.vapidKey, serviceWorkerRegistration: registration });
-    const playerId = activePlayerId();
-    if (!token || !playerId) throw new Error("Choose a hunter session before enabling notifications.");
-    const response = await fetch("/api/push/subscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, playerId }) });
-    if (!response.ok) throw new Error((await response.json()).error || "Could not save notification preference.");
+    await oneSignal.User.PushSubscription.optIn();
     localStorage.setItem(preferenceKey, "enabled");
-    localStorage.setItem("nightforgePushToken", token);
     update({ state: "enabled", detail: "Push notifications are enabled for this device." });
     return true;
   }
 
   async function disable() {
-    const token = localStorage.getItem("nightforgePushToken");
-    if (token) await fetch("/api/push/unsubscribe", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token }) });
-    if (messaging && window.HunterPush.client) await window.HunterPush.client.deleteToken(messaging);
+    if (await initialize()) {
+      await oneSignal.User.PushSubscription.optOut();
+      await oneSignal.logout();
+    }
     localStorage.setItem(preferenceKey, "disabled");
-    localStorage.removeItem("nightforgePushToken");
     update({ state: "disabled", detail: "Push notifications are disabled on this device." });
   }
 
-  window.HunterPush = { status: () => settings, enable, disable, client: null };
-  loadFirebase().catch(error => update({ state: "unavailable", detail: `Push setup unavailable: ${error.message}` }));
+  async function syncHunter() {
+    if (localStorage.getItem(preferenceKey) === "enabled" && await initialize()) await oneSignal.login(playerExternalId());
+  }
+
+  window.HunterPush = { status: () => settings, enable, disable, syncHunter };
+  initialize().catch(error => update({ state: "unavailable", detail: `Push setup unavailable: ${error.message}` }));
 })();

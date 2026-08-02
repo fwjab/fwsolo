@@ -189,6 +189,7 @@
       localStorage.setItem("nightforgePlayerSession", id);
       document.getElementById("sw-player-session").style.display = "none";
       window.HunterWorkout.render();
+      window.HunterPush?.syncHunter?.();
       renderConsole();
       return;
     }

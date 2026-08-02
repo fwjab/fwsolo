@@ -3,9 +3,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const mongoose = require("mongoose");
-const admin = require("firebase-admin");
 const GameState = require("./models/GameState");
-const NotificationSubscription = require("./models/NotificationSubscription");
 const port = Number(process.env.PORT || 4177);
 const host = "0.0.0.0";
 const adminPasscode = "j@bultra";
@@ -13,7 +11,6 @@ const maxPlayers = 10;
 const appFile = path.join(__dirname, "index.html");
 const saveFile = path.join(__dirname, "workout-save.json");
 let useMongo = Boolean(process.env.MONGO_URI);
-let firebaseMessaging = null;
 
 function cleanPushText(value, maxLength) {
   return String(value || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
@@ -27,50 +24,9 @@ function cleanPushData(value) {
   ]).filter(([key]) => key));
 }
 
-function firebaseWebConfig() {
-  let webConfig = {};
-  if (process.env.FIREBASE_WEB_CONFIG_JSON) {
-    try {
-      webConfig = JSON.parse(process.env.FIREBASE_WEB_CONFIG_JSON);
-    } catch (error) {
-      console.error("Firebase push is disabled: FIREBASE_WEB_CONFIG_JSON is not valid JSON.");
-      return null;
-    }
-  } else {
-    webConfig = {
-      apiKey: process.env.FIREBASE_API_KEY,
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-      appId: process.env.FIREBASE_APP_ID,
-      measurementId: process.env.FIREBASE_MEASUREMENT_ID
-    };
-  }
-  const config = { ...webConfig, vapidKey: process.env.FIREBASE_VAPID_KEY || webConfig.vapidKey };
-  const required = [config.apiKey, config.authDomain, config.projectId, config.storageBucket, config.messagingSenderId, config.appId, config.vapidKey];
-  return required.every(Boolean) ? config : null;
+function oneSignalConfigured() {
+  return Boolean(process.env.ONESIGNAL_APP_ID && process.env.ONESIGNAL_REST_API_KEY);
 }
-
-function initializeFirebaseMessaging() {
-  const rawCredentials = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!rawCredentials) {
-    console.log("Firebase push is disabled: FIREBASE_SERVICE_ACCOUNT_JSON is not set.");
-    return;
-  }
-  try {
-    const serviceAccount = JSON.parse(rawCredentials);
-    serviceAccount.private_key = String(serviceAccount.private_key || "").replace(/\\n/g, "\n");
-    if (!serviceAccount.project_id || !serviceAccount.client_email || !serviceAccount.private_key) throw new Error("Service account JSON is incomplete.");
-    const app = admin.apps.length ? admin.app() : admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-    firebaseMessaging = admin.messaging(app);
-    console.log("Firebase Cloud Messaging is configured.");
-  } catch (error) {
-    console.error("Firebase push is disabled: invalid service account configuration:", error.message);
-  }
-}
-
-initializeFirebaseMessaging();
 
 if (useMongo) {
   mongoose.connect(process.env.MONGO_URI)
@@ -124,52 +80,38 @@ async function writeState(state) {
   );
 }
 
-function pushEnabled() {
-  return Boolean(useMongo && firebaseMessaging && firebaseWebConfig());
-}
-
-function invalidFirebaseToken(error) {
-  return ["messaging/registration-token-not-registered", "messaging/invalid-registration-token"].includes(error?.code);
-}
-
-async function removeInvalidNotificationToken(token) {
-  if (!useMongo || !token) return;
-  await NotificationSubscription.deleteOne({ token });
-}
-
 async function sendPushToToken(token, title, body, data = {}) {
-  if (!pushEnabled()) return { sent: false, reason: "Push is not configured." };
+  if (!oneSignalConfigured()) return { sent: false, reason: "Push is not configured." };
   const safeTitle = cleanPushText(title, 70);
   const safeBody = cleanPushText(body, 180);
-  if (!safeTitle || !safeBody || typeof token !== "string" || token.length > 4096) return { sent: false, reason: "Invalid push payload." };
+  if (!safeTitle || !safeBody || typeof token !== "string" || token.length > 128) return { sent: false, reason: "Invalid push payload." };
   const payload = {
-    token,
-    data: { ...cleanPushData(data), notificationTitle: safeTitle, notificationBody: safeBody, url: data.url && String(data.url).startsWith("/") ? String(data.url) : "/" },
-    webpush: {
-      fcmOptions: { link: data.url && String(data.url).startsWith("/") ? String(data.url) : "/" }
-    }
+    app_id: process.env.ONESIGNAL_APP_ID,
+    target_channel: "push",
+    include_aliases: { external_id: [token] },
+    headings: { en: safeTitle },
+    contents: { en: safeBody },
+    data: cleanPushData(data),
+    url: data.url && String(data.url).startsWith("/") ? String(data.url) : "/"
   };
   try {
-    const messageId = await firebaseMessaging.send(payload);
-    return { sent: true, messageId };
+    const response = await fetch("https://api.onesignal.com/notifications", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}` }, body: JSON.stringify(payload) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.errors?.[0] || result.errors || "OneSignal send failed.");
+    return { sent: true, messageId: result.id };
   } catch (error) {
-    if (invalidFirebaseToken(error)) await removeInvalidNotificationToken(token);
-    console.error("Firebase push send failed:", error.code || error.message);
-    return { sent: false, reason: error.code || "Firebase send failed." };
+    console.error("OneSignal push send failed:", error.message);
+    return { sent: false, reason: "OneSignal send failed." };
   }
 }
 
 async function sendPushToPlayer(playerId, title, body, data = {}) {
-  if (!pushEnabled() || !playerId) return { sent: 0 };
-  const subscriptions = await NotificationSubscription.find({ playerId }).select("token").lean();
-  const results = await Promise.all(subscriptions.map(subscription => sendPushToToken(subscription.token, title, body, { ...data, playerId })));
-  return { sent: results.filter(result => result.sent).length };
+  return sendPushToToken(`hunter-${playerId}`, title, body, { ...data, playerId });
 }
 
 async function sendPushToAllPlayers(title, body, data = {}) {
-  if (!pushEnabled()) return { sent: 0 };
-  const subscriptions = await NotificationSubscription.find({}).select("token playerId").lean();
-  const results = await Promise.all(subscriptions.map(subscription => sendPushToToken(subscription.token, title, body, { ...data, playerId: subscription.playerId })));
+  const state = await readState();
+  const results = await Promise.all(state.players.map(player => sendPushToPlayer(player.id, title, body, data)));
   return { sent: results.filter(result => result.sent).length };
 }
 
@@ -347,46 +289,7 @@ if (request.method === "GET" && requestPath.endsWith(".css")) {
 }
 
     if (request.url === "/api/push/config" && request.method === "GET") {
-      const config = firebaseWebConfig();
-      sendJson(response, 200, { enabled: Boolean(pushEnabled()), config: config ? { ...config, measurementId: config.measurementId || undefined } : null });
-      return;
-    }
-
-    if (request.url === "/api/push/subscribe" && request.method === "POST") {
-      if (!pushEnabled()) {
-        sendJson(response, 503, { error: "Push notifications are not configured yet." });
-        return;
-      }
-      const body = JSON.parse(await readBody(request));
-      const playerId = cleanPushText(body.playerId, 80);
-      const token = String(body.token || "").trim();
-      if (!playerId || !token || token.length < 20 || token.length > 4096 || /\s/.test(token)) {
-        sendJson(response, 400, { error: "Invalid notification subscription." });
-        return;
-      }
-      const state = await readState();
-      if (!state.players.some(player => player.id === playerId)) {
-        sendJson(response, 404, { error: "Hunter record not found." });
-        return;
-      }
-      await NotificationSubscription.findOneAndUpdate(
-        { token },
-        { $set: { playerId, lastSeenAt: new Date() }, $setOnInsert: { createdAt: new Date() } },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-      sendJson(response, 200, { ok: true });
-      return;
-    }
-
-    if (request.url === "/api/push/unsubscribe" && request.method === "POST") {
-      const body = JSON.parse(await readBody(request));
-      const token = String(body.token || "").trim();
-      if (!token || token.length > 4096) {
-        sendJson(response, 400, { error: "Invalid notification token." });
-        return;
-      }
-      await removeInvalidNotificationToken(token);
-      sendJson(response, 200, { ok: true });
+      sendJson(response, 200, { enabled: oneSignalConfigured(), appId: oneSignalConfigured() ? process.env.ONESIGNAL_APP_ID : null });
       return;
     }
 
@@ -395,7 +298,7 @@ if (request.method === "GET" && requestPath.endsWith(".css")) {
         sendJson(response, 401, { error: "Unauthorized." });
         return;
       }
-      if (!pushEnabled()) {
+      if (!oneSignalConfigured()) {
         sendJson(response, 503, { error: "Push notifications are not configured." });
         return;
       }
