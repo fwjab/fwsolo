@@ -10,7 +10,8 @@ const adminPasscode = "j@bultra";
 const maxPlayers = 10;
 const appFile = path.join(__dirname, "index.html");
 const saveFile = path.join(__dirname, "workout-save.json");
-let useMongo = Boolean(process.env.MONGO_URI);
+const mongoRequested = Boolean(process.env.MONGO_URI);
+let mongoReady = false;
 
 function cleanPushText(value, maxLength) {
   return String(value || "").replace(/[\u0000-\u001f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
@@ -28,12 +29,16 @@ function oneSignalConfigured() {
   return Boolean(process.env.ONESIGNAL_APP_ID && process.env.ONESIGNAL_REST_API_KEY);
 }
 
-if (useMongo) {
+if (mongoRequested) {
+  mongoose.connection.on("connected", () => { mongoReady = true; });
+  mongoose.connection.on("disconnected", () => { mongoReady = false; });
   mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Connected to MongoDB"))
+    .then(() => {
+      mongoReady = true;
+      console.log("Connected to MongoDB");
+    })
     .catch(error => {
-      useMongo = false;
-      console.error("MongoDB connection failed; using local save instead:", error.message);
+      console.error("MongoDB connection failed; shared saves are temporarily unavailable:", error.message);
     });
 } else {
   console.log("No MONGO_URI set; using local workout-save.json.");
@@ -48,7 +53,7 @@ const defaultState = {
 };
 
 async function readState() {
-  if (!useMongo) {
+  if (!mongoRequested) {
     try {
       const state = JSON.parse(fs.readFileSync(saveFile, "utf8"));
       if (state && Array.isArray(state.players)) return state;
@@ -56,6 +61,12 @@ async function readState() {
       if (error.code !== "ENOENT") console.error("Could not read local save:", error.message);
     }
     return structuredClone(defaultState);
+  }
+
+  if (!mongoReady) {
+    const error = new Error("Shared save is temporarily unavailable. Please try again shortly.");
+    error.statusCode = 503;
+    throw error;
   }
 
   const state = await GameState.findOne();
@@ -68,7 +79,7 @@ async function readState() {
 }
 
 async function writeState(state) {
-  if (!useMongo) {
+  if (!mongoRequested) {
     fs.writeFileSync(saveFile, JSON.stringify(state, null, 2));
     return;
   }
@@ -487,7 +498,7 @@ state.feed = nextState.feed;
     sendJson(response, 404, { error: "Not found." });
   } catch (error) {
     console.error("Request failed:", error.message);
-    sendJson(response, 500, { error: "Server request failed." });
+    sendJson(response, error.statusCode || 500, { error: error.statusCode ? error.message : "Server request failed." });
   }
 });
 
