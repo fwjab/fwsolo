@@ -360,11 +360,19 @@ const currentIds = state.players
         sendJson(response, 403, { error: "Player roster changes require admin control." });
         return;
       }
+      const activePlayerId = cleanPushText(request.headers["x-hunter-session"], 80);
+      const incomingPlayer = nextState.players.find(player => player.id === activePlayerId);
+      const existingPlayerIndex = state.players.findIndex(player => player.id === activePlayerId);
+      if (!activePlayerId || !incomingPlayer || existingPlayerIndex === -1) {
+        sendJson(response, 400, { error: "Choose an active hunter before saving." });
+        return;
+      }
       state.quoteIndex = nextState.quoteIndex;
-state.feed = nextState.feed;
-      state.players = nextState.players;
+      state.feed = Array.isArray(nextState.feed) ? nextState.feed.slice(0, 4) : state.feed;
+      state.players[existingPlayerIndex] = incomingPlayer;
       await writeState(state);
-      notifyProgressChanges(previousState, nextState);
+      const mergedState = typeof state.toObject === "function" ? state.toObject() : structuredClone(state);
+      notifyProgressChanges(previousState, mergedState);
       sendJson(response, 200, { ok: true });
       return;
     }
