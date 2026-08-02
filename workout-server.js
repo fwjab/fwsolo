@@ -69,10 +69,14 @@ async function readState() {
     throw error;
   }
 
-  const state = await GameState.findOne();
+  const savedStates = await GameState.find({}).sort({ updatedAt: -1, _id: -1 }).limit(20);
+  const state = savedStates.sort((first, second) => {
+    const progress = item => (item.players || []).reduce((total, player) => total + (Number(player.totalXp) || 0) + (Number(player.level) || 1) * 1000, 0);
+    return progress(second) - progress(first) || new Date(second.updatedAt || second._id.getTimestamp()).getTime() - new Date(first.updatedAt || first._id.getTimestamp()).getTime();
+  })[0];
 
   if (!state) {
-    state = await GameState.create(defaultState);
+    return GameState.create(defaultState);
   }
 
   return state;

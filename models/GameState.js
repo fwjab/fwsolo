@@ -5,6 +5,6 @@ const GameStateSchema = new mongoose.Schema({
   feed: Array,
   players: Array,
   notificationMeta: mongoose.Schema.Types.Mixed
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("GameState", GameStateSchema);
