@@ -579,6 +579,8 @@
       font-weight: 800;
       overflow-wrap: anywhere;
     }
+    .sw-hunter-name-line { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+    .sw-title-badge { display: inline-flex; align-items: center; max-width: 150px; padding: 3px 7px; border: 1px solid rgba(214, 168, 255, .58); border-radius: 999px; color: #ecd7ff; background: linear-gradient(135deg, rgba(118, 63, 180, .42), rgba(35, 20, 77, .55)); box-shadow: inset 0 0 10px rgba(196, 128, 255, .15); font-size: .62rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .sw-rank {
       display: inline-flex;
@@ -1838,6 +1840,7 @@ if (profile?.upgrades.extraDailyQuest) {
           const activeShadows = Array.isArray(profile.activeShadows) && profile.activeShadows.length
             ? profile.activeShadows
             : profile.equippedShadow ? [profile.equippedShadow] : [];
+          const title = profile.title || "Rookie Hunter";
           const shadowClass = shadowName => shadowName === "Shadow Wolf" ? "wolf" : shadowName === "Shadow Mage" ? "mage" : shadowName === "Shadow Dragon" ? "dragon" : shadowName === "Iron Knight" ? "iron" : "none";
           const shadowCompanions = activeShadows.length
             ? activeShadows.map(shadowName => `<div class="sw-player-companion ${shadowClass(shadowName)}" title="${escapeHtml(shadowName)}" aria-label="${escapeHtml(shadowName)} deployed"></div>`).join("")
@@ -1851,7 +1854,7 @@ if (profile?.upgrades.extraDailyQuest) {
               <div class="sw-player-head">
                 <div class="sw-player-companions" aria-label="Active shadow army">${shadowCompanions}</div>
                 <div class="sw-name-wrap">
-                  <h3 class="sw-player-name" ${isActivePlayer ? "contenteditable=\"true\"" : ""} data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3>
+                  <div class="sw-hunter-name-line"><h3 class="sw-player-name" ${isActivePlayer ? "contenteditable=\"true\"" : ""} data-name-for="${player.id}" spellcheck="false">${escapeHtml(player.name)}</h3><span class="sw-title-badge" title="${escapeHtml(title)}">${escapeHtml(title)}</span></div>
                   <span class="sw-rank">${rankFor(player.level)}</span>
                   <span class="sw-session-label">${isActivePlayer ? "Active hunter" : "Read-only record"}</span>
                 </div>
