@@ -251,6 +251,25 @@ if (request.method === "GET" && requestPath.endsWith(".js")) {
     return;
 }
 
+    if (request.method === "GET" && requestPath.startsWith("/exercise-demos/")) {
+      const filePath = path.resolve(__dirname, `.${requestPath}`);
+      const extension = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        ".webm": "video/webm",
+        ".mp4": "video/mp4",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+        ".svg": "image/svg+xml"
+      };
+      if (!mimeTypes[extension] || !filePath.startsWith(`${path.join(__dirname, "exercise-demos")}${path.sep}`) || !fs.existsSync(filePath)) {
+        sendJson(response, 404, { error: "Exercise demonstration not found." });
+        return;
+      }
+      response.writeHead(200, { "Content-Type": mimeTypes[extension], "Cache-Control": "public, max-age=86400" });
+      response.end(fs.readFileSync(filePath));
+      return;
+    }
+
     if (request.method === "GET" && ["/assets/nightforge-hero-original.png", "/assets/nightforge-shadow-roster.png"].includes(requestPath)) {
       const assetName = path.basename(requestPath);
       response.writeHead(200, { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" });

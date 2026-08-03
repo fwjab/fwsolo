@@ -887,6 +887,23 @@
     .sw-daily-login-players button { display: flex; justify-content: space-between; align-items: center; padding: 13px 15px; border: 1px solid rgba(138, 193, 255, .34); border-radius: 10px; color: #f1f8ff; background: rgba(255, 255, 255, .05); cursor: pointer; }
     .sw-daily-login-players button:not(:disabled):hover { border-color: #8eeeff; background: rgba(73, 170, 255, .18); }
     .sw-daily-login-exit { width: 100%; margin-top: 14px; padding: 10px; border: 1px solid rgba(190, 205, 238, .28); border-radius: 9px; color: #c9d8ee; background: transparent; cursor: pointer; }
+    .sw-form-demo-btn { display: inline-flex; align-items: center; gap: 5px; margin: 7px 0 0; padding: 4px 8px; border: 1px solid rgba(109, 209, 255, .55); border-radius: 999px; color: #c8f3ff; background: rgba(29, 116, 171, .2); font: inherit; font-size: .72rem; font-weight: 800; cursor: pointer; }
+    .sw-form-demo-btn:hover { border-color: #96edff; background: rgba(58, 166, 224, .34); }
+    .sw-exercise-demo-modal { position: fixed; inset: 0; z-index: 110; display: grid; place-items: center; padding: 20px; background: rgba(2, 5, 15, .8); backdrop-filter: blur(10px); }
+    .sw-exercise-demo-card { width: min(820px, 100%); max-height: min(760px, calc(100vh - 40px)); overflow: auto; padding: 24px; border: 1px solid rgba(108, 220, 255, .65); border-radius: 18px; color: #eff8ff; background: radial-gradient(circle at top right, rgba(126, 66, 231, .32), transparent 42%), linear-gradient(145deg, #101b3b, #060a19 65%); box-shadow: 0 0 60px rgba(67, 181, 255, .25), inset 0 0 38px rgba(78, 110, 255, .08); }
+    .sw-exercise-demo-head { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
+    .sw-exercise-demo-head h2 { margin: 4px 0 0; font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .sw-exercise-demo-close { flex: 0 0 auto; padding: 7px 10px; border: 1px solid rgba(188, 213, 255, .34); border-radius: 8px; color: #d9e7ff; background: rgba(255, 255, 255, .06); cursor: pointer; }
+    .sw-exercise-demo-media { display: grid; place-items: center; min-height: 260px; margin: 18px 0; overflow: hidden; border: 1px solid rgba(109, 209, 255, .3); border-radius: 12px; background: repeating-linear-gradient(135deg, rgba(74, 185, 255, .06) 0 2px, transparent 2px 10px), #060b1b; }
+    .sw-exercise-demo-media video { display: block; width: 100%; max-height: 400px; background: #02040c; }
+    .sw-exercise-demo-placeholder { padding: 42px 20px; color: #b9d4ef; text-align: center; }
+    .sw-exercise-demo-placeholder b { display: block; margin-bottom: 8px; color: #8ce7ff; letter-spacing: .08em; text-transform: uppercase; }
+    .sw-exercise-demo-copy { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sw-exercise-demo-copy section { padding: 14px; border: 1px solid rgba(167, 194, 255, .18); border-radius: 10px; background: rgba(7, 14, 34, .65); }
+    .sw-exercise-demo-copy h3 { margin: 0 0 8px; color: #a9ebff; font-size: .92rem; letter-spacing: .08em; text-transform: uppercase; }
+    .sw-exercise-demo-copy ul { margin: 0; padding-left: 18px; color: #d5e3f7; }
+    .sw-exercise-demo-copy li + li { margin-top: 7px; }
+    @media (max-width: 600px) { .sw-exercise-demo-card { padding: 18px; } .sw-exercise-demo-copy { grid-template-columns: 1fr; } .sw-exercise-demo-media { min-height: 190px; } }
     @keyframes swXpFloat { from { opacity: 0; transform: translate(-50%, 10px) scale(.8); } 20% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -90px) scale(1.15); } }
 
     .sw-system-console {
@@ -1381,6 +1398,20 @@
 
    const dailyQuestXp = [45, 40, 40, 45, 40, 50];
    const cardioQuestXp = dailyQuestXp.map(xp => Math.round(xp * 0.4));
+   const exerciseDemoData = {
+    pushups: { title: "Push-Ups", video: "/exercise-demos/push-ups.webm", instructions: ["Keep your body in one straight line.", "Lower your chest with control.", "Keep elbows slightly angled back."], mistakes: ["Letting hips sag or rise.", "Stopping at half repetitions."] },
+    legRaises: { title: "Leg Raises", video: "/exercise-demos/leg-raises.webm", instructions: ["Keep your lower back gently braced.", "Raise legs smoothly without swinging.", "Lower slowly under control."], mistakes: ["Arching your lower back.", "Dropping legs too quickly."] },
+    inAndOuts: { title: "In-and-Out Abs", video: "/exercise-demos/in-and-outs.webm", instructions: ["Lean back with a tall chest.", "Extend and pull knees in with control.", "Keep your core tight throughout."], mistakes: ["Rounding the back too much.", "Using momentum instead of the core."] },
+    plank: { title: "Plank", video: "/exercise-demos/plank.webm", instructions: ["Stack shoulders over elbows.", "Keep hips level with shoulders.", "Brace your core and breathe steadily."], mistakes: ["Hips sagging toward the floor.", "Looking forward and straining the neck."] },
+    squats: { title: "Squats", video: "/exercise-demos/squats.webm", instructions: ["Keep feet about shoulder-width apart.", "Sit hips back and keep chest proud.", "Drive through your full foot to stand."], mistakes: ["Knees collapsing inward.", "Heels lifting off the floor."] },
+    curls: { title: "Curls", video: "/exercise-demos/curls.webm", instructions: ["Keep elbows close to your sides.", "Curl with control through the full range.", "Lower the weight slowly."], mistakes: ["Swinging your torso.", "Letting elbows drift forward."] },
+    jumpingJacks: { title: "Jumping Jacks", video: "/exercise-demos/jumping-jacks.webm", instructions: ["Land softly with knees relaxed.", "Raise arms overhead as feet move apart.", "Return to a controlled starting position."], mistakes: ["Landing with locked knees.", "Rushing without control."] },
+    highKnees: { title: "High Knees", video: "/exercise-demos/high-knees.webm", instructions: ["Stay tall through the torso.", "Drive one knee up at a time.", "Use quick, light steps."], mistakes: ["Leaning too far backward.", "Heavy, stomping landings."] },
+    mountainClimbers: { title: "Mountain Climbers", video: "/exercise-demos/mountain-climbers.webm", instructions: ["Start in a strong high-plank position.", "Drive one knee toward the chest at a time.", "Keep shoulders stable over hands."], mistakes: ["Bouncing hips high into the air.", "Letting shoulders collapse."] },
+    buttKicks: { title: "Butt Kicks", video: "/exercise-demos/butt-kicks.webm", instructions: ["Stay tall and keep a quick rhythm.", "Bring each heel toward your glutes.", "Land lightly under your hips."], mistakes: ["Leaning too far forward.", "Kicking the knee forward instead of the heel back."] },
+    fastFeet: { title: "Fast Feet", video: "/exercise-demos/fast-feet.webm", instructions: ["Use small, quick steps.", "Stay balanced over the middle of your feet.", "Keep your chest tall and relaxed."], mistakes: ["Taking steps that are too large.", "Locking knees or stomping."] },
+    stepUps: { title: "Step-Ups", video: "/exercise-demos/step-ups.webm", instructions: ["Use a stable, low step or platform.", "Place the whole foot on the step.", "Push through the leading foot and alternate sides."], mistakes: ["Using an unstable surface.", "Pushing hard from the trailing foot."] }
+   };
    const cardioRankTiers = {
     E: { jumpingJacks: 20, highKnees: 15, mountainClimbers: 12, buttKicks: 15, fastFeetSeconds: 15, stepUps: 10 },
     D: { jumpingJacks: 25, highKnees: 20, mountainClimbers: 15, buttKicks: 20, fastFeetSeconds: 20, stepUps: 12 },
@@ -1406,27 +1437,33 @@
     return [
         {
             title: `3 sets of ${current.pushups} push-ups`,
-            xp: dailyQuestXp[0]
+            xp: dailyQuestXp[0],
+            exerciseId: "pushups"
         },
         {
             title: `3 sets of ${current.legRaises} leg raises`,
-            xp: dailyQuestXp[1]
+            xp: dailyQuestXp[1],
+            exerciseId: "legRaises"
         },
         {
             title: `3 sets of ${current.inAndOut} in-and-out abs`,
-            xp: dailyQuestXp[2]
+            xp: dailyQuestXp[2],
+            exerciseId: "inAndOuts"
         },
         {
             title: `3 sets of ${current.plank} second planks`,
-            xp: dailyQuestXp[3]
+            xp: dailyQuestXp[3],
+            exerciseId: "plank"
         },
         {
             title: `3 sets of ${current.squats} squats`,
-            xp: dailyQuestXp[4]
+            xp: dailyQuestXp[4],
+            exerciseId: "squats"
         },
         {
             title: `1 set of ${current.curls} curls, both arms`,
-            xp: dailyQuestXp[5]
+            xp: dailyQuestXp[5],
+            exerciseId: "curls"
         }
     ];
 }
@@ -1434,12 +1471,12 @@
 function cardioQuestsFor(player) {
   const tier = cardioRankTiers[rankFor(player.level)] || cardioRankTiers.E;
   return [
-    { cardioKey: "jumping-jacks", title: `3 sets of ${tier.jumpingJacks} jumping jacks`, xp: cardioQuestXp[0] },
-    { cardioKey: "high-knees", title: `3 sets of ${tier.highKnees} high knees`, xp: cardioQuestXp[1] },
-    { cardioKey: "mountain-climbers", title: `3 sets of ${tier.mountainClimbers} mountain climbers`, xp: cardioQuestXp[2] },
-    { cardioKey: "butt-kicks", title: `3 sets of ${tier.buttKicks} butt kicks`, xp: cardioQuestXp[3] },
-    { cardioKey: "fast-feet", title: `3 sets of ${tier.fastFeetSeconds} seconds fast feet`, xp: cardioQuestXp[4] },
-    { cardioKey: "step-ups", title: `3 sets of ${tier.stepUps} step-ups`, xp: cardioQuestXp[5] }
+    { cardioKey: "jumping-jacks", exerciseId: "jumpingJacks", title: `3 sets of ${tier.jumpingJacks} jumping jacks`, xp: cardioQuestXp[0] },
+    { cardioKey: "high-knees", exerciseId: "highKnees", title: `3 sets of ${tier.highKnees} high knees`, xp: cardioQuestXp[1] },
+    { cardioKey: "mountain-climbers", exerciseId: "mountainClimbers", title: `3 sets of ${tier.mountainClimbers} mountain climbers`, xp: cardioQuestXp[2] },
+    { cardioKey: "butt-kicks", exerciseId: "buttKicks", title: `3 sets of ${tier.buttKicks} butt kicks`, xp: cardioQuestXp[3] },
+    { cardioKey: "fast-feet", exerciseId: "fastFeet", title: `3 sets of ${tier.fastFeetSeconds} seconds fast feet`, xp: cardioQuestXp[4] },
+    { cardioKey: "step-ups", exerciseId: "stepUps", title: `3 sets of ${tier.stepUps} step-ups`, xp: cardioQuestXp[5] }
   ].map(quest => ({ ...quest, category: "cardio" }));
 }
 
@@ -1611,6 +1648,27 @@ const dailyQuestSignature = "dynamic";
         return String(quest.title || "").trim().toLowerCase().replace(/\s+/g, " ");
       }
 
+      function exerciseIdForQuest(quest) {
+        if (exerciseDemoData[quest.exerciseId]) return quest.exerciseId;
+        const cardioIds = {
+          "jumping-jacks": "jumpingJacks",
+          "high-knees": "highKnees",
+          "mountain-climbers": "mountainClimbers",
+          "butt-kicks": "buttKicks",
+          "fast-feet": "fastFeet",
+          "step-ups": "stepUps"
+        };
+        if (cardioIds[quest.cardioKey]) return cardioIds[quest.cardioKey];
+        const title = String(quest.title || "").toLowerCase();
+        if (title.includes("push-up")) return "pushups";
+        if (title.includes("leg raise")) return "legRaises";
+        if (title.includes("in-and-out")) return "inAndOuts";
+        if (title.includes("plank")) return "plank";
+        if (title.includes("squat")) return "squats";
+        if (title.includes("curl")) return "curls";
+        return "";
+      }
+
       function rewardSeedFor(quest) {
         if (!Number.isInteger(quest.rewardSeed)) quest.rewardSeed = Math.floor(Math.random() * 2_147_483_647);
         return quest.rewardSeed;
@@ -1688,6 +1746,7 @@ const dailyQuestSignature = "dynamic";
           xp: quest.xp,
           category: quest.category,
           cardioKey: quest.cardioKey,
+          exerciseId: quest.exerciseId,
           rewardSeed: Math.floor(Math.random() * 2_147_483_647),
           rewardSnapshot: null,
           completedOrder: 0,
@@ -1747,6 +1806,7 @@ if (profile?.upgrades.extraDailyQuest) {
     xp: quest.xp,
     category: quest.category,
     cardioKey: quest.cardioKey,
+    exerciseId: quest.exerciseId,
     rewardSeed: Math.floor(Math.random() * 2_147_483_647),
     rewardSnapshot: null,
     completedOrder: 0,
@@ -1918,6 +1978,47 @@ if (profile?.upgrades.extraDailyQuest) {
           .replaceAll("'", "&#039;");
       }
 
+      function openExerciseDemo(exerciseId) {
+        const demo = exerciseDemoData[exerciseId];
+        if (!demo) return;
+        const existing = document.getElementById("sw-exercise-demo-modal");
+        if (existing) existing.remove();
+        const modal = document.createElement("div");
+        modal.id = "sw-exercise-demo-modal";
+        modal.className = "sw-exercise-demo-modal";
+        modal.setAttribute("role", "dialog");
+        modal.setAttribute("aria-modal", "true");
+        modal.setAttribute("aria-labelledby", "sw-exercise-demo-title");
+        modal.innerHTML = `
+          <div class="sw-exercise-demo-card">
+            <div class="sw-exercise-demo-head">
+              <div><p class="sw-kicker">HUNTER FORM ARCHIVE</p><h2 id="sw-exercise-demo-title">${escapeHtml(demo.title)}</h2></div>
+              <button type="button" class="sw-exercise-demo-close" aria-label="Close exercise demonstration">Close</button>
+            </div>
+            <div class="sw-exercise-demo-media">
+              <video autoplay loop muted controls playsinline preload="none" aria-label="${escapeHtml(demo.title)} form demonstration"><source src="${escapeHtml(demo.video)}" type="video/webm"></video>
+            </div>
+            <div class="sw-exercise-demo-copy">
+              <section><h3>System Form Notes</h3><ul>${demo.instructions.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>
+              <section><h3>Avoid These Errors</h3><ul>${demo.mistakes.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>
+            </div>
+          </div>`;
+        const close = () => {
+          document.removeEventListener("keydown", onKeydown);
+          modal.remove();
+        };
+        const onKeydown = event => { if (event.key === "Escape") close(); };
+        modal.addEventListener("click", event => { if (event.target === modal) close(); });
+        modal.querySelector(".sw-exercise-demo-close").addEventListener("click", close);
+        const video = modal.querySelector("video");
+        video.addEventListener("error", () => {
+          video.parentElement.innerHTML = `<div class="sw-exercise-demo-placeholder"><b>Form Archive Offline</b>Exercise demonstration coming soon.</div>`;
+        }, { once: true });
+        document.addEventListener("keydown", onKeydown);
+        document.body.append(modal);
+        modal.querySelector(".sw-exercise-demo-close").focus();
+      }
+
       function formatTimer(seconds) { return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`; }
       function updatePlankTimer(key) { const timer = plankTimers.get(key); const label = document.querySelector(`[data-plank-time="${key}"]`); if (label && timer) label.textContent = formatTimer(timer.remaining); }
       function togglePlankTimer(playerId, questId, seconds) {
@@ -2058,6 +2159,7 @@ if (profile?.upgrades.extraDailyQuest) {
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""} ${isActivePlayer ? "" : "disabled"}>
                     <span>
                       <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
+                      ${(() => { const exerciseId = exerciseIdForQuest(quest); return exerciseId ? `<button type="button" class="sw-form-demo-btn" data-form-demo="${exerciseId}">▶ View Form</button>` : ""; })()}
                       ${/planks?/i.test(quest.title) ? (() => { const seconds = Number((quest.title.match(/(\d+)\s*second/i) || [])[1]) || 30; const key = `${player.id}-${quest.id}`; const remaining = plankTimers.get(key)?.remaining ?? seconds; return `<span class="sw-plank-timer"><strong data-plank-time="${key}">${formatTimer(remaining)}</strong><button type="button" data-plank-toggle data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Start / Pause</button><button type="button" data-plank-reset data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Reset</button></span>`; })() : ""}
                       <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
                     </span>
@@ -2100,6 +2202,12 @@ if (profile?.upgrades.extraDailyQuest) {
             completeQuest(event.currentTarget.dataset.player, event.currentTarget.dataset.quest, event.currentTarget.checked);
           });
         });
+
+        document.querySelectorAll("[data-form-demo]").forEach(button => button.addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          openExerciseDemo(event.currentTarget.dataset.formDemo);
+        }));
 
         document.querySelectorAll("[data-plank-toggle]").forEach(button => button.addEventListener("click", event => {
           const element = event.currentTarget;
