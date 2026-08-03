@@ -1356,7 +1356,7 @@
     return [
         {
             title: `3 sets of ${current.pushups} push-ups`,
-            xp: 40
+            xp: 45
         },
         {
             title: `3 sets of ${current.legRaises} leg raises`,
@@ -1368,7 +1368,7 @@
         },
         {
             title: `3 sets of ${current.plank} second planks`,
-            xp: 40
+            xp: 45
         },
         {
             title: `3 sets of ${current.squats} squats`,
@@ -1376,7 +1376,7 @@
         },
         {
             title: `1 set of ${current.curls} curls, both arms`,
-            xp: 40
+            xp: 50
         }
     ];
 }
@@ -1661,10 +1661,7 @@ if (profile?.upgrades.extraDailyQuest) {
         }
     const currentProfile = window.HunterProgression?.getProfile?.(player);
     player.quests.forEach(quest => {
-      if (!quest.boss) {
-        if (!/^Extra Daily Quest:/i.test(quest.title || "")) quest.xp = 40;
-        return;
-      }
+      if (!quest.boss) return;
       const pool = bossQuestPools[rankFor(player.level)] || bossQuestPools.E;
       const bonus = Math.max(0, Number(currentProfile?.upgrades?.bossChance) || 0) * 10;
       quest.xp = Math.min(Number(quest.xp) || pool.xp[0], pool.xp[1] + bonus);
