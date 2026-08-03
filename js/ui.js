@@ -21,7 +21,7 @@
       document.body.append(popup);
     }
     const claimable = players.some(player => window.HunterProgression.adventureFor(player).dailyLoginDate !== today);
-    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · DAILY PRESENCE</p><h2>Daily Login Available</h2><p>Select your hunter to claim today's reward. Resets at midnight Eastern Time.</p><p class="sw-muted">Reward: +120 XP · +75 Gold${players.some(player => player.streak >= 7) ? " · Streak hunters also receive a Recovery Potion" : ""}</p><div class="sw-daily-login-players">${players.map(player => { const claimed = window.HunterProgression.adventureFor(player).dailyLoginDate === today; return `<button data-action="daily-login" data-id="${player.id}" ${claimed ? "disabled" : ""}><b>${escapeHtml(player.name)}</b><span>${claimed ? "Claimed today" : "Claim reward"}</span></button>`; }).join("")}</div>${claimable ? "" : "<p class=\"sw-muted\">Every hunter has claimed today’s reward. Return after midnight EST.</p>"}<button class="sw-daily-login-exit" data-action="daily-close">Exit for now</button></div>`;
+    popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · DAILY PRESENCE</p><h2>Daily Login Available</h2><p>Select your hunter to claim today's reward. Resets at midnight Eastern Time.</p><p class="sw-muted">Reward: +25 XP · +75 Gold${players.some(player => player.streak >= 7) ? " · Streak hunters also receive a Recovery Potion" : ""}</p><div class="sw-daily-login-players">${players.map(player => { const claimed = window.HunterProgression.adventureFor(player).dailyLoginDate === today; return `<button data-action="daily-login" data-id="${player.id}" ${claimed ? "disabled" : ""}><b>${escapeHtml(player.name)}</b><span>${claimed ? "Claimed today" : "Claim reward"}</span></button>`; }).join("")}</div>${claimable ? "" : "<p class=\"sw-muted\">Every hunter has claimed today’s reward. Return after midnight EST.</p>"}<button class="sw-daily-login-exit" data-action="daily-close">Exit for now</button></div>`;
     popup.style.display = claimable && localStorage.getItem(dismissedKey) !== "true" ? "grid" : "none";
   }
 
@@ -90,7 +90,7 @@
     if (adventure.eliteBoss) missionCards.push(card(adventure.eliteBoss.name, `${adventure.eliteBoss.objective} · +${adventure.eliteBoss.xp} XP · +${adventure.eliteBoss.gold} G`, `<button data-action="elite-claim">Defeat Elite Boss</button>`));
     else missionCards.push(card("Elite Boss Terminal", player.level >= 10 ? "Threat Level A. Summon when you are ready." : "Unlocks at Level 10.", `<button data-action="elite-summon" ${player.level < 10 ? "disabled" : ""}>Summon Elite Boss</button>`));
     missionCards.push(card("Hunter Contract", `${adventure.contracts.pushups}/250 push-ups · Reward: Golden King cosmetic`, profile.themes.includes("Golden King") ? "Contract cleared." : "Long-term objective."));
-    missionCards.push(card("Combo Chain", `Day ${adventure.comboDays} · ${Math.min(30, adventure.comboDays * 3)}% bonus XP on system rewards.`));
+    missionCards.push(card("Combo Chain", `Day ${adventure.comboDays} · ${Math.min(10, adventure.comboDays)}% bonus XP on system rewards.`));
     return cards(missionCards, item => item);
   }
 
@@ -128,7 +128,7 @@
     const mastered = Math.floor(adventure.mastery.pushups / 5) + 1;
     const rank = window.HunterWorkout.rankFor(player.level);
     const license = rank === "E" || rank === "D" ? "Hunter Shop" : rank === "C" || rank === "B" ? "Elite Boss Terminal" : "Shadow Barracks";
-    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Codex</p><h3>Collected Knowledge</h3><div class="sw-mini-stats">${stat("Loot", adventure.loot.length)}${stat("Boxes", adventure.boxes.length)}${stat("Constellations", adventure.constellations.length)}${stat("Awakenings", adventure.awakenings.length)}</div><p class="sw-muted">${adventure.loot.slice(0, 4).map(item => `${item.rarity} ${item.name}`).join(" · ") || "No loot collected yet."}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Exercise Mastery</p><h3>Push-Up Mastery · Level ${mastered}</h3><p>${adventure.mastery.pushups} push-up quests cleared. Next level at ${mastered * 5} clears. Current bonus: +${Math.min(100, mastered * 10)} XP per push-up quest.</p><p class="sw-muted">Constellations: ${adventure.constellations.join(", ") || "None yet"}<br>Awakenings: ${adventure.awakenings.join(", ") || "Not awakened"}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Hunter License</p><h3>${rank} License</h3><p>Current authorization: ${license}</p><p class="sw-muted">E: Shop · C: Elite Bosses · A: Shadow Barracks</p></div></div>`;
+    return `<div class="sw-console-grid"><div class="sw-hunter-card"><p class="sw-kicker">Hunter Codex</p><h3>Collected Knowledge</h3><div class="sw-mini-stats">${stat("Loot", adventure.loot.length)}${stat("Boxes", adventure.boxes.length)}${stat("Constellations", adventure.constellations.length)}${stat("Awakenings", adventure.awakenings.length)}</div><p class="sw-muted">${adventure.loot.slice(0, 4).map(item => `${item.rarity} ${item.name}`).join(" · ") || "No loot collected yet."}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Exercise Mastery</p><h3>Push-Up Mastery · Level ${mastered}</h3><p>${adventure.mastery.pushups} push-up quests cleared. Next level at ${mastered * 5} clears. Current bonus: +${Math.min(25, mastered * 3)} XP per push-up quest.</p><p class="sw-muted">Constellations: ${adventure.constellations.join(", ") || "None yet"}<br>Awakenings: ${adventure.awakenings.join(", ") || "Not awakened"}</p></div><div class="sw-hunter-card"><p class="sw-kicker">Hunter License</p><h3>${rank} License</h3><p>Current authorization: ${license}</p><p class="sw-muted">E: Shop · C: Elite Bosses · A: Shadow Barracks</p></div></div>`;
   }
 
   function renderStats(player) {
@@ -195,7 +195,7 @@
     if (action === "daily-login") {
       const player = window.HunterWorkout.players().find(item => item.id === id);
       const claimed = player && window.HunterProgression.actions.claimDailyLogin(player);
-      if (claimed) { saveGame(); window.HunterWorkout.showToast("Daily Login Claimed", `${player.name} received 120 XP and 75 Gold.`); renderConsole(); }
+      if (claimed) { saveGame(); window.HunterWorkout.showToast("Daily Login Claimed", `${player.name} received 25 XP and 75 Gold.`); renderConsole(); }
       return;
     }
     if (action === "daily-close") {

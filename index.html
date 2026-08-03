@@ -1116,7 +1116,7 @@
             Achievement
             <textarea id="sw-achievement-text" placeholder="Example: Ran 2 miles, hit a push-up PR, finished leg day"></textarea>
           </label>
-          <p class="sw-muted">Achievements roll a random system reward from 20 to 40 XP.</p>
+          <p class="sw-muted">Achievements roll a small system reward from 5 to 15 XP.</p>
           <button class="sw-btn sw-btn-primary" type="submit">Log Random XP</button>
         </div>
       </form>
@@ -1383,14 +1383,14 @@
 
 const dailyQuestSignature = "dynamic";
       const bossQuestPools = {
-        E: { xp: [70, 90], quests: ["10-minute recovery walk", "2 rounds of 8 squats and 8 wall push-ups", "30-second plank with rest as needed", "5 minutes of gentle stretching"] },
-        D: { xp: [95, 120], quests: ["2 rounds of 12 squats and 10 incline push-ups", "45-second plank with rest as needed", "3 rounds of 20 jumping jacks", "12-minute easy walk or light jog"] },
-        C: { xp: [125, 155], quests: ["3 rounds of 12 push-ups and 15 squats", "60-second plank split into comfortable sets", "3 rounds of 20 mountain climbers", "15-minute steady walk or easy jog"] },
-        B: { xp: [160, 195], quests: ["3 rounds of 15 push-ups and 20 squats", "90-second plank split into comfortable sets", "3 rounds of 12 reverse lunges per side", "20-minute recovery walk with good posture"] },
-        A: { xp: [205, 245], quests: ["4 rounds of 15 push-ups and 20 squats", "2-minute plank split into comfortable sets", "4 rounds of 20 high knees at a controlled pace", "25-minute steady walk or jog"] },
-        S: { xp: [255, 300], quests: ["4 rounds of 18 push-ups and 25 squats", "3 rounds of 45-second plank with recovery", "4 rounds of 15 alternating lunges per side", "25-minute outdoor walk or easy jog"] },
-        National: { xp: [315, 370], quests: ["5 rounds of 15 push-ups and 20 squats", "4 rounds of 45-second plank with recovery", "5 rounds of 20 controlled mountain climbers", "30-minute steady walk, jog, or bike ride"] },
-        Monarch: { xp: [390, 460], quests: ["5 rounds of 18 push-ups and 25 squats", "5 rounds of 45-second plank with recovery", "5 rounds of 15 reverse lunges per side", "35-minute steady walk, jog, or bike ride"] }
+        E: { xp: [40, 55], quests: ["10-minute recovery walk", "2 rounds of 8 squats and 8 wall push-ups", "30-second plank with rest as needed", "5 minutes of gentle stretching"] },
+        D: { xp: [55, 70], quests: ["2 rounds of 12 squats and 10 incline push-ups", "45-second plank with rest as needed", "3 rounds of 20 jumping jacks", "12-minute easy walk or light jog"] },
+        C: { xp: [70, 85], quests: ["3 rounds of 12 push-ups and 15 squats", "60-second plank split into comfortable sets", "3 rounds of 20 mountain climbers", "15-minute steady walk or easy jog"] },
+        B: { xp: [90, 110], quests: ["3 rounds of 15 push-ups and 20 squats", "90-second plank split into comfortable sets", "3 rounds of 12 reverse lunges per side", "20-minute recovery walk with good posture"] },
+        A: { xp: [115, 135], quests: ["4 rounds of 15 push-ups and 20 squats", "2-minute plank split into comfortable sets", "4 rounds of 20 high knees at a controlled pace", "25-minute steady walk or jog"] },
+        S: { xp: [140, 165], quests: ["4 rounds of 18 push-ups and 25 squats", "3 rounds of 45-second plank with recovery", "4 rounds of 15 alternating lunges per side", "25-minute outdoor walk or easy jog"] },
+        National: { xp: [170, 200], quests: ["5 rounds of 15 push-ups and 20 squats", "4 rounds of 45-second plank with recovery", "5 rounds of 20 controlled mountain climbers", "30-minute steady walk, jog, or bike ride"] },
+        Monarch: { xp: [210, 250], quests: ["5 rounds of 18 push-ups and 25 squats", "5 rounds of 45-second plank with recovery", "5 rounds of 15 reverse lunges per side", "35-minute steady walk, jog, or bike ride"] }
       };
       const defaultState = {
         quoteIndex: 4,
@@ -1524,7 +1524,7 @@ const dailyQuestSignature = "dynamic";
       }
 
       function randomAchievementXp() {
-        return randomInt(20, 40);
+        return randomInt(5, 15);
       }
 
       function bossContractFor(player) {
@@ -1643,7 +1643,7 @@ const profile = window.HunterProgression?.getProfile?.(player);
 if (profile?.upgrades.extraDailyQuest) {
   quests.push({
     title: "Extra Daily Quest: 20-minute recovery walk, Shadow endurance training",
-    xp: 35
+    xp: 25
   });
 }
 
@@ -1659,7 +1659,15 @@ if (profile?.upgrades.extraDailyQuest) {
     custom: false
 }));
         }
-        return player.quests;
+    const currentProfile = window.HunterProgression?.getProfile?.(player);
+    player.quests.forEach(quest => {
+      if (!quest.boss) return;
+      const pool = bossQuestPools[rankFor(player.level)] || bossQuestPools.E;
+      const bonus = Math.max(0, Number(currentProfile?.upgrades?.bossChance) || 0) * 10;
+      quest.xp = Math.min(Number(quest.xp) || pool.xp[0], pool.xp[1] + bonus);
+    });
+
+    return player.quests;
       }
 
       function addXp(player, xp, reason, alreadyRankScaled = false) {
@@ -1746,7 +1754,7 @@ if (profile?.upgrades.extraDailyQuest) {
         if (allDone && player.lastDaily !== todayKey()) {
           player.streak += 1;
           player.lastDaily = todayKey();
-          addXp(player, 75, "Daily quest bonus");
+          addXp(player, 25, "Daily quest bonus");
           if (!silent) pushFeed(`${player.name} completed the full daily quest and gained a streak bonus.`);
         }
       }

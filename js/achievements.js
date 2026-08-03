@@ -1,6 +1,6 @@
 const achievements = [
-  { id: "quest10", name: "First Steps", description: "Clear 10 workout quests.", goal: 10, rewardGold: 500, rewardXP: 500 },
-  { id: "quest100", name: "Dungeon Veteran", description: "Clear 100 workout quests.", goal: 100, rewardGold: 5000, rewardXP: 3000 }
+  { id: "quest10", name: "First Steps", description: "Clear 10 workout quests.", goal: 10, rewardGold: 500, rewardXP: 100 },
+  { id: "quest100", name: "Dungeon Veteran", description: "Clear 100 workout quests.", goal: 100, rewardGold: 5000, rewardXP: 500 }
 ];
 
 function unlockAchievement(player, achievement) {

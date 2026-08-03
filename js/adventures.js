@@ -48,6 +48,9 @@
       window.HunterProgression.adventureMigrationOccurred = true;
       unlockMilestones(player);
     }
+    if (profile.adventure.emergency?.xp > 200) profile.adventure.emergency.xp = 200;
+    if (profile.adventure.eliteBoss?.xp > 500) profile.adventure.eliteBoss.xp = 500;
+
     return profile.adventure;
   }
 
@@ -116,25 +119,25 @@
     const previousDate = adventure.comboDate;
     adventure.comboDate = dateKey();
     adventure.comboDays = previousDate === adventure.comboDate ? Math.max(adventure.comboDays, player.streak || 1) : Math.max(1, player.streak || 1);
-    const comboBonus = Math.min(0.3, adventure.comboDays * 0.03);
+    const comboBonus = Math.min(0.10, adventure.comboDays * 0.01);
     if (comboBonus) giveXP(player, Math.round(quest.xp * comboBonus), `Combo Chain Day ${adventure.comboDays}`);
-    if (hour < 7) giveXP(player, quest.xp, "Dawn Mission bonus");
+    if (hour < 7) giveXP(player, Math.round(quest.xp * 0.25), "Dawn Mission bonus");
     if (hour >= 21) giveGold(player, 35, "Night Hunt bonus");
-    if (profile.adventure.dailyFortune?.type === "xp") giveXP(player, Math.round(quest.xp * 0.15), "Daily Fortune");
+    if (profile.adventure.dailyFortune?.type === "xp") giveXP(player, Math.round(quest.xp * 0.10), "Daily Fortune");
     if (profile.adventure.dailyFortune?.type === "gold") giveGold(player, 20, "Daily Fortune");
     if (isPushupQuest) {
       const masteryLevel = Math.floor(adventure.mastery.pushups / 5) + 1;
-      giveXP(player, Math.min(100, masteryLevel * 10), `Push-Up Mastery Level ${masteryLevel}`);
+      giveXP(player, Math.min(25, masteryLevel * 3), `Push-Up Mastery Level ${masteryLevel}`);
     }
     if (adventure.potions.doubleXpArmed) {
-      giveXP(player, quest.xp, "Double XP Potion");
+      giveXP(player, Math.round(quest.xp * 0.5), "Double XP Potion");
       adventure.potions.doubleXpArmed = false;
     }
 
     if (roll(0.48)) addLoot(player, pick(["Energy Crystal", "Mana Shard", "Beast Core"]), pick(["Common", "Rare", "Epic"]));
     if (roll(0.25)) grantFragments(player, 1);
     if (roll(0.14)) adventure.boxes.push(pick(rarityTable));
-    if (roll(0.12) && !adventure.emergency) adventure.emergency = { objective: "20 Burpees", xp: 1200, gold: 500, rare: true };
+    if (roll(0.12) && !adventure.emergency) adventure.emergency = { objective: "20 Burpees", xp: 200, gold: 500, rare: true };
     if (profile.completedQuests >= 100 && adventure.contracts.pushups >= 250 && !profile.themes.includes("Golden King")) profile.themes.push("Golden King");
     unlockMilestones(player);
     if (roll(0.28)) window.HunterWorkout?.showToast("SYSTEM", pick(["The System is observing your growth.", "Your physical abilities have increased.", "Your body has adapted to today's training.", "Potential detected.", "Hunter status improving."]));
@@ -163,7 +166,7 @@
     const rarity = adventure.boxes.shift();
     if (!rarity) return false;
     const multiplier = { Common: 1, Rare: 2, Epic: 4, Legendary: 8, Mythic: 15 }[rarity];
-    giveRewards(player, { gold: 120 * multiplier, xp: 90 * multiplier, reason: `${rarity} Mystery Box` });
+    giveRewards(player, { gold: 120 * multiplier, xp: 30 * multiplier, reason: `${rarity} Mystery Box` });
     if (rarity !== "Common") grantFragments(player, multiplier);
     if (rarity === "Rare" || rarity === "Epic") adventure.potions.doubleXp += 1;
     if (rarity === "Legendary" || rarity === "Mythic") adventure.potions.recovery += 1;
@@ -176,7 +179,7 @@
   function summonEliteBoss(player) {
     const adventure = adventureFor(player);
     if (player.level < 10 || adventure.eliteBoss) return false;
-    adventure.eliteBoss = { name: "A-Rank Iron Colossus", objective: "200 Squats · 100 Push-ups · 3 Minute Plank", xp: 2500, gold: 1250 };
+    adventure.eliteBoss = { name: "A-Rank Iron Colossus", objective: "200 Squats · 100 Push-ups · 3 Minute Plank", xp: 500, gold: 1250 };
     return true;
   }
 
@@ -228,7 +231,7 @@
     const today = easternDayKey();
     if (adventure.dailyLoginDate === today) return false;
     adventure.dailyLoginDate = today;
-    giveRewards(player, { xp: 120, gold: 75, reason: "Daily Login · EST" });
+    giveRewards(player, { xp: 25, gold: 75, reason: "Daily Login · EST" });
     if ((Number(player.streak) || 0) >= 7) adventure.potions.recovery += 1;
     return true;
   }
@@ -258,7 +261,7 @@
     const mission = adventure.shadowMission;
     if (!mission || Date.now() < mission.readyAt) return false;
     const level = adventure.shadowLevels[mission.shadow] || 1;
-    giveRewards(player, { xp: 180 + level * 40, gold: 120 + level * 30, reason: `${mission.shadow} Mission` });
+    giveRewards(player, { xp: 50 + level * 10, gold: 120 + level * 30, reason: `${mission.shadow} Mission` });
     adventure.shadowLevels[mission.shadow] = level + 1;
     adventure.shadowMission = null;
     return true;

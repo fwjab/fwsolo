@@ -30,6 +30,13 @@
       world.migrationVersion = 1;
       window.HunterProgression.worldMigrationOccurred = true;
     }
+    if (world.welcomePackage?.xp > 200) world.welcomePackage.xp = 200;
+    if (world.dimensionGate?.xp > 750) world.dimensionGate.xp = 750;
+    if (world.storyGate) {
+      const storyXp = 75 + Math.max(0, Number(world.storyGate.level) || 0) * 10;
+      world.storyGate.xp = Math.min(Number(world.storyGate.xp) || storyXp, storyXp);
+    }
+
     return world;
   }
 
@@ -62,10 +69,10 @@
     world.systemScan = pick(["Strength increased. Recovery optimal. Mission availability: HIGH.", "The System is observing your growth. Potential remains stable.", "Hunter status evaluated. Shadow resonance detected.", "Daily scan complete. The body has adapted to training."]);
     if (priorLogin) {
       const daysAway = Math.floor((new Date(`${today}T00:00:00`) - new Date(`${priorLogin}T00:00:00`)) / 86400000);
-      if (daysAway >= 3) world.welcomePackage = { xp: 250 + daysAway * 25, gold: 150 + daysAway * 15 };
+      if (daysAway >= 3) world.welcomePackage = { xp: Math.min(200, 50 + daysAway * 10), gold: 150 + daysAway * 15 };
     }
     if (!world.eclipse && roll(0.008)) world.eclipse = { date: today, title: "Eclipse Event", active: true };
-    if (!world.dimensionGate && roll(0.08)) world.dimensionGate = { title: "A-Rank Dimension Gate", objective: "100 Push-ups · 100 Squats · 5 Minute Walk", xp: 3500, gold: 1800 };
+    if (!world.dimensionGate && roll(0.08)) world.dimensionGate = { title: "A-Rank Dimension Gate", objective: "100 Push-ups · 100 Squats · 5 Minute Walk", xp: 750, gold: 1800 };
     return true;
   }
 
@@ -79,8 +86,8 @@
     }
     if (roll(0.06)) {
       world.criticals += 1;
-      giveXP(player, quest.xp, "Critical Success");
-      window.HunterWorkout.showToast("CRITICAL SUCCESS", "Workout efficiency exceeded expectations. XP doubled.");
+      giveXP(player, Math.round(quest.xp * 0.5), "Critical Success");
+      window.HunterWorkout.showToast("CRITICAL SUCCESS", "Workout efficiency exceeded expectations. Bonus XP granted.");
       speak(player, "Critical success.");
     }
     if (roll(0.04)) world.memoryCrystals += 1;
@@ -94,7 +101,7 @@
     if (profile.completedQuests >= 100) addLegacy(player, "100 Missions", "Dungeon Veteran milestone recorded.");
     const gateLevel = Math.floor(player.level / 5) * 5;
     if (gateLevel >= 5 && gateLevel > world.storyGateLevel && !world.storyGate) {
-      world.storyGate = { level: gateLevel, title: "Unknown Gate", objective: `Complete 3 daily quests at Level ${gateLevel}+`, xp: 300 + gateLevel * 40, gold: 150 + gateLevel * 20, entered: false };
+      world.storyGate = { level: gateLevel, title: "Unknown Gate", objective: `Complete 3 daily quests at Level ${gateLevel}+`, xp: 75 + gateLevel * 10, gold: 150 + gateLevel * 20, entered: false };
       speak(player, "An unknown gate has appeared.");
     }
   }
