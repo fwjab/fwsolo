@@ -643,6 +643,42 @@
       gap: 10px;
     }
 
+    .sw-quest-section {
+      margin-top: 18px;
+    }
+
+    .sw-quest-section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin: 0 0 10px;
+    }
+
+    .sw-quest-section-head h3 {
+      margin: 0;
+    }
+
+    .sw-quest-section-head p {
+      margin: 0;
+      color: #aebbd3;
+      font-size: .8rem;
+    }
+
+    .sw-quest-divider {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(164, 193, 255, .16);
+    }
+
+    .sw-quest-divider b { letter-spacing: .08em; text-transform: uppercase; }
+    .sw-quest-divider small { color: #aebbd3; }
+
     .sw-quest {
       padding: 12px;
       display: grid;
@@ -769,6 +805,7 @@
     .sw-quest:hover { transform: translateX(4px); border-color: rgba(124, 191, 255, .58); }
     .sw-quest:has(input:checked) { border-color: rgba(99, 227, 197, .54); background: linear-gradient(90deg, rgba(25, 109, 109, .26), rgba(16, 29, 56, .9)); }
     .sw-quest:has(input:checked) .sw-quest-title { color: #bfffe9; }
+    .sw-quest-cardio { border-color: rgba(92, 209, 255, .42); background: linear-gradient(110deg, rgba(18, 87, 138, .2), rgba(12, 20, 49, .9)); }
     .sw-quest-boss { border-color: rgba(223, 153, 255, .6); background: linear-gradient(110deg, rgba(102, 42, 139, .35), rgba(12, 20, 49, .9)); }
     .sw-quest-boss::after { content: "BOSS CONTRACT"; position: absolute; right: 68px; top: 8px; color: #e5bbff; font-size: .6rem; letter-spacing: .13em; font-weight: 800; }
 
@@ -1342,6 +1379,18 @@
   "Keep leveling until the world notices."
 ];
 
+   const dailyQuestXp = [45, 40, 40, 45, 40, 50];
+   const cardioRankTiers = {
+    E: { jumpingJacks: 20, highKnees: 15, mountainClimbers: 12, buttKicks: 15, fastFeetSeconds: 15, stepUps: 10 },
+    D: { jumpingJacks: 25, highKnees: 20, mountainClimbers: 15, buttKicks: 20, fastFeetSeconds: 20, stepUps: 12 },
+    C: { jumpingJacks: 30, highKnees: 25, mountainClimbers: 18, buttKicks: 25, fastFeetSeconds: 25, stepUps: 15 },
+    B: { jumpingJacks: 35, highKnees: 30, mountainClimbers: 21, buttKicks: 30, fastFeetSeconds: 30, stepUps: 18 },
+    A: { jumpingJacks: 40, highKnees: 35, mountainClimbers: 24, buttKicks: 35, fastFeetSeconds: 35, stepUps: 21 },
+    S: { jumpingJacks: 45, highKnees: 40, mountainClimbers: 27, buttKicks: 40, fastFeetSeconds: 40, stepUps: 24 },
+    National: { jumpingJacks: 50, highKnees: 45, mountainClimbers: 30, buttKicks: 45, fastFeetSeconds: 45, stepUps: 27 },
+    Monarch: { jumpingJacks: 55, highKnees: 50, mountainClimbers: 33, buttKicks: 50, fastFeetSeconds: 50, stepUps: 30 }
+   };
+
    function starterQuestsFor(player) {
     let current = rankData[0];
 
@@ -1356,29 +1405,41 @@
     return [
         {
             title: `3 sets of ${current.pushups} push-ups`,
-            xp: 45
+            xp: dailyQuestXp[0]
         },
         {
             title: `3 sets of ${current.legRaises} leg raises`,
-            xp: 40
+            xp: dailyQuestXp[1]
         },
         {
             title: `3 sets of ${current.inAndOut} in-and-out abs`,
-            xp: 40
+            xp: dailyQuestXp[2]
         },
         {
             title: `3 sets of ${current.plank} second planks`,
-            xp: 45
+            xp: dailyQuestXp[3]
         },
         {
             title: `3 sets of ${current.squats} squats`,
-            xp: 40
+            xp: dailyQuestXp[4]
         },
         {
             title: `1 set of ${current.curls} curls, both arms`,
-            xp: 50
+            xp: dailyQuestXp[5]
         }
     ];
+}
+
+function cardioQuestsFor(player) {
+  const tier = cardioRankTiers[rankFor(player.level)] || cardioRankTiers.E;
+  return [
+    { cardioKey: "jumping-jacks", title: `3 sets of ${tier.jumpingJacks} jumping jacks`, xp: dailyQuestXp[0] },
+    { cardioKey: "high-knees", title: `3 sets of ${tier.highKnees} high knees`, xp: dailyQuestXp[1] },
+    { cardioKey: "mountain-climbers", title: `3 sets of ${tier.mountainClimbers} mountain climbers`, xp: dailyQuestXp[2] },
+    { cardioKey: "butt-kicks", title: `3 sets of ${tier.buttKicks} butt kicks`, xp: dailyQuestXp[3] },
+    { cardioKey: "fast-feet", title: `3 sets of ${tier.fastFeetSeconds} seconds fast feet`, xp: dailyQuestXp[4] },
+    { cardioKey: "step-ups", title: `3 sets of ${tier.stepUps} step-ups`, xp: dailyQuestXp[5] }
+  ].map(quest => ({ ...quest, category: "cardio" }));
 }
 
 const dailyQuestSignature = "dynamic";
@@ -1604,6 +1665,27 @@ const dailyQuestSignature = "dynamic";
         state.feed = feedBefore;
       }
 
+      function ensureCardioQuests(player) {
+        if (!Array.isArray(player.quests) || !player.quests.length) return false;
+        const existingKeys = new Set(player.quests.filter(quest => quest.category === "cardio").map(quest => quest.cardioKey));
+        const missing = cardioQuestsFor(player).filter(quest => !existingKeys.has(quest.cardioKey));
+        if (!missing.length) return false;
+        const today = todayKey();
+        player.quests.push(...missing.map((quest, index) => ({
+          id: `${today}-cardio-${quest.cardioKey}-${index}-${Math.random().toString(16).slice(2)}`,
+          title: quest.title,
+          xp: quest.xp,
+          category: quest.category,
+          cardioKey: quest.cardioKey,
+          rewardSeed: Math.floor(Math.random() * 2_147_483_647),
+          rewardSnapshot: null,
+          completedOrder: 0,
+          done: false,
+          custom: false
+        })));
+        return true;
+      }
+
       function getDailyQuests(player) {
         const today = todayKey();
         if (!player.quests || player.quests.length === 0 || player.questDate !== today || player.questSignature !== dailyQuestSignature) {
@@ -1638,7 +1720,7 @@ const dailyQuestSignature = "dynamic";
           if (isNewQuestDay) player.claimedQuestKeys = [];
           
 
-const quests = starterQuestsFor(player);
+const quests = [...starterQuestsFor(player), ...cardioQuestsFor(player)];
 const profile = window.HunterProgression?.getProfile?.(player);
 if (profile?.upgrades.extraDailyQuest) {
   quests.push({
@@ -1652,6 +1734,8 @@ if (profile?.upgrades.extraDailyQuest) {
     id: `${today}-${index}-${Math.random().toString(16).slice(2)}`,
     title: quest.title,
     xp: quest.xp,
+    category: quest.category,
+    cardioKey: quest.cardioKey,
     rewardSeed: Math.floor(Math.random() * 2_147_483_647),
     rewardSnapshot: null,
     completedOrder: 0,
@@ -1659,6 +1743,7 @@ if (profile?.upgrades.extraDailyQuest) {
     custom: false
 }));
         }
+    const cardioQuestsAdded = ensureCardioQuests(player);
     const currentProfile = window.HunterProgression?.getProfile?.(player);
     player.quests.forEach(quest => {
       if (!quest.boss) return;
@@ -1667,6 +1752,7 @@ if (profile?.upgrades.extraDailyQuest) {
       quest.xp = Math.min(Number(quest.xp) || pool.xp[0], pool.xp[1] + bonus);
     });
 
+    if (cardioQuestsAdded) saveState();
     return player.quests;
       }
 
@@ -1915,6 +2001,17 @@ if (profile?.upgrades.extraDailyQuest) {
           const log = player.log.length
             ? player.log.map(item => `<div class="sw-log-item"><b>${escapeHtml(item.date)}</b><br>${escapeHtml(item.text)}</div>`).join("")
             : `<div class="sw-log-item">No achievements logged yet.</div>`;
+          const renderQuestCard = quest => `
+            <label class="sw-quest ${quest.category === "cardio" ? "sw-quest-cardio" : ""} ${quest.boss ? "sw-quest-boss" : ""}">
+              <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""} ${isActivePlayer ? "" : "disabled"}>
+              <span>
+                <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
+                ${/planks?/i.test(quest.title) ? (() => { const seconds = Number((quest.title.match(/(\d+)\s*second/i) || [])[1]) || 30; const key = `${player.id}-${quest.id}`; const remaining = plankTimers.get(key)?.remaining ?? seconds; return `<span class="sw-plank-timer"><strong data-plank-time="${key}">${formatTimer(remaining)}</strong><button type="button" data-plank-toggle data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Start / Pause</button><button type="button" data-plank-reset data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Reset</button></span>`; })() : ""}
+                <small>${quest.boss ? "Optional boss quest" : quest.category === "cardio" ? "Cardio quest" : "Daily quest"} Â· ${today}</small>
+              </span>
+              <span class="sw-xp-pill">+${quest.xp}</span>
+            </label>
+          `;
 
           return `
             <article class="sw-player ${isActivePlayer ? "" : "sw-player-readonly"}" data-rank="${rankFor(player.level)}">
@@ -1943,8 +2040,10 @@ if (profile?.upgrades.extraDailyQuest) {
               </div>
 
               <div class="sw-quest-list">
-                ${quests.map(quest => `
-                  <label class="sw-quest ${quest.boss ? "sw-quest-boss" : ""}">
+                ${quests.map((quest, index) => `
+                  ${quest.category === "cardio" && quests[index - 1]?.category !== "cardio" ? `<div class="sw-quest-divider"><b>Cardio Quests</b><small>Each rep counts individually for alternating movements.</small></div>` : ""}
+                  ${quest.boss && !quests[index - 1]?.boss ? `<div class="sw-quest-divider"><b>Boss Quest</b><small>Optional rank-locked contract</small></div>` : ""}
+                  <label class="sw-quest ${quest.category === "cardio" ? "sw-quest-cardio" : ""} ${quest.boss ? "sw-quest-boss" : ""}">
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""} ${isActivePlayer ? "" : "disabled"}>
                     <span>
                       <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
