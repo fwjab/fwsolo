@@ -266,7 +266,7 @@ if (request.method === "GET" && requestPath.endsWith(".js")) {
         sendJson(response, 404, { error: "Exercise demonstration not found." });
         return;
       }
-      response.writeHead(200, { "Content-Type": mimeTypes[extension], "Cache-Control": "public, max-age=86400" });
+      response.writeHead(200, { "Content-Type": mimeTypes[extension], "Cache-Control": "no-cache, max-age=0, must-revalidate" });
       response.end(fs.readFileSync(filePath));
       return;
     }
