@@ -1380,6 +1380,7 @@
 ];
 
    const dailyQuestXp = [45, 40, 40, 45, 40, 50];
+   const cardioQuestXp = dailyQuestXp.map(xp => Math.round(xp * 0.4));
    const cardioRankTiers = {
     E: { jumpingJacks: 20, highKnees: 15, mountainClimbers: 12, buttKicks: 15, fastFeetSeconds: 15, stepUps: 10 },
     D: { jumpingJacks: 25, highKnees: 20, mountainClimbers: 15, buttKicks: 20, fastFeetSeconds: 20, stepUps: 12 },
@@ -1433,12 +1434,12 @@
 function cardioQuestsFor(player) {
   const tier = cardioRankTiers[rankFor(player.level)] || cardioRankTiers.E;
   return [
-    { cardioKey: "jumping-jacks", title: `3 sets of ${tier.jumpingJacks} jumping jacks`, xp: dailyQuestXp[0] },
-    { cardioKey: "high-knees", title: `3 sets of ${tier.highKnees} high knees`, xp: dailyQuestXp[1] },
-    { cardioKey: "mountain-climbers", title: `3 sets of ${tier.mountainClimbers} mountain climbers`, xp: dailyQuestXp[2] },
-    { cardioKey: "butt-kicks", title: `3 sets of ${tier.buttKicks} butt kicks`, xp: dailyQuestXp[3] },
-    { cardioKey: "fast-feet", title: `3 sets of ${tier.fastFeetSeconds} seconds fast feet`, xp: dailyQuestXp[4] },
-    { cardioKey: "step-ups", title: `3 sets of ${tier.stepUps} step-ups`, xp: dailyQuestXp[5] }
+    { cardioKey: "jumping-jacks", title: `3 sets of ${tier.jumpingJacks} jumping jacks`, xp: cardioQuestXp[0] },
+    { cardioKey: "high-knees", title: `3 sets of ${tier.highKnees} high knees`, xp: cardioQuestXp[1] },
+    { cardioKey: "mountain-climbers", title: `3 sets of ${tier.mountainClimbers} mountain climbers`, xp: cardioQuestXp[2] },
+    { cardioKey: "butt-kicks", title: `3 sets of ${tier.buttKicks} butt kicks`, xp: cardioQuestXp[3] },
+    { cardioKey: "fast-feet", title: `3 sets of ${tier.fastFeetSeconds} seconds fast feet`, xp: cardioQuestXp[4] },
+    { cardioKey: "step-ups", title: `3 sets of ${tier.stepUps} step-ups`, xp: cardioQuestXp[5] }
   ].map(quest => ({ ...quest, category: "cardio" }));
 }
 
@@ -1667,9 +1668,19 @@ const dailyQuestSignature = "dynamic";
 
       function ensureCardioQuests(player) {
         if (!Array.isArray(player.quests) || !player.quests.length) return false;
+        const cardioTemplates = cardioQuestsFor(player);
+        const rewardsByKey = new Map(cardioTemplates.map(quest => [quest.cardioKey, quest.xp]));
+        let changed = false;
+        player.quests.filter(quest => quest.category === "cardio").forEach(quest => {
+          const expectedXp = rewardsByKey.get(quest.cardioKey);
+          if (Number.isFinite(expectedXp) && quest.xp !== expectedXp) {
+            quest.xp = expectedXp;
+            changed = true;
+          }
+        });
         const existingKeys = new Set(player.quests.filter(quest => quest.category === "cardio").map(quest => quest.cardioKey));
-        const missing = cardioQuestsFor(player).filter(quest => !existingKeys.has(quest.cardioKey));
-        if (!missing.length) return false;
+        const missing = cardioTemplates.filter(quest => !existingKeys.has(quest.cardioKey));
+        if (!missing.length) return changed;
         const today = todayKey();
         player.quests.push(...missing.map((quest, index) => ({
           id: `${today}-cardio-${quest.cardioKey}-${index}-${Math.random().toString(16).slice(2)}`,
