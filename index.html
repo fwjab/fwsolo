@@ -896,6 +896,9 @@
     .sw-exercise-demo-close { flex: 0 0 auto; padding: 7px 10px; border: 1px solid rgba(188, 213, 255, .34); border-radius: 8px; color: #d9e7ff; background: rgba(255, 255, 255, .06); cursor: pointer; }
     .sw-exercise-demo-media { display: grid; place-items: center; min-height: 260px; margin: 18px 0; overflow: hidden; border: 1px solid rgba(109, 209, 255, .3); border-radius: 12px; background: repeating-linear-gradient(135deg, rgba(74, 185, 255, .06) 0 2px, transparent 2px 10px), #060b1b; }
     .sw-exercise-demo-media video, .sw-exercise-demo-media img { display: block; width: 100%; max-height: 400px; background: #02040c; }
+    .sw-exercise-demo-panel { width: min(100%, 500px); aspect-ratio: 341 / 384; overflow: hidden; border: 1px solid rgba(145, 225, 255, .42); border-radius: 10px; box-shadow: 0 0 30px rgba(85, 101, 255, .28); }
+    .sw-exercise-demo-panel img { display: block; width: 300%; height: 400%; max-width: none; max-height: none; transform-origin: top left; animation: swFormArtPulse 2.6s ease-in-out infinite; }
+    @keyframes swFormArtPulse { 50% { filter: brightness(1.12) saturate(1.12); } }
     .sw-exercise-demo-placeholder { padding: 42px 20px; color: #b9d4ef; text-align: center; }
     .sw-exercise-demo-placeholder b { display: block; margin-bottom: 8px; color: #8ce7ff; letter-spacing: .08em; text-transform: uppercase; }
     .sw-exercise-demo-copy { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -1399,18 +1402,18 @@
    const dailyQuestXp = [45, 40, 40, 45, 40, 50];
    const cardioQuestXp = dailyQuestXp.map(xp => Math.round(xp * 0.4));
    const exerciseDemoData = {
-    pushups: { title: "Push-Ups", video: "/exercise-demos/push-ups.svg", instructions: ["Keep your body in one straight line.", "Lower your chest with control.", "Keep elbows slightly angled back."], mistakes: ["Letting hips sag or rise.", "Stopping at half repetitions."] },
-    legRaises: { title: "Leg Raises", video: "/exercise-demos/leg-raises.svg", instructions: ["Keep your lower back gently braced.", "Raise legs smoothly without swinging.", "Lower slowly under control."], mistakes: ["Arching your lower back.", "Dropping legs too quickly."] },
-    inAndOuts: { title: "In-and-Out Abs", video: "/exercise-demos/in-and-outs.svg", instructions: ["Lean back with a tall chest.", "Extend and pull knees in with control.", "Keep your core tight throughout."], mistakes: ["Rounding the back too much.", "Using momentum instead of the core."] },
-    plank: { title: "Plank", video: "/exercise-demos/plank.svg", instructions: ["Stack shoulders over elbows.", "Keep hips level with shoulders.", "Brace your core and breathe steadily."], mistakes: ["Hips sagging toward the floor.", "Looking forward and straining the neck."] },
-    squats: { title: "Squats", video: "/exercise-demos/squats.svg", instructions: ["Keep feet about shoulder-width apart.", "Sit hips back and keep chest proud.", "Drive through your full foot to stand."], mistakes: ["Knees collapsing inward.", "Heels lifting off the floor."] },
-    curls: { title: "Curls", video: "/exercise-demos/curls.svg", instructions: ["Keep elbows close to your sides.", "Curl with control through the full range.", "Lower the weight slowly."], mistakes: ["Swinging your torso.", "Letting elbows drift forward."] },
-    jumpingJacks: { title: "Jumping Jacks", video: "/exercise-demos/jumping-jacks.svg", instructions: ["Land softly with knees relaxed.", "Raise arms overhead as feet move apart.", "Return to a controlled starting position."], mistakes: ["Landing with locked knees.", "Rushing without control."] },
-    highKnees: { title: "High Knees", video: "/exercise-demos/high-knees.svg", instructions: ["Stay tall through the torso.", "Drive one knee up at a time.", "Use quick, light steps."], mistakes: ["Leaning too far backward.", "Heavy, stomping landings."] },
-    mountainClimbers: { title: "Mountain Climbers", video: "/exercise-demos/mountain-climbers.svg", instructions: ["Start in a strong high-plank position.", "Drive one knee toward the chest at a time.", "Keep shoulders stable over hands."], mistakes: ["Bouncing hips high into the air.", "Letting shoulders collapse."] },
-    buttKicks: { title: "Butt Kicks", video: "/exercise-demos/butt-kicks.svg", instructions: ["Stay tall and keep a quick rhythm.", "Bring each heel toward your glutes.", "Land lightly under your hips."], mistakes: ["Leaning too far forward.", "Kicking the knee forward instead of the heel back."] },
-    fastFeet: { title: "Fast Feet", video: "/exercise-demos/fast-feet.svg", instructions: ["Use small, quick steps.", "Stay balanced over the middle of your feet.", "Keep your chest tall and relaxed."], mistakes: ["Taking steps that are too large.", "Locking knees or stomping."] },
-    stepUps: { title: "Step-Ups", video: "/exercise-demos/step-ups.svg", instructions: ["Use a stable, low step or platform.", "Place the whole foot on the step.", "Push through the leading foot and alternate sides."], mistakes: ["Using an unstable surface.", "Pushing hard from the trailing foot."] }
+    pushups: { title: "Push-Ups", panel: 0, instructions: ["Keep your body in one straight line.", "Lower your chest with control.", "Keep elbows slightly angled back."], mistakes: ["Letting hips sag or rise.", "Stopping at half repetitions."] },
+    legRaises: { title: "Leg Raises", panel: 1, instructions: ["Keep your lower back gently braced.", "Raise legs smoothly without swinging.", "Lower slowly under control."], mistakes: ["Arching your lower back.", "Dropping legs too quickly."] },
+    inAndOuts: { title: "In-and-Out Abs", panel: 2, instructions: ["Lean back with a tall chest.", "Extend and pull knees in with control.", "Keep your core tight throughout."], mistakes: ["Rounding the back too much.", "Using momentum instead of the core."] },
+    plank: { title: "Plank", panel: 3, instructions: ["Stack shoulders over elbows.", "Keep hips level with shoulders.", "Brace your core and breathe steadily."], mistakes: ["Hips sagging toward the floor.", "Looking forward and straining the neck."] },
+    squats: { title: "Squats", panel: 4, instructions: ["Keep feet about shoulder-width apart.", "Sit hips back and keep chest proud.", "Drive through your full foot to stand."], mistakes: ["Knees collapsing inward.", "Heels lifting off the floor."] },
+    curls: { title: "Curls", panel: 5, instructions: ["Keep elbows close to your sides.", "Curl with control through the full range.", "Lower the weight slowly."], mistakes: ["Swinging your torso.", "Letting elbows drift forward."] },
+    jumpingJacks: { title: "Jumping Jacks", panel: 6, instructions: ["Land softly with knees relaxed.", "Raise arms overhead as feet move apart.", "Return to a controlled starting position."], mistakes: ["Landing with locked knees.", "Rushing without control."] },
+    highKnees: { title: "High Knees", panel: 7, instructions: ["Stay tall through the torso.", "Drive one knee up at a time.", "Use quick, light steps."], mistakes: ["Leaning too far backward.", "Heavy, stomping landings."] },
+    mountainClimbers: { title: "Mountain Climbers", panel: 8, instructions: ["Start in a strong high-plank position.", "Drive one knee toward the chest at a time.", "Keep shoulders stable over hands."], mistakes: ["Bouncing hips high into the air.", "Letting shoulders collapse."] },
+    buttKicks: { title: "Butt Kicks", panel: 9, instructions: ["Stay tall and keep a quick rhythm.", "Bring each heel toward your glutes.", "Land lightly under your hips."], mistakes: ["Leaning too far forward.", "Kicking the knee forward instead of the heel back."] },
+    fastFeet: { title: "Fast Feet", panel: 10, instructions: ["Use small, quick steps.", "Stay balanced over the middle of your feet.", "Keep your chest tall and relaxed."], mistakes: ["Taking steps that are too large.", "Locking knees or stomping."] },
+    stepUps: { title: "Step-Ups", panel: 11, instructions: ["Use a stable, low step or platform.", "Place the whole foot on the step.", "Push through the leading foot and alternate sides."], mistakes: ["Using an unstable surface.", "Pushing hard from the trailing foot."] }
    };
    const cardioRankTiers = {
     E: { jumpingJacks: 20, highKnees: 15, mountainClimbers: 12, buttKicks: 15, fastFeetSeconds: 15, stepUps: 10 },
@@ -1981,7 +1984,11 @@ if (profile?.upgrades.extraDailyQuest) {
       function openExerciseDemo(exerciseId) {
         const demo = exerciseDemoData[exerciseId];
         if (!demo) return;
-        const mediaMarkup = demo.video.endsWith(".svg")
+        const panelColumn = Number(demo.panel) % 3;
+        const panelRow = Math.floor(Number(demo.panel) / 3);
+        const mediaMarkup = Number.isInteger(demo.panel)
+          ? `<div class="sw-exercise-demo-panel"><img src="/exercise-demos/hunter-form-panels.png" alt="${escapeHtml(demo.title)} full-body Hunter form demonstration" loading="lazy" data-demo-media style="transform: translate(-${panelColumn * 33.333}%, -${panelRow * 25}%);"></div>`
+          : demo.video.endsWith(".svg")
           ? `<img src="${escapeHtml(demo.video)}" alt="Animated ${escapeHtml(demo.title)} form demonstration" loading="lazy" data-demo-media>`
           : `<video autoplay loop muted controls playsinline preload="none" aria-label="${escapeHtml(demo.title)} form demonstration" data-demo-media><source src="${escapeHtml(demo.video)}" type="video/webm"></video>`;
         const existing = document.getElementById("sw-exercise-demo-modal");

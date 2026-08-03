@@ -257,6 +257,7 @@ if (request.method === "GET" && requestPath.endsWith(".js")) {
       const mimeTypes = {
         ".webm": "video/webm",
         ".mp4": "video/mp4",
+        ".png": "image/png",
         ".webp": "image/webp",
         ".gif": "image/gif",
         ".svg": "image/svg+xml"
