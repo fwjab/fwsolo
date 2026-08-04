@@ -357,18 +357,16 @@ sendJson(response, 200, state);
         sendJson(response, 400, { error: "Invalid state." });
         return;
       }
-     const state = await readState();
-      const previousState = typeof state.toObject === "function" ? state.toObject() : structuredClone(state);
 
-const currentIds = state.players
-  .map(player => player.id)
-  .sort()
-  .join("|");
+      const state = await readState();
+      const previousState = typeof state.toObject === "function" ? state.toObject() : structuredClone(state);
+      const currentIds = state.players.map(player => player.id).sort().join("|");
       const nextIds = nextState.players.map(player => player.id).sort().join("|");
       if (currentIds !== nextIds) {
         sendJson(response, 403, { error: "Player roster changes require admin control." });
         return;
       }
+
       const activePlayerId = cleanPushText(request.headers["x-hunter-session"], 80);
       const incomingPlayer = nextState.players.find(player => player.id === activePlayerId);
       const existingPlayerIndex = state.players.findIndex(player => player.id === activePlayerId);
@@ -376,18 +374,60 @@ const currentIds = state.players
         sendJson(response, 400, { error: "Choose an active hunter before saving." });
         return;
       }
+
       const expectedRevision = Math.max(0, Number(request.headers["x-hunter-revision"]) || 0);
       const currentRevision = Math.max(0, Number(state.players[existingPlayerIndex].syncRevision) || 0);
       if (expectedRevision !== currentRevision) {
-        sendJson(response, 409, { error: "A newer hunter save already exists.", state: typeof state.toObject === "function" ? state.toObject() : state });
+        sendJson(response, 409, {
+          error: "A newer hunter save already exists.",
+          state: typeof state.toObject === "function" ? state.toObject() : state
+        });
         return;
       }
-      state.quoteIndex = nextState.quoteIndex;
-      state.feed = Array.isArray(nextState.feed) ? nextState.feed.slice(0, 4) : state.feed;
+
       incomingPlayer.syncRevision = currentRevision + 1;
-      state.players[existingPlayerIndex] = incomingPlayer;
-      await writeState(state);
-      const mergedState = typeof state.toObject === "function" ? state.toObject() : structuredClone(state);
+      let mergedState;
+
+      if (useMongo) {
+        const activeHunterFilter = currentRevision === 0
+          ? {
+              "active.id": activePlayerId,
+              $or: [
+                { "active.syncRevision": 0 },
+                { "active.syncRevision": { $exists: false } }
+              ]
+            }
+          : { "active.id": activePlayerId, "active.syncRevision": currentRevision };
+
+        const saved = await GameState.findOneAndUpdate(
+          { _id: state._id },
+          {
+            $set: {
+              quoteIndex: nextState.quoteIndex,
+              feed: Array.isArray(nextState.feed) ? nextState.feed.slice(0, 4) : state.feed,
+              "players.$[active]": incomingPlayer
+            }
+          },
+          { new: true, arrayFilters: [activeHunterFilter] }
+        );
+        const savedPlayer = saved?.players?.find(player => player.id === activePlayerId);
+        if (!savedPlayer || Number(savedPlayer.syncRevision) !== incomingPlayer.syncRevision) {
+          const latestState = await readState();
+          sendJson(response, 409, {
+            error: "A newer hunter save already exists.",
+            state: typeof latestState.toObject === "function" ? latestState.toObject() : latestState
+          });
+          return;
+        }
+        mergedState = saved.toObject();
+      } else {
+        state.quoteIndex = nextState.quoteIndex;
+        state.feed = Array.isArray(nextState.feed) ? nextState.feed.slice(0, 4) : state.feed;
+        state.players[existingPlayerIndex] = incomingPlayer;
+        await writeState(state);
+        mergedState = structuredClone(state);
+      }
+
       notifyProgressChanges(previousState, mergedState);
       sendJson(response, 200, { ok: true, playerRevision: incomingPlayer.syncRevision });
       return;
