@@ -5,13 +5,13 @@
   const shadowRequirements = { "Iron Knight": 15, "Shadow Wolf": 25, "Shadow Mage": 40, "Shadow Dragon": 100 };
   const rarityTable = ["Common", "Common", "Rare", "Rare", "Epic", "Legendary", "Mythic"];
   const mysteryBoxRewards = {
-    Common: { gold: 20, xp: 6, fragments: 0 },
-    Rare: { gold: 35, xp: 10, fragments: 1 },
-    Epic: { gold: 55, xp: 16, fragments: 1 },
-    Legendary: { gold: 80, xp: 24, fragments: 2 },
-    Mythic: { gold: 120, xp: 36, fragments: 3 }
+    Common: { gold: 45, xp: 15, fragments: 0 },
+    Rare: { gold: 75, xp: 25, fragments: 1 },
+    Epic: { gold: 110, xp: 38, fragments: 2 },
+    Legendary: { gold: 160, xp: 55, fragments: 3 },
+    Mythic: { gold: 240, xp: 80, fragments: 15 }
   };
-  const mysteryBoxRankScaling = { E: 0.75, D: 0.85, C: 1, B: 1.1, A: 1.2, S: 1.35, National: 1.5, Monarch: 1.7 };
+  const mysteryBoxRankScaling = { E: 0.8, D: 0.9, C: 1, B: 1.15, A: 1.3, S: 1.45, National: 1.65, Monarch: 1.85 };
 
   function mysteryBoxRewardFor(player, rarity) {
     const base = mysteryBoxRewards[rarity] || mysteryBoxRewards.Common;
@@ -19,8 +19,8 @@
     const scale = mysteryBoxRankScaling[rank] || mysteryBoxRankScaling.E;
     return {
       rank,
-      gold: Math.max(10, Math.round(base.gold * scale)),
-      xp: Math.max(3, Math.round(base.xp * scale)),
+      gold: Math.max(25, Math.round(base.gold * scale)),
+      xp: Math.max(8, Math.round(base.xp * scale)),
       fragments: base.fragments
     };
   }
