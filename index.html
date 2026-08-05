@@ -1890,6 +1890,7 @@ if (profile?.upgrades.extraDailyQuest) {
             applyQuestRewards(quest, () => window.HunterProgression?.onQuestCompleted?.(player, quest));
             updateDailyStreak(player);
             quest.rewardSnapshot.after = progressSnapshot(player);
+            playSystemSound("complete");
           }
           quest.completedOrder = Math.max(0, ...getDailyQuests(player).map(item => item.completedOrder || 0)) + 1;
         } else {
@@ -1950,17 +1951,43 @@ if (profile?.upgrades.extraDailyQuest) {
           const AudioContext = window.AudioContext || window.webkitAudioContext;
           if (!AudioContext) return;
           const audio = new AudioContext();
-          const oscillator = audio.createOscillator();
-          const gain = audio.createGain();
-          const notes = { click: [340, .04], timer: [520, .045], xp: [660, .08], rank: [330, .35], boss: [120, .45] };
-          const [frequency, duration] = notes[type] || notes.click;
-          oscillator.type = type === "boss" ? "sawtooth" : "sine";
-          oscillator.frequency.setValueAtTime(frequency, audio.currentTime);
-          oscillator.frequency.exponentialRampToValueAtTime(type === "rank" ? frequency * 2 : frequency * .72, audio.currentTime + duration);
-          gain.gain.setValueAtTime(.045, audio.currentTime);
-          gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + duration);
-          oscillator.connect(gain).connect(audio.destination);
-          oscillator.start(); oscillator.stop(audio.currentTime + duration);
+          const now = audio.currentTime;
+          const playTone = (frequency, start, duration, volume, wave = "sine", endFrequency = frequency) => {
+            const oscillator = audio.createOscillator();
+            const gain = audio.createGain();
+            oscillator.type = wave;
+            oscillator.frequency.setValueAtTime(frequency, start);
+            oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), start + duration);
+            gain.gain.setValueAtTime(0.001, start);
+            gain.gain.exponentialRampToValueAtTime(volume, start + .012);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+            oscillator.connect(gain).connect(audio.destination);
+            oscillator.start(start);
+            oscillator.stop(start + duration + .02);
+          };
+          const sounds = {
+            click: () => playTone(340, now, .06, .055, "triangle", 275),
+            timer: () => {
+              playTone(740, now, .08, .105, "triangle", 660);
+              playTone(1110, now + .025, .055, .045, "sine", 990);
+            },
+            xp: () => {
+              playTone(660, now, .1, .07, "sine", 820);
+              playTone(990, now + .06, .14, .06, "triangle", 1180);
+            },
+            complete: () => {
+              playTone(220, now, .18, .06, "sine", 195);
+              playTone(587, now + .04, .19, .1, "triangle", 880);
+              playTone(880, now + .12, .28, .085, "sine", 1320);
+            },
+            rank: () => {
+              playTone(330, now, .34, .1, "sawtooth", 660);
+              playTone(660, now + .1, .38, .09, "triangle", 1320);
+            },
+            boss: () => playTone(120, now, .48, .12, "sawtooth", 72)
+          };
+          sounds[type]?.() || sounds.click();
+          window.setTimeout(() => audio.close().catch(() => {}), 900);
         } catch (error) {}
       }
 
@@ -2035,7 +2062,7 @@ if (profile?.upgrades.extraDailyQuest) {
         const key = `${playerId}-${questId}`; let timer = plankTimers.get(key);
         if (!timer) { timer = { remaining: seconds, interval: null }; plankTimers.set(key, timer); }
         if (timer.interval) { clearInterval(timer.interval); timer.interval = null; return; }
-        timer.interval = setInterval(() => { timer.remaining = Math.max(0, timer.remaining - 1); updatePlankTimer(key); if (timer.remaining) playSystemSound("timer"); if (!timer.remaining) { clearInterval(timer.interval); timer.interval = null; playSystemSound("rank"); showToast("Timer Complete", "Timer complete. Mark the quest when you finish your set."); } }, 1000);
+        timer.interval = setInterval(() => { timer.remaining = Math.max(0, timer.remaining - 1); updatePlankTimer(key); if (timer.remaining) playSystemSound("timer"); if (!timer.remaining) { clearInterval(timer.interval); timer.interval = null; playSystemSound("complete"); showToast("Timer Complete", "Timer complete. Mark the quest when you finish your set."); } }, 1000);
       }
       function resetPlankTimer(playerId, questId, seconds) { const key = `${playerId}-${questId}`; const timer = plankTimers.get(key); if (timer?.interval) clearInterval(timer.interval); plankTimers.set(key, { remaining: seconds, interval: null }); updatePlankTimer(key); }
 
