@@ -4,6 +4,26 @@
   const pick = values => values[Math.floor(Math.random() * values.length)];
   const shadowRequirements = { "Iron Knight": 15, "Shadow Wolf": 25, "Shadow Mage": 40, "Shadow Dragon": 100 };
   const rarityTable = ["Common", "Common", "Rare", "Rare", "Epic", "Legendary", "Mythic"];
+  const mysteryBoxRewards = {
+    Common: { gold: 20, xp: 6, fragments: 0 },
+    Rare: { gold: 35, xp: 10, fragments: 1 },
+    Epic: { gold: 55, xp: 16, fragments: 1 },
+    Legendary: { gold: 80, xp: 24, fragments: 2 },
+    Mythic: { gold: 120, xp: 36, fragments: 3 }
+  };
+  const mysteryBoxRankScaling = { E: 0.75, D: 0.85, C: 1, B: 1.1, A: 1.2, S: 1.35, National: 1.5, Monarch: 1.7 };
+
+  function mysteryBoxRewardFor(player, rarity) {
+    const base = mysteryBoxRewards[rarity] || mysteryBoxRewards.Common;
+    const rank = window.HunterWorkout?.rankFor?.(player.level) || "E";
+    const scale = mysteryBoxRankScaling[rank] || mysteryBoxRankScaling.E;
+    return {
+      rank,
+      gold: Math.max(10, Math.round(base.gold * scale)),
+      xp: Math.max(3, Math.round(base.xp * scale)),
+      fragments: base.fragments
+    };
+  }
 
   function adventureFor(player) {
     const profile = getProfile(player);
@@ -165,9 +185,9 @@
     const adventure = adventureFor(player);
     const rarity = adventure.boxes.shift();
     if (!rarity) return false;
-    const multiplier = { Common: 1, Rare: 2, Epic: 4, Legendary: 8, Mythic: 15 }[rarity];
-    giveRewards(player, { gold: 120 * multiplier, xp: 30 * multiplier, reason: `${rarity} Mystery Box` });
-    if (rarity !== "Common") grantFragments(player, multiplier);
+    const reward = mysteryBoxRewardFor(player, rarity);
+    giveRewards(player, { gold: reward.gold, xp: reward.xp, reason: `${rarity} Mystery Box · ${reward.rank} Rank` });
+    if (reward.fragments) grantFragments(player, reward.fragments);
     if (rarity === "Rare" || rarity === "Epic") adventure.potions.doubleXp += 1;
     if (rarity === "Legendary" || rarity === "Mythic") adventure.potions.recovery += 1;
     if (rarity === "Legendary" || rarity === "Mythic") addLoot(player, "Monarch Relic", rarity);
