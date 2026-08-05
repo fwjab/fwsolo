@@ -571,7 +571,7 @@
     .sw-player-companions .sw-player-companion:nth-child(2) { z-index: 3; }
     .sw-player-companions .sw-player-companion:nth-child(3) { z-index: 2; }
     .sw-player-companions .sw-player-companion:nth-child(4) { z-index: 1; }
-    .sw-player-companion.none::after { content: "◇"; display: grid; place-items: center; height: 100%; color: #91dfff; font-size: 1.7rem; }
+    .sw-player-companion.none::after { content: "â—‡"; display: grid; place-items: center; height: 100%; color: #91dfff; font-size: 1.7rem; }
 
     .sw-player-name {
       margin: 0;
@@ -1081,7 +1081,7 @@
   <main class="sw-shell">
     <header class="sw-topbar">
       <div class="sw-brand">
-        <div class="sw-sigil" aria-hidden="true">◆</div>
+        <div class="sw-sigil" aria-hidden="true">â—†</div>
         <div>
           <h1>Nightforge Training</h1>
           <p>Shared hunter quests, XP, ranks, and daily streaks.</p>
@@ -1134,14 +1134,14 @@
           <h3>Rank Ladder</h3>
           <div id="sw-rank-ladder" aria-live="polite"></div>
 <p class="sw-muted">
-  E Rank — Level 1<br>
-  D Rank — Level 5<br>
-  C Rank — Level 10<br>
-  B Rank — Level 15<br>
-  A Rank — Level 20<br>
-  S Rank — Level 25<br>
-  National Rank — Level 30<br>
-  Monarch Rank — Level 35
+  E Rank â€” Level 1<br>
+  D Rank â€” Level 5<br>
+  C Rank â€” Level 10<br>
+  B Rank â€” Level 15<br>
+  A Rank â€” Level 20<br>
+  S Rank â€” Level 25<br>
+  National Rank â€” Level 30<br>
+  Monarch Rank â€” Level 35
 </p>
         </div>
       </aside>
@@ -1293,7 +1293,7 @@
   "The system rewards consistency, not excuses.",
   "Today's struggle is tomorrow's strength.",
   "The strongest hunter was once the weakest.",
-  "You don't unlock greatness—you earn it.",
+  "You don't unlock greatnessâ€”you earn it.",
   "One more rep. One more level.",
   "Every workout is experience gained.",
   "No enemy is stronger than a quitter.",
@@ -1891,6 +1891,7 @@ if (profile?.upgrades.extraDailyQuest) {
             updateDailyStreak(player);
             quest.rewardSnapshot.after = progressSnapshot(player);
             playSystemSound("complete");
+            announceSystem("Well done, soldier.");
           }
           quest.completedOrder = Math.max(0, ...getDailyQuests(player).map(item => item.completedOrder || 0)) + 1;
         } else {
@@ -1968,8 +1969,9 @@ if (profile?.upgrades.extraDailyQuest) {
           const sounds = {
             click: () => playTone(340, now, .06, .055, "triangle", 275),
             timer: () => {
-              playTone(740, now, .08, .105, "triangle", 660);
-              playTone(1110, now + .025, .055, .045, "sine", 990);
+              playTone(523, now, .11, .18, "triangle", 587);
+              playTone(784, now + .045, .1, .14, "sine", 880);
+              playTone(1046, now + .09, .12, .1, "triangle", 1174);
             },
             xp: () => {
               playTone(660, now, .1, .07, "sine", 820);
@@ -1988,6 +1990,21 @@ if (profile?.upgrades.extraDailyQuest) {
           };
           sounds[type]?.() || sounds.click();
           window.setTimeout(() => audio.close().catch(() => {}), 900);
+        } catch (error) {}
+      }
+
+      function announceSystem(message) {
+        try {
+          if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+          window.speechSynthesis.cancel();
+          const announcement = new SpeechSynthesisUtterance(message);
+          const narrator = window.speechSynthesis.getVoices().find(voice => /en-US|en-GB/i.test(voice.lang) && /david|guy|male|daniel/i.test(voice.name))
+            || window.speechSynthesis.getVoices().find(voice => /en/i.test(voice.lang));
+          if (narrator) announcement.voice = narrator;
+          announcement.volume = 1;
+          announcement.rate = .86;
+          announcement.pitch = .78;
+          window.speechSynthesis.speak(announcement);
         } catch (error) {}
       }
 
@@ -2062,7 +2079,7 @@ if (profile?.upgrades.extraDailyQuest) {
         const key = `${playerId}-${questId}`; let timer = plankTimers.get(key);
         if (!timer) { timer = { remaining: seconds, interval: null }; plankTimers.set(key, timer); }
         if (timer.interval) { clearInterval(timer.interval); timer.interval = null; return; }
-        timer.interval = setInterval(() => { timer.remaining = Math.max(0, timer.remaining - 1); updatePlankTimer(key); if (timer.remaining) playSystemSound("timer"); if (!timer.remaining) { clearInterval(timer.interval); timer.interval = null; playSystemSound("complete"); showToast("Timer Complete", "Timer complete. Mark the quest when you finish your set."); } }, 1000);
+        timer.interval = setInterval(() => { timer.remaining = Math.max(0, timer.remaining - 1); updatePlankTimer(key); if (timer.remaining) playSystemSound("timer"); if (!timer.remaining) { clearInterval(timer.interval); timer.interval = null; playSystemSound("complete"); announceSystem("Well done, soldier. Timer complete."); showToast("Timer Complete", "Timer complete. Mark the quest when you finish your set."); } }, 1000);
       }
       function resetPlankTimer(playerId, questId, seconds) { const key = `${playerId}-${questId}`; const timer = plankTimers.get(key); if (timer?.interval) clearInterval(timer.interval); plankTimers.set(key, { remaining: seconds, interval: null }); updatePlankTimer(key); }
 
@@ -2088,7 +2105,7 @@ if (profile?.upgrades.extraDailyQuest) {
           const rank = rankFor(player.level);
           const cosmetic = profile.equippedTheme || "Blue Hunter";
           const shadow = profile.equippedShadow || "No Shadow";
-          return `<article class="sw-ladder-hunter" data-rank="${rank}"><span class="sw-ladder-position">#${index + 1}</span><span class="sw-ladder-rank">${rank === "National" ? "N" : rank === "Monarch" ? "M" : rank}</span><span class="sw-ladder-info"><b>${escapeHtml(player.name)}</b><small>${rank} Rank · Lv ${player.level} · ${escapeHtml(shadow)}</small></span><span class="sw-ladder-theme" title="${escapeHtml(cosmetic)}">${escapeHtml(cosmetic)}</span></article>`;
+          return `<article class="sw-ladder-hunter" data-rank="${rank}"><span class="sw-ladder-position">#${index + 1}</span><span class="sw-ladder-rank">${rank === "National" ? "N" : rank === "Monarch" ? "M" : rank}</span><span class="sw-ladder-info"><b>${escapeHtml(player.name)}</b><small>${rank} Rank Â· Lv ${player.level} Â· ${escapeHtml(shadow)}</small></span><span class="sw-ladder-theme" title="${escapeHtml(cosmetic)}">${escapeHtml(cosmetic)}</span></article>`;
         }).join("") || `<p class="sw-muted">No hunter records found.</p>`;
         root.innerHTML = `<div class="sw-rank-scale" aria-label="Rank scale from Monarch to E">${scale}</div><div class="sw-ladder-hunters">${hunters}</div>`;
       }
@@ -2102,7 +2119,7 @@ if (profile?.upgrades.extraDailyQuest) {
           document.body.append(popup);
         }
         const activePlayerId = localStorage.getItem("nightforgePlayerSession") || state.players[0]?.id;
-        popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM · HUNTER ARCHIVE</p><h2>View Hunter Record</h2><p>Choose a hunter to view their card. Only your active console can make changes.</p><div class="sw-daily-login-players">${state.players.map(player => `<button type="button" data-view-hunter-id="${player.id}"><b>${escapeHtml(player.name)}</b><span>${player.id === activePlayerId ? "Your active console" : "View read-only record"}</span></button>`).join("")}</div><button class="sw-daily-login-exit" type="button" data-close-hunter-viewer>Exit</button></div>`;
+        popup.innerHTML = `<div class="sw-daily-login-card"><p class="sw-kicker">SYSTEM Â· HUNTER ARCHIVE</p><h2>View Hunter Record</h2><p>Choose a hunter to view their card. Only your active console can make changes.</p><div class="sw-daily-login-players">${state.players.map(player => `<button type="button" data-view-hunter-id="${player.id}"><b>${escapeHtml(player.name)}</b><span>${player.id === activePlayerId ? "Your active console" : "View read-only record"}</span></button>`).join("")}</div><button class="sw-daily-login-exit" type="button" data-close-hunter-viewer>Exit</button></div>`;
         popup.querySelectorAll("[data-view-hunter-id]").forEach(button => {
           button.onclick = () => {
             localStorage.setItem("nightforgeViewedHunter", button.dataset.viewHunterId);
@@ -2132,7 +2149,7 @@ if (profile?.upgrades.extraDailyQuest) {
           .filter((playerId, index, playerIds) => playerId && playerIds.indexOf(playerId) === index)
           .map(playerId => state.players.find(player => player.id === playerId))
           .filter(Boolean);
-        const viewButtons = state.players.filter(player => player.id !== activePlayerId).map(player => `<button type="button" onclick="window.HunterWorkout.viewHunter('${player.id}')">${escapeHtml(player.name)} · Level ${player.level}</button>`).join("");
+        const viewButtons = state.players.filter(player => player.id !== activePlayerId).map(player => `<button type="button" onclick="window.HunterWorkout.viewHunter('${player.id}')">${escapeHtml(player.name)} Â· Level ${player.level}</button>`).join("");
         playersRoot.innerHTML = visiblePlayers.map(player => {
           const isActivePlayer = player.id === activePlayerId;
           const needed = xpForLevel(player.level);
@@ -2156,7 +2173,7 @@ if (profile?.upgrades.extraDailyQuest) {
               <span>
                 <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
                 ${/(?:planks?|fast feet)/i.test(quest.title) ? (() => { const seconds = Number((quest.title.match(/(\d+)\s*second/i) || [])[1]) || 30; const key = `${player.id}-${quest.id}`; const remaining = plankTimers.get(key)?.remaining ?? seconds; return `<span class="sw-plank-timer"><strong data-plank-time="${key}">${formatTimer(remaining)}</strong><button type="button" data-plank-toggle data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Start / Pause</button><button type="button" data-plank-reset data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Reset</button></span>`; })() : ""}
-                <small>${quest.boss ? "Optional boss quest" : quest.category === "cardio" ? "Cardio quest" : "Daily quest"} Â· ${today}</small>
+                <small>${quest.boss ? "Optional boss quest" : quest.category === "cardio" ? "Cardio quest" : "Daily quest"} Ã‚Â· ${today}</small>
               </span>
               <span class="sw-xp-pill">+${quest.xp}</span>
             </label>
@@ -2196,9 +2213,9 @@ if (profile?.upgrades.extraDailyQuest) {
                     <input type="checkbox" data-player="${player.id}" data-quest="${quest.id}" ${quest.done ? "checked" : ""} ${isActivePlayer ? "" : "disabled"}>
                     <span>
                       <span class="sw-quest-title">${escapeHtml(quest.title)}</span>
-                      ${(() => { const exerciseId = exerciseIdForQuest(quest); return exerciseId ? `<button type="button" class="sw-form-demo-btn" data-form-demo="${exerciseId}">▶ View Form</button>` : ""; })()}
+                      ${(() => { const exerciseId = exerciseIdForQuest(quest); return exerciseId ? `<button type="button" class="sw-form-demo-btn" data-form-demo="${exerciseId}">â–¶ View Form</button>` : ""; })()}
                       ${/(?:planks?|fast feet)/i.test(quest.title) ? (() => { const seconds = Number((quest.title.match(/(\d+)\s*second/i) || [])[1]) || 30; const key = `${player.id}-${quest.id}`; const remaining = plankTimers.get(key)?.remaining ?? seconds; return `<span class="sw-plank-timer"><strong data-plank-time="${key}">${formatTimer(remaining)}</strong><button type="button" data-plank-toggle data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Start / Pause</button><button type="button" data-plank-reset data-player="${player.id}" data-quest="${quest.id}" data-seconds="${seconds}">Reset</button></span>`; })() : ""}
-                      <small>${quest.boss ? "Optional boss quest" : "Daily quest"} · ${today}</small>
+                      <small>${quest.boss ? "Optional boss quest" : "Daily quest"} Â· ${today}</small>
                     </span>
                     <span class="sw-xp-pill">+${quest.xp}</span>
                   </label>
@@ -2222,7 +2239,7 @@ if (profile?.upgrades.extraDailyQuest) {
 
         document.getElementById("sw-quote").textContent = quoteBank[state.quoteIndex];
         document.getElementById("sw-status-feed").innerHTML = state.feed.map(line => (
-          `<div class="sw-feed-line"><span aria-hidden="true">▸</span><span>${escapeHtml(line)}</span></div>`
+          `<div class="sw-feed-line"><span aria-hidden="true">â–¸</span><span>${escapeHtml(line)}</span></div>`
         )).join("");
 
         document.getElementById("sw-party-level").textContent = state.players.reduce((sum, player) => sum + player.level, 0);
